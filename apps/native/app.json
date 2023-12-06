@@ -1,0 +1,61 @@
+{
+  "expo": {
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#4C7AED",
+        "foregroundImage": "./assets/images/adaptive-icon.png"
+      },
+      "package": "com.bandi"
+    },
+    "androidStatusBar": {
+      "backgroundColor": "#ffffff",
+      "barStyle": "dark-content",
+      "hidden": false
+    },
+    "assetBundlePatterns": ["**/*"],
+    "backgroundColor": "#ffffff",
+    "description": "New RN starter kit",
+    "experiments": {
+      "tsconfigPaths": true,
+      "typedRoutes": true
+    },
+    "icon": "./assets/images/icon.png",
+    "ios": {
+      "bundleIdentifier": "com.bandi",
+      "infoPlist": {
+        "RCTAsyncStorageExcludeFromBackup": true,
+        "UIBackgroundModes": ["remote-notification"]
+      },
+      "supportsTablet": true
+    },
+    "name": "Bandi",
+    "orientation": "portrait",
+    "plugins": [
+      "expo-router",
+      "expo-notifications",
+      [
+        "expo-router",
+        {
+          "asyncRoutes": "development",
+          "origin": "<YOUR_WEB_URL>.vercel.app"
+        }
+      ]
+    ],
+    "primaryColor": "#ffffff",
+    "privacy": "public",
+    "scheme": "bandi",
+    "slug": "bandi",
+    "splash": {
+      "backgroundColor": "#4C7AED",
+      "image": "./assets/images/splash.png",
+      "resizeMode": "contain"
+    },
+    "userInterfaceStyle": "automatic",
+    "version": "1.0.0",
+    "web": {
+      "bundler": "metro",
+      "favicon": "./assets/images/favicon.png",
+      "output": "static"
+    }
+  }
+}

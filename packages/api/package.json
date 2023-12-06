@@ -1,0 +1,24 @@
+{
+  "name": "api",
+  "version": "0.0.0",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "license": "MIT",
+  "scripts": {
+    "writeOpenapi": "ts-node -r tsconfig-paths/register src/getAndWriteOpenApi.ts",
+    "postwriteOpenapi": "prettier src/__generated__/openapi.json --write",
+    "dev": "EXPO_PUBLIC_PROFILE=development orval --config src/orvalConfig.ts && tsup src/index.ts --dts --watch",
+    "build": "EXPO_PUBLIC_PROFILE=production orval --config src/orvalConfig.ts && tsup src/index.ts --dts --minify",
+    "lint": "eslint . --fix",
+    "clean": "rm -rf dist node_modules"
+  },
+  "devDependencies": {
+    "eslint-config-custom": "*",
+    "ts-node": "^10.9.1",
+    "tsconfig": "*",
+    "tsup": "^7.1.0"
+  },
+  "dependencies": {
+    "orval": "^6.16.0"
+  }
+}

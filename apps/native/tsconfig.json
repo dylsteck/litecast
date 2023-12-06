@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "types": ["detox", "jest", "node"]
+  },
+  "extends": "expo/tsconfig.base",
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    ".expo/types/**/*.ts",
+    "expo-env.d.ts",
+    "../../@types/**/*"
+  ]
+}

@@ -1,0 +1,5 @@
+{
+  "exclude": ["dist", "build", "node_modules"],
+  "extends": "tsconfig/react-library.json",
+  "include": [".", "../../@types/**/*", "../../apps/web/.next/types/**/*.ts"]
+}

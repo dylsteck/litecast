@@ -1,0 +1,11 @@
+# Add files here to ignore them from prettier formatting
+.bundle
+coverage
+ios
+android
+dist
+.vercel
+.next
+.expo*
+__generated__
+.tamagui

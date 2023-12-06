@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    "jsx": "react",
+    "lib": ["DOM", "ESNext"],
+    "noEmit": true,
+    "resolveJsonModule": true,
+    "target": "ESNext"
+  },
+  "display": "api",
+  "extends": "./base.json"
+}

@@ -1,0 +1,16 @@
+import "server-only";
+
+import { ReactNode } from "react";
+import { Stack } from "tamagui";
+
+interface {{ pascalCase name }}Props {
+  children?: ReactNode;
+}
+
+export function {{ pascalCase name }}({ children }: {{ pascalCase name }}Props) {
+  return (
+    <Stack>
+      {children}
+    </Stack>
+  );
+}

@@ -1,0 +1,29 @@
+{
+  "private": true,
+  "scripts": {
+    "postinstall": "npx typesync",
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "clean": "turbo run clean",
+    "postclean": "yarn",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "check-deps": "check-dependency-version-consistency ."
+  },
+  "devDependencies": {
+    "@turbo/gen": "^1.9.7",
+    "@types/eslint": "8.44.0",
+    "@types/prettier": "^2.7.3",
+    "check-dependency-version-consistency": "4.1.0",
+    "eslint": "^8.45.0",
+    "eslint-config-custom": "*",
+    "prettier": "latest",
+    "turbo": "latest"
+  },
+  "name": "bandi",
+  "packageManager": "yarn@1.22.19",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
+}

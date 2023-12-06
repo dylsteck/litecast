@@ -1,0 +1,144 @@
+{
+  "info": {
+    "description": "[openapi.json](/api/swagger)",
+    "title": "Bandi Swagger",
+    "version": "0.1.0"
+  },
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/hello": {
+      "get": {
+        "tags": ["sample"],
+        "summary": "greeting",
+        "description": "say hello\n",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string" },
+                    "createdAt": { "type": "string" }
+                  },
+                  "required": ["message", "createdAt"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/notifications": {
+      "get": {
+        "tags": ["config"],
+        "summary": "config",
+        "description": "recent notification list\n",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "title": { "type": "string" },
+                      "date": { "type": "string" },
+                      "img": { "type": "string" }
+                    },
+                    "required": ["title", "date", "img"]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/post/{postId}": {
+      "get": {
+        "tags": ["post"],
+        "summary": "post",
+        "description": "post detail\n",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "postId",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "The post id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "string" },
+                    "description": { "type": "string" },
+                    "img": { "type": "string" },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "createdAt": { "type": "string" },
+                        "location": { "type": "string" }
+                      },
+                      "required": ["createdAt", "location"]
+                    },
+                    "title": { "type": "string" }
+                  },
+                  "required": ["id", "description", "img", "meta", "title"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/post": {
+      "get": {
+        "tags": ["post"],
+        "summary": "post",
+        "description": "recent post list\n",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": { "type": "string" },
+                      "description": { "type": "string" },
+                      "img": { "type": "string" },
+                      "meta": {
+                        "type": "object",
+                        "properties": {
+                          "createdAt": { "type": "string" },
+                          "location": { "type": "string" }
+                        },
+                        "required": ["createdAt", "location"]
+                      },
+                      "title": { "type": "string" }
+                    },
+                    "required": ["id", "description", "img", "meta", "title"]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {},
+  "tags": []
+}

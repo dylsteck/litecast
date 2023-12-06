@@ -1,0 +1,53 @@
+{
+  "name": "ui",
+  "version": "0.0.0",
+  "main": "./index.tsx",
+  "types": "./index.tsx",
+  "sideEffects": [
+    "*.css"
+  ],
+  "license": "MIT",
+  "scripts": {
+    "lint": "eslint . --fix",
+    "clean": "rm -rf dist node_modules",
+    "generate:component": "turbo gen react-component"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.14.195",
+    "@types/ms": "^0.7.31",
+    "@types/react": "18.2.15",
+    "@types/react-dom": "18.2.7",
+    "@types/react-native-swiper": "^1.5.12",
+    "client-only": "latest",
+    "eslint-config-custom": "*",
+    "react": "18.2.0",
+    "react-native": "0.72.3",
+    "server-only": "latest",
+    "tsconfig": "*",
+    "typescript": "^5.1.3"
+  },
+  "dependencies": {
+    "@react-native-community/netinfo": "9.3.10",
+    "@shopify/flash-list": "1.4.3",
+    "@tamagui/animations-react-native": "^1.41.1",
+    "@tamagui/babel-plugin": "^1.41.1",
+    "@tamagui/config": "^1.41.1",
+    "@tamagui/font-inter": "^1.41.1",
+    "@tamagui/lucide-icons": "^1.41.1",
+    "@tamagui/themes": "^1.41.1",
+    "@tanstack/react-virtual": "3.0.0-beta.54",
+    "dayjs": "^1.11.9",
+    "embla-carousel-react": "^8.0.0-rc11",
+    "lodash": "^4.17.21",
+    "ms": "^2.1.3",
+    "react-hook-form": "^7.45.1",
+    "react-native-mmkv": "^2.10.1",
+    "react-native-reanimated": "^3.3.0",
+    "react-native-svg": "13.9.0",
+    "react-native-swiper": "^1.6.0",
+    "recoil": "^0.7.7",
+    "recoil-sync": "^0.2.0",
+    "solito": "^4.0.0-alpha.5",
+    "tamagui": "^1.41.1"
+  }
+}

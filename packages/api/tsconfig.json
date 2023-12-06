@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "types": ["next/types/global"]
+  },
+  "exclude": ["build", "dist", "node_modules"],
+  "extends": "tsconfig/api",
+  "include": [".", "../../@types/**/*"]
+}

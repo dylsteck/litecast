@@ -1,0 +1,16 @@
+version: 2
+updates:
+  # Enable version updates for npm
+  - package-ecosystem: 'npm'
+    # Look for `package.json` and `lock` files in the `root` directory
+    directory: '/'
+    # Check the npm registry for updates every day
+    schedule:
+      interval: 'weekly'
+      time: '11:00'
+      timezone: 'Asia/Seoul'
+    reviewers:
+      - 'mononoke-choi'
+    # Raise all npm pull requests with an assignee
+    assignees:
+      - 'mononoke-choi'

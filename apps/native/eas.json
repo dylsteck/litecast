@@ -1,0 +1,35 @@
+{
+  "build": {
+    "base": {},
+    "development": {
+      "android": {
+        "gradleCommand": ":app:assembleDebug",
+        "image": "latest",
+        "withoutCredentials": true
+      },
+      "developmentClient": true,
+      "distribution": "internal",
+      "extends": "base",
+      "ios": {
+        "image": "latest",
+        "simulator": true
+      }
+    },
+    "preview": {
+      "android": {
+        "buildType": "apk"
+      },
+      "distribution": "internal",
+      "extends": "base"
+    },
+    "production": {
+      "extends": "base"
+    }
+  },
+  "cli": {
+    "version": ">= 2.4.0"
+  },
+  "submit": {
+    "production": {}
+  }
+}
