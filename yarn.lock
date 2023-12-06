@@ -13761,10 +13761,10 @@ react-native-pager-view@6.0.1:
   resolved "https://registry.npmjs.org/react-native-pager-view/-/react-native-pager-view-6.0.1.tgz"
   integrity sha512-kOVNu+4JnR3Gpykviy4WbOAnQz8TgP6O2pRvne221oPUDQLYrvEE/FINR0P85TxbMgvKTPlLejGw0ZHQbezK/g==
 
-react-native-pager-view@^6.2.0:
-  version "6.2.0"
-  resolved "https://registry.npmjs.org/react-native-pager-view/-/react-native-pager-view-6.2.0.tgz"
-  integrity sha512-pf9OnL/Tkr+5s4Gjmsn7xh91PtJLDa6qxYa/bmtUhd/+s4cQdWQ8DIFoOFghwZIHHHwVdWtoXkp6HtpjN+r20g==
+react-native-pager-view@^6.2.3:
+  version "6.2.3"
+  resolved "https://registry.yarnpkg.com/react-native-pager-view/-/react-native-pager-view-6.2.3.tgz#698f6387fdf06cecc3d8d4792604419cb89cb775"
+  integrity sha512-dqVpXWFtPNfD3D2QQQr8BP+ullS5MhjRJuF8Z/qml4QTILcrWaW8F5iAxKkQR3Jl0ikcEryG/+SQlNcwlo0Ggg==
 
 react-native-qrcode-svg@^6.2.0:
   version "6.2.0"
@@ -13917,10 +13917,10 @@ react-redux@^8.1.1:
     react-is "^18.0.0"
     use-sync-external-store "^1.0.0"
 
-react-refresh@^0.4.0, react-refresh@~0.14.0:
-  version "0.14.0"
-  resolved "https://registry.yarnpkg.com/react-refresh/-/react-refresh-0.14.0.tgz#4e02825378a5f227079554d4284889354e5f553e"
-  integrity sha512-wViHqhAd8OHeLS/IRMJjTSDHF3U9eWi62F/MledQGPdJGDhodXJ9PBLNGr6WWL7qlH12Mt3TyTpbS+hGXMjCzQ==
+react-refresh@^0.4.0:
+  version "0.4.3"
+  resolved "https://registry.yarnpkg.com/react-refresh/-/react-refresh-0.4.3.tgz#966f1750c191672e76e16c2efa569150cc73ab53"
+  integrity sha512-Hwln1VNuGl/6bVwnd0Xdn1e84gT/8T9aYNL+HAKDArLCS7LWjwr7StE30IEYbIkx0Vi3vs+coQxe+SQDbGbbpA==
 
 react-remove-scroll-bar@^2.3.4:
   version "2.3.4"
