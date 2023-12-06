@@ -7667,23 +7667,23 @@ electron-to-chromium@^1.4.431:
   resolved "https://registry.npmjs.org/electron-to-chromium/-/electron-to-chromium-1.4.461.tgz"
   integrity sha512-1JkvV2sgEGTDXjdsaQCeSwYYuhLRphRpc+g6EHTFELJXEiznLt3/0pZ9JuAOQ5p2rI3YxKTbivtvajirIfhrEQ==
 
-embla-carousel-react@^8.0.0-rc11:
-  version "8.0.0-rc11"
-  resolved "https://registry.npmjs.org/embla-carousel-react/-/embla-carousel-react-8.0.0-rc11.tgz"
-  integrity sha512-hXOAUMOIa0GF5BtdTTqBuKcjgU+ipul6thTCXOZttqnu2c6VS3SIzUUT+onIIEw+AptzKJcPwGcoAByAGa9eJw==
+embla-carousel-react@^8.0.0-rc15:
+  version "8.0.0-rc15"
+  resolved "https://registry.yarnpkg.com/embla-carousel-react/-/embla-carousel-react-8.0.0-rc15.tgz#1f5528256896f5b9a8a49c743d56a522519d47e7"
+  integrity sha512-PePOkyPMWsUDNJKYRhUmGScYhex9mfpEiYiKT8OgwP/4K60plW0qk8cAXWvS9N61A/3RkUq7uz+hQsmhAtYMcA==
   dependencies:
-    embla-carousel "8.0.0-rc11"
-    embla-carousel-reactive-utils "8.0.0-rc11"
+    embla-carousel "8.0.0-rc15"
+    embla-carousel-reactive-utils "8.0.0-rc15"
 
-embla-carousel-reactive-utils@8.0.0-rc11:
-  version "8.0.0-rc11"
-  resolved "https://registry.npmjs.org/embla-carousel-reactive-utils/-/embla-carousel-reactive-utils-8.0.0-rc11.tgz"
-  integrity sha512-pDNVJNCn0dybLkHw93My+cMfkRQ5oLZff6ZCwgmrw+96aPiZUyo5ANywz8Lb70SWWgD/TNBRrtQCquvjHS31Sg==
+embla-carousel-reactive-utils@8.0.0-rc15:
+  version "8.0.0-rc15"
+  resolved "https://registry.yarnpkg.com/embla-carousel-reactive-utils/-/embla-carousel-reactive-utils-8.0.0-rc15.tgz#29309e19657944bc3fb6a908a2da5675c7d2a325"
+  integrity sha512-17Pr+N2vULFS8Lxzi2jaebwVloiFJLpdJMJLKJKQ26NzEmX8pVtHSu3uuTWc8HPwye5HFugqCPJ2QoWWhKs6Kg==
 
-embla-carousel@8.0.0-rc11:
-  version "8.0.0-rc11"
-  resolved "https://registry.npmjs.org/embla-carousel/-/embla-carousel-8.0.0-rc11.tgz"
-  integrity sha512-Toeaug98PGYzSY56p/xsa+u4zbQbAXgGymwEDUc2wqT+1XCnnUsH42MClglhABJQbobwDYxOabhJrfXyJKUMig==
+embla-carousel@8.0.0-rc15:
+  version "8.0.0-rc15"
+  resolved "https://registry.yarnpkg.com/embla-carousel/-/embla-carousel-8.0.0-rc15.tgz#68e269bb1ead1422aa3078401947f0d85c6e1671"
+  integrity sha512-s7VPexK2h8VEYjEVQFnJAPcRnY5YqJYicFxKVVyWXP3Hk9FFDkT0kqVxMM1PcL187qHOUgmGVHOrfC8xWy3OKQ==
 
 emittery@^0.13.1:
   version "0.13.1"
@@ -13917,10 +13917,10 @@ react-redux@^8.1.1:
     react-is "^18.0.0"
     use-sync-external-store "^1.0.0"
 
-react-refresh@^0.4.0, react-refresh@~0.14.0:
-  version "0.14.0"
-  resolved "https://registry.yarnpkg.com/react-refresh/-/react-refresh-0.14.0.tgz#4e02825378a5f227079554d4284889354e5f553e"
-  integrity sha512-wViHqhAd8OHeLS/IRMJjTSDHF3U9eWi62F/MledQGPdJGDhodXJ9PBLNGr6WWL7qlH12Mt3TyTpbS+hGXMjCzQ==
+react-refresh@^0.4.0:
+  version "0.4.3"
+  resolved "https://registry.yarnpkg.com/react-refresh/-/react-refresh-0.4.3.tgz#966f1750c191672e76e16c2efa569150cc73ab53"
+  integrity sha512-Hwln1VNuGl/6bVwnd0Xdn1e84gT/8T9aYNL+HAKDArLCS7LWjwr7StE30IEYbIkx0Vi3vs+coQxe+SQDbGbbpA==
 
 react-remove-scroll-bar@^2.3.4:
   version "2.3.4"
