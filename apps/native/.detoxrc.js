@@ -13,19 +13,19 @@ module.exports = {
     'ios.debug': {
       type: 'ios.app',
       binaryPath:
-        'ios/build/Build/Products/Debug-iphonesimulator/Bandidevelopment.app',
+        'ios/build/Build/Products/Debug-iphonesimulator/Litecastdevelopment.app',
       build:
-        'xcodebuild -workspace ios/Bandidevelopment.xcworkspace -scheme' +
-        ' Bandidevelopment' +
+        'xcodebuild -workspace ios/Litecastdevelopment.xcworkspace -scheme' +
+        ' Litecastdevelopment' +
         ' -configuration Debug -sdk iphonesimulator -derivedDataPath ios/build',
     },
     'ios.release': {
       type: 'ios.app',
       binaryPath:
-        'ios/build/Build/Products/Release-iphonesimulator/Bandidevelopment.app',
+        'ios/build/Build/Products/Release-iphonesimulator/Litecastdevelopment.app',
       build:
-        'xcodebuild -workspace ios/Bandidevelopment.xcworkspace -scheme' +
-        ' Bandidevelopment' +
+        'xcodebuild -workspace ios/Litecastdevelopment.xcworkspace -scheme' +
+        ' Litecastdevelopment' +
         ' -configuration Release -sdk iphonesimulator -derivedDataPath ios/build',
     },
     'android.debug': {

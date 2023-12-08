@@ -5,7 +5,7 @@
         "backgroundColor": "#4C7AED",
         "foregroundImage": "./assets/images/adaptive-icon.png"
       },
-      "package": "com.bandi"
+      "package": "com.litecast"
     },
     "androidStatusBar": {
       "backgroundColor": "#ffffff",
@@ -14,21 +14,26 @@
     },
     "assetBundlePatterns": ["**/*"],
     "backgroundColor": "#ffffff",
-    "description": "New RN starter kit",
+    "description": "A beautiful yet simple Farcaster client",
+    "extra": {
+      "eas": {
+        "projectId": "8c7d3ef0-c9c4-4bd1-b71a-5d5cb32b20a7"
+      }
+    },
     "experiments": {
       "tsconfigPaths": true,
       "typedRoutes": true
     },
     "icon": "./assets/images/icon.png",
     "ios": {
-      "bundleIdentifier": "com.bandi",
+      "bundleIdentifier": "com.litecast",
       "infoPlist": {
         "RCTAsyncStorageExcludeFromBackup": true,
         "UIBackgroundModes": ["remote-notification"]
       },
       "supportsTablet": true
     },
-    "name": "Bandi",
+    "name": "Litecast",
     "orientation": "portrait",
     "plugins": [
       "expo-router",
@@ -43,8 +48,8 @@
     ],
     "primaryColor": "#ffffff",
     "privacy": "public",
-    "scheme": "bandi",
-    "slug": "bandi",
+    "scheme": "litecast",
+    "slug": "litecast",
     "splash": {
       "backgroundColor": "#4C7AED",
       "image": "./assets/images/splash.png",

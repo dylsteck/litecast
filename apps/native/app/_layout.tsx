@@ -16,6 +16,8 @@ import { TamaguiProvider } from 'tamagui';
 import { tamaguiConfig, WithRecoilSync } from 'ui';
 
 import { NeynarProvider } from '../providers/NeynarProvider';
+import HomeHeaderLeft from '../components/HomeHeaderLeft';
+import HomeHeaderRight from '../components/HomeHeaderRight';
 
 dayjs.locale('ko');
 dayjs.extend(duration);
@@ -71,6 +73,13 @@ export default function RootLayout() {
                 <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
                 <Stack.Screen name="index" />
                 <Stack.Screen name="setting" />
+                <Stack.Screen name="page" 
+                options={{ 
+                  headerLeft: HomeHeaderLeft,
+                  headerRight: HomeHeaderRight,
+                  headerShadowVisible: false,
+                  title: '', }} 
+                />
                 <Stack.Screen name="modal" />
               </Stack>
             </WithRecoilSync>

@@ -129,7 +129,7 @@ export default function ModalScreen() {
           const response = await fetch(url, {
             headers: {
               'Accept': 'application/json',
-              'api_key': process.env.NEYNAR_API_KEY ?? '',
+              'api_key': "",
             },
             method: 'GET',
           });

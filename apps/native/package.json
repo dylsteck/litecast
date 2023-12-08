@@ -67,6 +67,7 @@
     "react-native-svg": "13.9.0",
     "react-native-svg-transformer": "^1.0.0",
     "react-native-web": "~0.19.6",
+    "swr": "^2.2.4",
     "tamagui": "^1.41.1",
     "ui": "*"
   },

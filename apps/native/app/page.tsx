@@ -1,14 +1,15 @@
 import { FlashList } from '@shopify/flash-list';
 import { Heart, Repeat2, MessageSquare } from '@tamagui/lucide-icons';
 import { formatDistanceToNow } from 'date-fns';
+import { useLocalSearchParams } from 'expo-router';
 import _ from 'lodash';
 import React, { useCallback } from 'react';
 import { View, StyleSheet, ActivityIndicator, Text, Image } from 'react-native';
 import { Link } from 'solito/link';
 
-import ComposeCast from '../../../components/ComposeCast';
-import useLatestCasts from '../../../hooks/useLatestCasts';
-import { Cast } from '../../../providers/NeynarProvider';
+import ComposeCast from '../components/ComposeCast';
+import useLatestCasts from '../hooks/useLatestCasts';
+import { Cast } from '../providers/NeynarProvider';
 
 const CastComponent = ({ cast }: { cast: Cast }) => {
   const relativeTime = formatDistanceToNow(new Date(cast.timestamp), { addSuffix: true });
@@ -40,8 +41,9 @@ const CastComponent = ({ cast }: { cast: Cast }) => {
   );
 };
 
-const Home = () => {
-  const { casts, isLoading, loadMore, isReachingEnd } = useLatestCasts();
+export default function Page() {
+  const { pageId, sharedTransitionTag } = useLocalSearchParams<never>();
+  const { casts, isLoading, loadMore, isReachingEnd } = useLatestCasts('trending', pageId && String(pageId).length > 0 && pageId !== 'trending' ? pageId : '');
 
   const onEndReached = useCallback(() => {
     if (!isReachingEnd) {
@@ -54,17 +56,16 @@ const Home = () => {
       <FlashList
         contentContainerStyle={styles.flashList}
         data={casts}
-        renderItem={({ item }) =>  <Link key={item.hash} href={`/modal?hash=${item.hash}`}><CastComponent cast={item} /></Link>}
+        renderItem={({ item }) =>  <Link key={item.hash} href={`/modal?hash=${item.hash}`} asChild><CastComponent cast={item} /></Link>}
         keyExtractor={(item) => item.hash}
         onEndReached={onEndReached}
         onEndReachedThreshold={0.1}
         ListFooterComponent={() => isLoading && !isReachingEnd ? <ActivityIndicator size="large" color="#0000ff" /> : null}
       />
-      {/* <ModComposeCast /> */}
       <ComposeCast />
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   castContainer: {
@@ -142,5 +143,3 @@ const styles = StyleSheet.create({
     paddingRight: 6,
   },
 });
-
-export default Home;

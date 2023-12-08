@@ -20,7 +20,7 @@
     "prettier": "latest",
     "turbo": "latest"
   },
-  "name": "bandi",
+  "name": "litecast",
   "packageManager": "yarn@1.22.19",
   "workspaces": [
     "apps/*",
