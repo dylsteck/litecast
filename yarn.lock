@@ -4060,6 +4060,11 @@
   resolved "https://registry.npmjs.org/@tamagui/constants/-/constants-1.41.1.tgz"
   integrity sha512-dqYeTKXs1Jv/05J7JRb6kO1rHv5Yfe5eqnpW3gfODyt9Q0YDCyby1ifKRlB+Crj4io9Vg7t22YVARzB2QYsh8A==
 
+"@tamagui/constants@1.79.19":
+  version "1.79.19"
+  resolved "https://registry.yarnpkg.com/@tamagui/constants/-/constants-1.79.19.tgz#2dca336fac012d4eaeea4a54574b01882acc26e9"
+  integrity sha512-rmp4Q7khVcKb5FFUMwlKPyfrnBOVnBi0lJ5meZFbJa7FG2ls4G3PYtq1d7SPCZNjYKFJzakDAWCP98OK+3bNzw==
+
 "@tamagui/core-node@1.41.1":
   version "1.41.1"
   resolved "https://registry.npmjs.org/@tamagui/core-node/-/core-node-1.41.1.tgz"
@@ -4331,12 +4336,13 @@
     thread-loader "^4.0.1"
     url-loader "^4.1.1"
 
-"@tamagui/next-theme@^1.41.1":
-  version "1.41.1"
-  resolved "https://registry.npmjs.org/@tamagui/next-theme/-/next-theme-1.41.1.tgz"
-  integrity sha512-KMWMtDnCg/sZ3uczCKzMzdhIPK55r/loo60W9LLTxlFcsNyaVcnWX5a6OdXAAc+pFwmkzskxUrPqCo3Aa/cjjg==
+"@tamagui/next-theme@^1.79.19":
+  version "1.79.19"
+  resolved "https://registry.yarnpkg.com/@tamagui/next-theme/-/next-theme-1.79.19.tgz#e355731219edf1ad66ec58e8bfcdbf52eb8aad73"
+  integrity sha512-DvUEu3M08v/wjXM1WOmFZRWwWywLTh6vc1HNDaK3RrKlri3h2SMNO8AnA8zyMz6PIQkCFAA/5H4Beau/7RtUsQ==
   dependencies:
-    "@tamagui/use-event" "1.41.1"
+    "@tamagui/constants" "1.79.19"
+    "@tamagui/use-event" "1.79.19"
 
 "@tamagui/normalize-css-color@1.41.1":
   version "1.41.1"
@@ -4737,6 +4743,13 @@
   version "1.41.1"
   resolved "https://registry.npmjs.org/@tamagui/use-event/-/use-event-1.41.1.tgz"
   integrity sha512-6BMyy9NMd+3pZmz1VgdMc95LYezZLzLaxL3Addb3bYoQrQynKUiiafazKqLMfkUzlCJpmtjd2eMzT1h7RRtoKg==
+
+"@tamagui/use-event@1.79.19":
+  version "1.79.19"
+  resolved "https://registry.yarnpkg.com/@tamagui/use-event/-/use-event-1.79.19.tgz#9ecda9b6f2b99f17dc0941b5303546114c7c930e"
+  integrity sha512-c7B9a5RxH3lEFYnwmtUB8aBYh3GaOK//FSq/mJ3BZm3gIJQTV1vZTLZFWRF5TBqbAT5d94//eyxbB0it6CoLiw==
+  dependencies:
+    "@tamagui/constants" "1.79.19"
 
 "@tamagui/use-force-update@1.41.1":
   version "1.41.1"
