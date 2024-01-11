@@ -31,6 +31,9 @@ export default function TabLayout() {
             display: 'none',
             shadowOpacity: 0,
           },
+          headerStyle: {
+            backgroundColor: 'white'
+          }
         }}>
         <Tabs.Screen
           name="index"

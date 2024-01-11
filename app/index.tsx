@@ -26,17 +26,21 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
     backgroundColor: 'white',
+    color: 'black'
   },
   textContainer: {
     marginTop: '20%',
     paddingLeft: '10%',
+    backgroundColor: 'white',
   },
   title: {
     fontSize: 40,
     fontWeight: '400',
+    color: 'black'
   },
   subtitle: {
     fontSize: 18,
+    color: 'black'
   },
   homepageHeader: {
     width: '100%', 

@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
-import { FontAwesome } from '@expo/vector-icons';
+import { FlashList } from '@shopify/flash-list';
 import { formatDistanceToNow } from 'date-fns';
 import _ from 'lodash';
-
-import ComposeCast from '../../components/ComposeCast';
+import { FontAwesome } from '@expo/vector-icons';
 import { Link } from 'expo-router';
+import ComposeCast from '../../components/ComposeCast';
 import { useLogin } from '../../providers/NeynarProvider';
 
 export type NeynarCastV1 = {
@@ -78,31 +78,50 @@ export type NeynarCastV1 = {
 };
 
 export default function ConversationScreen() {
-  const { farcasterUser } = useLogin();
-  const [parentHash, setParentHash] = useState<string | null>(null);
-  const [thread, setThread] = useState<NeynarCastV1[]>([]);
   const route = useRoute();
   const hash = route.params?.hash as string;
+  const { farcasterUser } = useLogin();
+  const [parentHash, setParentHash] = useState<string | null>(null); // todo: rename, this is just for fetchThread
+  const [navigationParentHash, setNavigationParentHash] = useState<string | null>(hash);
+  const [thread, setThread] = useState<NeynarCastV1[]>([]);
   const navigation = useNavigation();
 
-  const handlePress = () => {
-    if (parentHash !== null) {
-      navigation.navigate('conversation', { hash: parentHash });
-    } else {
-      navigation.navigate('index', { key: '' });
-    }
+  const handleBackPress = () => {
+    // if(navigationParentHash === null || navigationParentHash === hash){
+    //   console.log("back to index, here's last value ", navigationParentHash);
+    //   navigation.navigate('index');
+    // }
+    // else{
+    //   navigation.setParams({ hash: navigationParentHash })
+    //   setNavigationParentHash(null);
+    // }
+    navigation.navigate('index');
+    setNavigationParentHash(null);
   };
+
+  const handleCastPress = (childHash: string) => {
+    navigation.setParams({ hash: childHash })
+    setNavigationParentHash(childHash);
+  }
 
   useEffect(() => {
     navigation.setOptions({
       headerLeft: () => (
-        <TouchableOpacity onPress={handlePress}>
+        <TouchableOpacity onPress={handleBackPress}>
           <Text style={{paddingLeft: 15, fontWeight: '300'}}>Back</Text>
         </TouchableOpacity>
       ),
-      title: 'Thread'
+      title: 'Thread',
+      headerTitleStyle: {
+        color: 'black'
+      }
     });
   }, [hash, navigation]);
+
+  useEffect(() => {
+    console.log("new navigationParentHash ", navigationParentHash);
+  }, [navigationParentHash]);
+
 
   useEffect(() => {
     async function fetchThread() {
@@ -151,38 +170,57 @@ export default function ConversationScreen() {
     data.forEach((cast) => {
       map[cast.hash] = cast;
       cast.children = [];
-      // if (cast.parentHash && map[cast.parentHash]) {
-      //   map[cast.parentHash].children.push(cast);
-      // } else {
-      //   thread.push(cast);
-      // }
       thread.push(cast);
     });
     return thread;
   };
 
+  const renderCast = ({ item: cast }) => {
+    const renderImages = () => {
+      // Regex to match image URLs
+      const regex = /https?:\/\/\S+\.(?:jpg|jpeg|png|gif)/g;
+    
+      // Find matches in cast.text
+      const textMatches = cast.text.match(regex) || [];
+    
+      // Extract URLs from cast.embeds
+      const embedMatches = cast.embeds
+        .filter(embed => embed.url && embed.url.match(regex))
+        .map(embed => embed.url);
+    
+      // Combine and de-duplicate URLs from text and embeds
+      const allMatches = Array.from(new Set([...textMatches, ...embedMatches]));
+    
+      // Render images
+      return allMatches.map((url) => (
+        <Image key={url} source={{ uri: url }} style={styles.image} />
+      ));
+    };
+    return(
+    <TouchableOpacity onPress={() => handleCastPress(cast.hash)}>
+      <View style={styles.castContainer}>
+        <Image source={{ uri: cast.author.pfp.url }} style={styles.pfpImage} />
+        <View style={styles.contentContainer}>
+          <View style={styles.headerContainer}>
+            <Text style={styles.displayName}>{cast.author.displayName}</Text>
+            <Text style={styles.timestamp}>{_.replace(formatDistanceToNow(new Date(cast.timestamp)), 'about ', '')} ago</Text>
+          </View>
+          <Text style={styles.castText}>{cast.text}</Text>
+          {renderImages()}
+        </View>
+      </View>
+    </TouchableOpacity>
+   )
+  };
+
   return (
     <View style={styles.container}>
-      <ScrollView style={styles.scrollView}>
-        {thread && thread.length > 0 && (
-          <>
-            {thread.map((cast, index) => (
-              <Link key={index} href={`/conversation?hash=${cast.hash}`} asChild>
-                <View style={styles.castContainer}>
-                  <Image source={{ uri: cast.author.pfp.url }} style={styles.pfpImage} />
-                  <View style={styles.contentContainer}>
-                    <View style={styles.headerContainer}>
-                      <Text style={styles.displayName}>{cast.author.displayName}</Text>
-                      <Text style={styles.timestamp}>{_.replace(formatDistanceToNow(new Date(cast.timestamp)), 'about ', '')} ago</Text>
-                    </View>
-                    <Text style={styles.castText}>{cast.text}</Text>
-                  </View>
-                </View>
-              </Link>
-            ))}
-          </>
-        )}
-      </ScrollView>
+      <FlashList
+        contentContainerStyle={styles.scrollView}
+        data={thread}
+        renderItem={renderCast}
+        keyExtractor={item => item.hash}
+      />
       {thread.length > 0 && <ComposeCast hash={thread[0].hash} />}
     </View>
   );
@@ -229,5 +267,11 @@ const styles = StyleSheet.create({
     width: 25,
     marginRight: 2,
     marginTop: 9
+  },
+  image: {
+    width: 100, // Set your desired image width
+    height: 100, // Set your desired image height
+    marginRight: 4,
+    paddingBottom: 4,
   },
 });

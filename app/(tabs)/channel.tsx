@@ -8,6 +8,7 @@ import useLatestCasts from '../hooks/useLatestCasts';
 import ComposeCast from '../../components/ComposeCast';
 import { Cast } from '../../providers/NeynarProvider';
 import { Link } from 'expo-router';
+import { useRoute } from '@react-navigation/native';
 
 
 const CastComponent = ({ cast }: { cast: Cast }) => {
@@ -41,7 +42,10 @@ const CastComponent = ({ cast }: { cast: Cast }) => {
 };
 
 const ChannelScreen = () => {
-  const { casts, isLoading, loadMore, isReachingEnd } = useLatestCasts('trending');
+  const route = useRoute();
+  // todo: need to add types/interfaces all of this
+  const { type, parent_url } = route.params;
+  const { casts, isLoading, loadMore, isReachingEnd } = parent_url && parent_url.length > 0 ? useLatestCasts(type as string, parent_url as string) : useLatestCasts(type as string);
 
   const onEndReached = useCallback(() => {
     if (!isReachingEnd) {

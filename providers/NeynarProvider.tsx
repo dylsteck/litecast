@@ -3,7 +3,6 @@ import React, { createContext, useState, useContext, useEffect } from 'react';
 
 const API_KEY = "";
 const API_URL = 'https://api.farcasterkit.com';
-// const API_URL = 'http://localhost:3001';
 
 export interface FarcasterUser {
   signer_uuid: string;
@@ -34,6 +33,7 @@ interface NeynarContextProps {
   setFarcasterUser: React.Dispatch<React.SetStateAction<FarcasterUser | null>>;
   handleSignIn: () => Promise<void>;
   loading: boolean;
+  postReaction: (type: string, hash: string) => Promise<void>;
 }
 
 export const NeynarContext = createContext<NeynarContextProps | undefined>(undefined);
@@ -82,6 +82,7 @@ export const NeynarProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             headers: {
               'api_key': API_KEY
             },
+            method: 'GET',
           });
           const updatedUser = await response.json() as FarcasterUser;
           if (updatedUser?.status === 'approved') {
@@ -98,8 +99,27 @@ export const NeynarProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   }, [farcasterUser]);
 
+  const postReaction = async (type: 'like' | 'recast', hash: string) => {
+    try {
+      await fetch(`https://api.neynar.com/v2/farcaster/reaction`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'api_key': API_KEY,
+        },
+        body: JSON.stringify({
+          signer_uuid: farcasterUser?.signer_uuid,
+          reaction_type: type,
+          target: hash,
+        }),
+      });
+    } catch (error) {
+      console.error('Failed to post reaction', error);
+    }
+  };
+
   return (
-    <NeynarContext.Provider value={{ farcasterUser, handleSignIn, loading, setFarcasterUser }}>
+    <NeynarContext.Provider value={{ farcasterUser, handleSignIn, loading, setFarcasterUser, postReaction }}>
       {children}
     </NeynarContext.Provider>
   );
@@ -111,4 +131,12 @@ export const useLogin = () => {
     throw new Error('useLogin must be used within a NeynarProvider');
   }
   return context;
+};
+
+export const useReaction = () => {
+  const context = useContext(NeynarContext);
+  if (!context) {
+    throw new Error('useReaction must be used within a NeynarProvider');
+  }
+  return context.postReaction;
 };

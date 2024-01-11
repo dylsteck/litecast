@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "litecast",
+    "name": "Litecast",
     "slug": "litecast",
-    "version": "0.0.1",
+    "version": "0.0.12",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",

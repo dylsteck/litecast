@@ -1,4 +1,5 @@
 import { FontAwesome } from '@expo/vector-icons';
+import { useRoute } from '@react-navigation/native';
 import { Link, useNavigation } from 'expo-router';
 import React from 'react';
 import { Text, ScrollView, Alert, TouchableOpacity, View, Pressable } from 'react-native';
@@ -8,6 +9,7 @@ const PURPLE_CHANNEL_URL = 'chain://eip155:1/erc721:0xa45662638e9f3bbb7a6fecb4b1
 
 const HomeHeaderRight = () => {
   const navigation = useNavigation();
+  const currentRoute = useRoute();
   const fontSize = 22;
 
   const handlePressNotAvailable = (section: string) => {
@@ -18,17 +20,8 @@ const HomeHeaderRight = () => {
     );
   };
 
-  const getCurrentRouteName = () => {
-    const navState = navigation.getState();
-    if (navState.routes && navState.routes.length > 0) {
-      const currentRoute = navState.routes[navState.routes.length - 1];
-      return currentRoute;
-    }
-    return null;
-  };
-  // todo: fix this function
+  // todo: fix this function, it's broken
   const isSelected = (name: string) => {
-    const currentRoute = getCurrentRouteName();
     if(currentRoute === null){
       return false
     }
@@ -36,13 +29,13 @@ const HomeHeaderRight = () => {
       if(name === 'index' && currentRoute.name === 'index'){
         return true
       }
-      else if(name === 'trending' && currentRoute.name === 'page' && currentRoute.params.pageId === 'trending'){
+      else if(name === 'trending' && currentRoute.name === 'channel' && currentRoute.params.type === 'trending'){
         return true
       }
-      else if(name === DEV_CHANNEL_URL && currentRoute.name === 'page' && currentRoute.params.pageId === DEV_CHANNEL_URL){
+      else if(name === DEV_CHANNEL_URL && currentRoute.name === 'channel' && currentRoute.params.parent_url === DEV_CHANNEL_URL){
         return true
       }
-      else if(name === PURPLE_CHANNEL_URL && currentRoute.name === 'page' && currentRoute.params.pageId === PURPLE_CHANNEL_URL){
+      else if(name === PURPLE_CHANNEL_URL && currentRoute.name === 'channel' && currentRoute.params.parent_url === PURPLE_CHANNEL_URL){
         return true
       }
     }
@@ -59,15 +52,15 @@ const HomeHeaderRight = () => {
           <Link href="/(tabs)" asChild>
             <Text style={{ fontSize, fontWeight: 'normal', opacity: isSelected('index') ? 1 : 0.7 }}>Home</Text>
           </Link>
-          <Link href="/(tabs)/channel" asChild>
+          <Link href="/(tabs)/channel?type=trending" asChild>
             <Text style={{ fontSize, fontWeight: 'normal', opacity: isSelected('trending') ? 1 : 0.7 }}>Trending</Text>
           </Link>
-          <Pressable onPress={() => handlePressNotAvailable('/dev')}>
+          <Link href={`/(tabs)/channel?type=channel&parent_url=${DEV_CHANNEL_URL}`} asChild>
             <Text style={{ fontSize, fontWeight: 'normal', opacity: isSelected(DEV_CHANNEL_URL) ? 1 : 0.7 }}>/dev</Text>
-          </Pressable>
-          <Pressable onPress={() => handlePressNotAvailable('Purple')}>
-            <Text style={{ fontSize, fontWeight: 'normal', opacity: isSelected(DEV_CHANNEL_URL) ? 1 : 0.7 }}>Purple</Text>
-          </Pressable>
+          </Link>
+          <Link href={`/(tabs)/channel?type=channel&parent_url=${PURPLE_CHANNEL_URL}`} asChild>
+            <Text style={{ fontSize, fontWeight: 'normal', opacity: isSelected(PURPLE_CHANNEL_URL) ? 1 : 0.7 }}>Purple</Text>
+          </Link>
           <Pressable onPress={() => handlePressNotAvailable('Logout')}>
             <Text style={{ color: 'red', fontSize, fontWeight: 'normal', opacity: 0.7 }}>Logout</Text>
           </Pressable>

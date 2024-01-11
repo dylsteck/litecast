@@ -9,7 +9,7 @@ export default function ConnectWithWarpcast() {
   const { farcasterUser, handleSignIn, loading } = useLogin();
 
   useEffect(() => {
-    if(farcasterUser){
+    if(farcasterUser && farcasterUser.status === 'approved'){
       router.push('/(tabs)')
     }
   }, [farcasterUser])
@@ -33,7 +33,7 @@ export default function ConnectWithWarpcast() {
       <View style={styles.container}>
         <QRCode value={farcasterUser.signer_approval_url} size={200} />
         <TouchableOpacity onPress={() => Linking.openURL(farcasterUser.signer_approval_url ?? '')}>
-          <Text style={styles.linkText}>Click here to view the signer URL</Text>
+          <Text style={styles.linkText}>Click here to deep-link into Warpcast for sign-in</Text>
         </TouchableOpacity>
       </View>
     );
