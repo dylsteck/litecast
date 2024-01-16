@@ -5,41 +5,41 @@ Built as an open source example for FarcasterKit x Neynar, as well as part of [d
 
 ### Built with
 
-- [Expo](https://expo.dev)
-- [FarcasterKit](https://farcasterkit.com)'s [Neynar](https://neynar.com) Provider, as well as other API calls from both providers
+-   [Expo](https://expo.dev)
+-   [FarcasterKit](https://farcasterkit.com)'s [Neynar](https://neynar.com) Provider, as well as other API calls from both providers
 
 ### How to run
 
 1. Set up the app locally
 
-- `git clone https://github.com/dylsteck/litecast`
-- `cd litecast && yarn install`
+-   `git clone https://github.com/dylsteck/litecast`
+-   `cd litecast && yarn install`
 
 2. Set environment variables
 
-- Copy `.env.example` to a new `.env` file and add your `NEYNAR_API_KEY`
-- In `constants.ts`, the `API_URL` value is for FarcasterKit's API, which has routes to get/receive the signer and post casts to Neynar. Don't change this value you're running the FarcasterKit API locally, but if not change the value to `http://api.farcasterkit.com`
+-   Copy `.env.example` to a new `.env` file and add your `NEYNAR_API_KEY`
+-   In `constants.ts`, the `API_URL` value is for FarcasterKit's API, which has routes to get/receive the signer and post casts to Neynar. Don't change this value you're running the FarcasterKit API locally, but if not change the value to `http://api.farcasterkit.com`
 
-2. Create Expo project
+3. Create Expo project
 
-- To run the app locally, you'll need to create an account at `https://expo.dev`, then create a new project
-- Once you've created a project, run `npm install --global eas-cli && eas init --id [YOUR PROJECT ID]` to overwrite the existing project with your own
+-   To run the app locally, you'll need to create an account at `https://expo.dev`, then create a new project
+-   Once you've created a project, run `npm install --global eas-cli && eas init --id [YOUR PROJECT ID]` to overwrite the existing project with your own
 
-3. Run by calling `yarn start`
+4. Run by calling `yarn start`
 
 ### Todos
 
 _note_: These are just the most immediate todos that come to mind, I'm sure this list will change a bit!
 
-- [] Launch TestFlight with existing app
-- [] Make the navbar functional(clicking feeds)
-- [] Further style the cast and thread components
-- [] Cleanup `NeynarProvider` before eventually moving it officially into `farcasterkit`
-  - note: my process for building `farcasterkit` providers has been building the providers in an example app(like Litecast) before moving to the package level -- so this works out well anyways
-- [] Add search
-- [] Add logout capabilities
-- [] (longterm) build the client out in `web` and use as many overlapping `packages/ui` components as possible
-  - note: funny enough I was building the `NeynarProvider` for Next.JS last weekend, so I might be able to merge that codebase with `apps/web` whenever I get to it
+-   [] Launch TestFlight with existing app
+-   [] Make the navbar functional(clicking feeds)
+-   [] Further style the cast and thread components
+-   [] Cleanup `NeynarProvider` before eventually moving it officially into `farcasterkit`
+    -   note: my process for building `farcasterkit` providers has been building the providers in an example app(like Litecast) before moving to the package level -- so this works out well anyways
+-   [] Add search
+-   [] Add logout capabilities
+-   [] (longterm) build the client out in `web` and use as many overlapping `packages/ui` components as possible
+    -   note: funny enough I was building the `NeynarProvider` for Next.JS last weekend, so I might be able to merge that codebase with `apps/web` whenever I get to it
 
 ### Mockups
 
