@@ -3,6 +3,7 @@ import { StyleSheet, Image, SafeAreaView, Platform, StatusBar } from 'react-nati
 import ConnectWithWarpcast from '../components/ConnectWithWarpcast';
 import { Text, View } from '../components/Themed';
 import homepageHeader from '../assets/images/homepage-header.png';
+import ConnectAsGuest from '../components/ConnectAsGuest';
 
 export default function IndexScreen() {
 
@@ -13,6 +14,7 @@ export default function IndexScreen() {
           <Text style={styles.title}>Litecast</Text>
           <Text style={styles.subtitle}>A beautiful yet simple Farcaster client</Text>
           <ConnectWithWarpcast />
+          <ConnectAsGuest />
         </View>
       </SafeAreaView>
   );
@@ -41,7 +43,7 @@ const styles = StyleSheet.create({
   },
   homepageHeader: {
     width: '100%', 
-    height: undefined, 
+    height: undefined,
     aspectRatio: 2150 / 200,
   },
 });

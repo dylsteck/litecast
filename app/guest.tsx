@@ -4,22 +4,18 @@ import _ from 'lodash';
 import React, { useCallback } from 'react';
 import { View, StyleSheet, ActivityIndicator, Text, Image, TouchableOpacity } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
-// import useLatestCasts from '../hooks/useLatestCasts';
-import ComposeCast from '../../components/ComposeCast';
-// import { Cast, useReaction } from '../../providers/NeynarProvider';
 import { Link } from 'expo-router';
-import { useLatestCasts, useReaction } from 'farcasterkit-react-native';
+import { useLatestCasts } from 'farcasterkit-react-native';
 
 const CastComponent = ({ cast }: { cast: NeynarCastV2 }) => {
-  const postReaction = useReaction();
 
   const handleReaction = async (type: 'like' | 'recast', hash: string) => {
-    try {
-      await postReaction(type, hash);
-      console.log(`${type}d cast with hash ${hash}`)
-    } catch (error) {
-      console.error('Error posting reaction:', error);
-    }
+    // try {
+    //   await postReaction(type, hash);
+    //   console.log(`${type}d cast with hash ${hash}`)
+    // } catch (error) {
+    //   console.error('Error posting reaction:', error);
+    // }
   };
 
   const renderImages = () => {
@@ -77,7 +73,7 @@ const CastComponent = ({ cast }: { cast: NeynarCastV2 }) => {
   );
 };
 
-const TabOneScreen = () => {
+const GuestScreen = () => {
   // TODO: edit useLatestCasts logic so it adds dyanmic fid and not mine as static
   const { casts, isLoading, loadMore, isReachingEnd } = useLatestCasts();
 
@@ -92,13 +88,12 @@ const TabOneScreen = () => {
       <FlashList
         contentContainerStyle={styles.flashList}
         data={casts}
-        renderItem={({ item }) => <Link key={item.hash} href={`/conversation?hash=${item.hash}`}><CastComponent cast={item} /></Link>}
+        renderItem={({ item }) => <CastComponent cast={item} />}
         keyExtractor={(item) => item.hash}
         onEndReached={onEndReached}
         onEndReachedThreshold={0.1}
         ListFooterComponent={() => isLoading && !isReachingEnd ? <ActivityIndicator size="large" color="#0000ff" /> : null}
       />
-      <ComposeCast />
     </View>
   );
 };
@@ -191,4 +186,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default TabOneScreen;
+export default GuestScreen;
