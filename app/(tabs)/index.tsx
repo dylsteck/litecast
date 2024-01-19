@@ -4,11 +4,11 @@ import _ from 'lodash';
 import React, { useCallback } from 'react';
 import { View, StyleSheet, ActivityIndicator, Text, Image, TouchableOpacity } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
-import useLatestCasts from '../hooks/useLatestCasts';
+// import useLatestCasts from '../hooks/useLatestCasts';
 import ComposeCast from '../../components/ComposeCast';
-import { Cast, useReaction } from '../../providers/NeynarProvider';
+// import { Cast, useReaction } from '../../providers/NeynarProvider';
 import { Link } from 'expo-router';
-
+import { useLatestCasts, useReaction } from 'farcasterkit-react-native';
 
 const CastComponent = ({ cast }: { cast: NeynarCastV2 }) => {
   const postReaction = useReaction();

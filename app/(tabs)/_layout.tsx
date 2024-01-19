@@ -3,7 +3,6 @@ import { Link, Tabs } from 'expo-router';
 import { Pressable, useColorScheme } from 'react-native';
 
 import Colors from '../../constants/Colors';
-import { NeynarProvider } from '../../providers/NeynarProvider';
 import HomeHeaderLeft from '../../components/HomeHeaderLeft';
 import HomeHeaderRight from '../../components/HomeHeaderRight';
 
@@ -21,7 +20,6 @@ export default function TabLayout() {
   const colorScheme = useColorScheme();
 
   return (
-    <NeynarProvider>
       <Tabs
         screenOptions={{
           tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
@@ -68,6 +66,5 @@ export default function TabLayout() {
           }}
         />
       </Tabs>
-    </NeynarProvider>
   );
 }

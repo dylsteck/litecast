@@ -3,7 +3,8 @@ import { View, TextInput, StyleSheet, TouchableOpacity, Image, KeyboardAvoidingV
 // todo: fix cannot find module error for images
 import CastIcon from '../assets/images/castIcon.png';
 import { API_URL } from '../constants/Farcaster';
-import { useLogin } from '../providers/NeynarProvider';
+import { useLogin } from 'farcasterkit-react-native';
+// import { useLogin } from '../providers/NeynarProvider';
 
 const ComposeCast = ({ hash }: { hash?: string }) => {
   const DEFAULT_PLACEHOLDER = 'cast something...';

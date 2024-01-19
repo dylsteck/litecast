@@ -2,13 +2,11 @@ import React, { useEffect } from 'react';
 import { StyleSheet, Image, SafeAreaView, Platform, StatusBar } from 'react-native';
 import ConnectWithWarpcast from '../components/ConnectWithWarpcast';
 import { Text, View } from '../components/Themed';
-import { NeynarProvider, useLogin } from '../providers/NeynarProvider';
 import homepageHeader from '../assets/images/homepage-header.png';
 
 export default function IndexScreen() {
 
   return (
-    <NeynarProvider>
       <SafeAreaView style={styles.container}>
         <Image style={styles.homepageHeader} source={homepageHeader} resizeMode="contain" />
         <View style={styles.textContainer}>
@@ -17,7 +15,6 @@ export default function IndexScreen() {
           <ConnectWithWarpcast />
         </View>
       </SafeAreaView>
-    </NeynarProvider>
   );
 }
 
