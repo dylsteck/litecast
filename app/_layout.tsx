@@ -2,8 +2,10 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { SplashScreen, Stack } from 'expo-router';
+import { NeynarProvider } from 'farcasterkit-react-native';
 import { useEffect } from 'react';
 import { useColorScheme } from 'react-native';
+import GuestHeaderLeft from '../components/GuestHeaderLeft';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -44,14 +46,18 @@ export default function RootLayout() {
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
+  const neynarApiKey = process.env.EXPO_PUBLIC_NEYNAR_API_KEY;
+  const fckitApiUrl = process.env.EXPO_PUBLIC_API_URL;
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <NeynarProvider apiKey={neynarApiKey as string} fcKitApiUrl={fckitApiUrl as string}>
+      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="guest" options={{ headerShown: true, title: 'Feed', headerTitleStyle: { color: 'black' }, headerLeft: GuestHeaderLeft, headerStyle: { backgroundColor: 'white'} }}/>
       </Stack>
     </ThemeProvider>
+    </NeynarProvider>
   );
 }

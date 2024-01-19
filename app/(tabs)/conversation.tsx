@@ -7,7 +7,7 @@ import _ from 'lodash';
 import { FontAwesome } from '@expo/vector-icons';
 import { Link } from 'expo-router';
 import ComposeCast from '../../components/ComposeCast';
-import { useLogin } from '../../providers/NeynarProvider';
+import { useLogin } from 'farcasterkit-react-native';
 
 export type NeynarCastV1 = {
   hash: string;
@@ -85,6 +85,7 @@ export default function ConversationScreen() {
   const [navigationParentHash, setNavigationParentHash] = useState<string | null>(hash);
   const [thread, setThread] = useState<NeynarCastV1[]>([]);
   const navigation = useNavigation();
+  const neynarApiKey = process.env.EXPO_PUBLIC_NEYNAR_API_KEY;
 
   const handleBackPress = () => {
     // if(navigationParentHash === null || navigationParentHash === hash){
@@ -119,11 +120,7 @@ export default function ConversationScreen() {
   }, [hash, navigation]);
 
   useEffect(() => {
-    console.log("new navigationParentHash ", navigationParentHash);
-  }, [navigationParentHash]);
-
-
-  useEffect(() => {
+    // TOOD: move to farcasterkit-react-native
     async function fetchThread() {
       if (thread.some(cast => cast.hash === hash)) {
         const itemIndex = thread.findIndex(cast => cast.hash === hash);
@@ -142,7 +139,7 @@ export default function ConversationScreen() {
           const response = await fetch(url, {
             headers: {
               'Accept': 'application/json',
-              'api_key': "",
+              'api_key': neynarApiKey as string,
             },
             method: 'GET',
           });

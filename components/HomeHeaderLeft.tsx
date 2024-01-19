@@ -2,40 +2,19 @@ import React, { useEffect, useState } from 'react';
 import { View, Image, StyleSheet } from 'react-native';
 
 import { API_URL } from '../constants/Farcaster';
-import { useLogin } from '../providers/NeynarProvider';
-
-interface FarcasterKitUser {
-  fid: string;
-  created_at: string;
-  custody_address: {
-    type: string;
-    data: number[];
-  };
-  pfp: string;
-  display: string;
-  bio: string;
-  url: string | null;
-  fname: string;
-}
+import { Link } from 'expo-router';
+import { useLogin } from 'farcasterkit-react-native';
 
 const HomeHeaderLeft = () => {
   const { farcasterUser } = useLogin();
-  const [pfp, setPfp] = useState<string>('');
 
-  useEffect(() => {
-    (async function fetchPfp() {
-      if(farcasterUser !== null) {
-        const response = await fetch(`${API_URL}/users/user?fid=${farcasterUser.fid}`);
-        const data = await response.json();
-        const user = data.user as FarcasterKitUser;
-        setPfp(user.pfp);
-      }
-    })();
-  }, [farcasterUser]);
-  
   return (
     <View style={styles.container}>
-      {pfp && <Image source={{ uri: pfp }} style={styles.image} />}
+      {farcasterUser && farcasterUser.pfp && 
+      <Link href={`/user?fname=${farcasterUser?.fname}`}>
+        <Image source={{ uri: farcasterUser.pfp }} style={styles.image} />
+      </Link>
+      }
     </View>
   );
 };
