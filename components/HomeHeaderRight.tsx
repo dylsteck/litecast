@@ -1,16 +1,21 @@
 import { FontAwesome } from '@expo/vector-icons';
 import { useRoute } from '@react-navigation/native';
-import { Link, useNavigation } from 'expo-router';
+import { Link, useNavigation, useRouter } from 'expo-router';
 import React from 'react';
 import { Text, ScrollView, Alert, TouchableOpacity, View, Pressable } from 'react-native';
+import { LOCAL_STORAGE_KEYS } from '../constants/Farcaster';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useLogin } from 'farcasterkit-react-native';
 
 const DEV_CHANNEL_URL = 'chain://eip155:1/erc721:0x7dd4e31f1530ac682c8ea4d8016e95773e08d8b0';
 const PURPLE_CHANNEL_URL = 'chain://eip155:1/erc721:0xa45662638e9f3bbb7a6fecb4b17853b7ba0f3a60';
 
 const HomeHeaderRight = () => {
   const navigation = useNavigation();
+  const router = useRouter();
   const currentRoute = useRoute();
   const fontSize = 22;
+  const { setFarcasterUser } = useLogin();
 
   const handlePressNotAvailable = (section: string) => {
     Alert.alert(
@@ -19,6 +24,20 @@ const HomeHeaderRight = () => {
       [{ onPress: () => console.log('Alert closed'), text: 'Close' }]
     );
   };
+
+  // this is 90% done but wasn't fully working so commented it out in the meantime
+  // todo: add this logic directly to NeynarProvider
+  // const handleLogout = () => {
+  //   (async () => {
+  //     try {
+  //       await AsyncStorage.removeItem(LOCAL_STORAGE_KEYS.FARCASTER_USER);
+  //       setFarcasterUser(null);
+  //       router.push('/');
+  //     } catch (error) {
+  //       console.error("Failed to remove item from AsyncStorage", error);
+  //     }
+  //   })();
+  // }
 
   // todo: fix this function, it's broken
   const isSelected = (name: string) => {

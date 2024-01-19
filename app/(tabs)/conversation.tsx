@@ -120,11 +120,6 @@ export default function ConversationScreen() {
   }, [hash, navigation]);
 
   useEffect(() => {
-    console.log("new navigationParentHash ", navigationParentHash);
-  }, [navigationParentHash]);
-
-
-  useEffect(() => {
     // TOOD: move to farcasterkit-react-native
     async function fetchThread() {
       if (thread.some(cast => cast.hash === hash)) {

@@ -4,8 +4,18 @@ import ConnectWithWarpcast from '../components/ConnectWithWarpcast';
 import { Text, View } from '../components/Themed';
 import homepageHeader from '../assets/images/homepage-header.png';
 import ConnectAsGuest from '../components/ConnectAsGuest';
+import { useLogin } from 'farcasterkit-react-native';
+import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function IndexScreen() {
+  const { farcasterUser } = useLogin();
+  const router = useRouter();
+  useEffect(() => {
+    if(farcasterUser){
+      router.push('/(tabs)');
+    }
+  }, [farcasterUser]);
 
   return (
       <SafeAreaView style={styles.container}>

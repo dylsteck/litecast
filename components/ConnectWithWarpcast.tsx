@@ -5,6 +5,8 @@ import {NeynarSigninButton, ISuccessMessage} from "@neynar/react-native-signin";
 import { router } from 'expo-router';
 import { useLogin } from 'farcasterkit-react-native';
 import useWarpcastUser from '../hooks/useWarpcastUser';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { LOCAL_STORAGE_KEYS } from '../constants/Farcaster';
 
 export default function ConnectWithWarpcast() {
   const { farcasterUser, setFarcasterUser } = useLogin();
@@ -16,7 +18,7 @@ export default function ConnectWithWarpcast() {
 
   useEffect(() => {
     if (warpcastUser && signerUuid) {
-      setFarcasterUser({
+      const farcasterUser = {
         signer_uuid: signerUuid,
         fid: Number(warpcastUser.fid),
         fname: warpcastUser?.username,
@@ -28,8 +30,9 @@ export default function ConnectWithWarpcast() {
         pfp: warpcastUser.pfp.url,
         followerCount: warpcastUser?.followerCount,
         followingCount: warpcastUser?.followingCount,
-      });
-      console.log("should push to tabs");
+      };
+      AsyncStorage.setItem(LOCAL_STORAGE_KEYS.FARCASTER_USER, JSON.stringify(farcasterUser));
+      setFarcasterUser(farcasterUser);
       router.push('/(tabs)');
     }
   }, [warpcastUser]);
