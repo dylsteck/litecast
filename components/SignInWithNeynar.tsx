@@ -8,7 +8,7 @@ import useWarpcastUser from '../hooks/useWarpcastUser';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LOCAL_STORAGE_KEYS } from '../constants/Farcaster';
 
-export default function ConnectWithWarpcast() {
+export default function SignInWithNeynar() {
   const { farcasterUser, setFarcasterUser } = useLogin();
   const [signerUuid, setSignerUuid] = useState<string | null>(null);
   const [fid, setFid] = useState<number | null>(null);

@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { StyleSheet, Image, SafeAreaView, Platform, StatusBar } from 'react-native';
-import ConnectWithWarpcast from '../components/ConnectWithWarpcast';
+import SignInWithNeynar from '../components/SignInWithNeynar';
 import { Text, View } from '../components/Themed';
 import homepageHeader from '../assets/images/homepage-header.png';
 import ConnectAsGuest from '../components/ConnectAsGuest';
@@ -23,7 +23,7 @@ export default function IndexScreen() {
         <View style={styles.textContainer}>
           <Text style={styles.title}>Litecast</Text>
           <Text style={styles.subtitle}>A beautiful yet simple Farcaster client</Text>
-          <ConnectWithWarpcast />
+          <SignInWithNeynar />
           <ConnectAsGuest />
         </View>
       </SafeAreaView>
