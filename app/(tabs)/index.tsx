@@ -96,7 +96,7 @@ const TabOneScreen = () => {
         keyExtractor={(item) => item.hash}
         onEndReached={onEndReached}
         onEndReachedThreshold={0.1}
-        ListFooterComponent={() => isLoading && !isReachingEnd ? <ActivityIndicator size="large" color="#0000ff" /> : null}
+        ListFooterComponent={() => isLoading && !isReachingEnd ? <ActivityIndicator size="large" color="#000000" /> : null}
       />
       <ComposeCast />
     </View>

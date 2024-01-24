@@ -21,6 +21,7 @@ Built as an open source example for FarcasterKit x Neynar, as well as part of [d
 
 -   Copy `.env.example` to a new `.env` file and add your `NEYNAR_API_KEY`
 -   In `constants.ts`, the `API_URL` value is for FarcasterKit's API, which has routes to get/receive the signer and post casts to Neynar. Don't change this value you're running the FarcasterKit API locally, but if not change the value to `http://api.farcasterkit.com`
+- Set the same values you have in your `.env` file in `eas.json` under the env sections for development and preview
 
 3. Create Expo project
 

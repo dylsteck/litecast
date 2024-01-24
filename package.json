@@ -2,7 +2,7 @@
   "name": "litecast",
   "main": "expo-router/entry",
   "author": "@dylsteck",
-  "version": "0.0.14",
+  "version": "0.0.17",
   "scripts": {
     "start": "expo start",
     "android": "expo run:android",
@@ -40,6 +40,7 @@
     "react-native-screens": "~3.22.0",
     "react-native-svg": "13.9.0",
     "react-native-web": "~0.19.6",
+    "react-native-webview": "^13.6.4",
     "swr": "^2.2.4"
   },
   "devDependencies": {
