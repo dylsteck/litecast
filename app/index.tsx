@@ -5,17 +5,8 @@ import { Text, View } from '../components/Themed';
 import homepageHeader from '../assets/images/homepage-header.png';
 import ConnectAsGuest from '../components/ConnectAsGuest';
 import { useLogin } from 'farcasterkit-react-native';
-import { ErrorBoundaryProps, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-export function ErrorBoundary(props: ErrorBoundaryProps) {
-  return (
-    <View style={{ flex: 1, backgroundColor: "red" }}>
-      <Text>{props.error.message}</Text>
-      <Text onPress={props.retry}>Try Again?</Text>
-    </View>
-  );
-}
 
 export default function IndexScreen() {
   const { farcasterUser } = useLogin();

@@ -2,7 +2,7 @@
   "name": "litecast",
   "main": "expo-router/entry",
   "author": "@dylsteck",
-  "version": "0.0.16",
+  "version": "0.0.17",
   "scripts": {
     "start": "expo start",
     "android": "expo run:android",
