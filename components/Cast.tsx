@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import { formatDistanceToNow } from 'date-fns'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { View, StyleSheet, Text, Image, TouchableOpacity } from 'react-native'
 import { FontAwesome } from '@expo/vector-icons'
 import { useLogin, useReaction } from 'farcasterkit-react-native'
@@ -9,11 +9,31 @@ import { Link } from 'expo-router'
 const Cast = ({ cast }: { cast: NeynarCastV2 }) => {
   const { farcasterUser } = useLogin()
   const postReaction = useReaction()
+  const [reactions, setReactions] = useState<Reactions>({
+    likes: [],
+    recasts: [],
+  }) // track reactions in state to optimistically update when the user reacts
+
+  useEffect(() => {
+    setReactions(cast.reactions)
+  }, [cast])
 
   const handleReaction = async (type: 'like' | 'recast', hash: string) => {
     try {
       if (!farcasterUser) throw new Error('Not logged in')
       await postReaction(type, hash)
+      // TODO: handle unlikes and un-recasts
+      if (type === 'like') {
+        setReactions({
+          ...reactions,
+          likes: [...reactions.likes, farcasterUser],
+        })
+      } else if (type === 'recast') {
+        setReactions({
+          ...reactions,
+          recasts: [...reactions.recasts, farcasterUser],
+        })
+      }
       console.log(`${type}d cast with hash ${hash}`)
     } catch (error) {
       console.error('Error posting reaction:', error)
@@ -76,12 +96,16 @@ const Cast = ({ cast }: { cast: NeynarCastV2 }) => {
                 <FontAwesome
                   name="retweet"
                   size={11}
-                  color="black"
+                  color={
+                    reactions.recasts.some((r) => r.fid === farcasterUser?.fid)
+                      ? 'green'
+                      : 'black'
+                  }
                   style={{ opacity: farcasterUser ? 100 : 50 }}
                 />
                 <Text style={styles.reactionText}>
                   {' '}
-                  {cast.reactions.recasts.length}
+                  {reactions.recasts.length}
                 </Text>
               </View>
             </TouchableOpacity>
@@ -91,14 +115,22 @@ const Cast = ({ cast }: { cast: NeynarCastV2 }) => {
             >
               <View style={styles.reactionsGroupContainer}>
                 <FontAwesome
-                  name="heart-o"
+                  name={
+                    reactions.likes.some((r) => r.fid === farcasterUser?.fid)
+                      ? 'heart'
+                      : 'heart-o'
+                  }
                   size={11}
-                  color="black"
+                  color={
+                    reactions.likes.some((r) => r.fid === farcasterUser?.fid)
+                      ? 'red'
+                      : 'black'
+                  }
                   style={{ opacity: farcasterUser ? 100 : 50 }}
                 />
                 <Text style={styles.reactionTextFirst}>
                   {' '}
-                  {cast.reactions.likes.length}
+                  {reactions.likes.length}
                 </Text>
               </View>
             </TouchableOpacity>
