@@ -74,7 +74,7 @@ export default function SignInWithNeynar() {
         fetchAuthorizationUrl={fetchAuthorizationUrl}
         successCallback={handleSignin}
         errorCallback={handleError}
-        redirectUrl={`exp://${COMPUTER_IP_ADDRESS}:8081`}
+        redirectUrl={Linking.createURL('/')}
         buttonStyles={styles.neynarSignInBtn}
         paddingVertical={0}
         paddingHorizontal={0}
