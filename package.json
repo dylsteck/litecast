@@ -1,7 +1,7 @@
 {
-  "name": "litecast",
+  "name": "cozycast",
   "main": "expo-router/entry",
-  "author": "@dylsteck",
+  "author": "@deveshb15",
   "version": "0.0.17",
   "scripts": {
     "start": "expo start",
