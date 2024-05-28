@@ -4,7 +4,7 @@ type NeynarCastV2 = {
     thread_hash: string;
     parent_hash: string | null;
     parent_url: string | null;
-    root_parent_url: sstring | null;
+    root_parent_url: string | null;
     parent_author: ParentAuthor;
     author: Author;
     text: string;

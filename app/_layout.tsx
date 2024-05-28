@@ -8,6 +8,7 @@ import { useColorScheme } from 'react-native';
 import GuestHeaderLeft from '../components/GuestHeaderLeft';
 import HomeHeaderLeft from '../components/HomeHeaderLeft';
 import HomeHeaderRight from '../components/HomeHeaderRight';
+import React from 'react';
 
 export {
   // Catch any errors thrown by the Layout component.
