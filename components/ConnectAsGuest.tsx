@@ -4,7 +4,7 @@ import { Text, View } from 'react-native';
 import { useNavigation } from 'expo-router';
 
 export default function ConnectAsGuest() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
 
   return (
     <View>

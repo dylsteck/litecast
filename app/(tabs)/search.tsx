@@ -4,18 +4,12 @@ import _ from 'lodash';
 import React, { useCallback } from 'react';
 import { View, StyleSheet, ActivityIndicator, Text, Image } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
-// import useLatestCasts from '../hooks/useLatestCasts';
-import useLatestCasts from 'farcasterkit-react-native';
-import ComposeCast from '../../components/ComposeCast';
-import { Cast } from '../../providers/NeynarProvider';
-import { Link } from 'expo-router';
 
 
 const SearchScreen = () => {
 
   return (
     <View style={styles.container}>
-      <ComposeCast />
     </View>
   );
 };

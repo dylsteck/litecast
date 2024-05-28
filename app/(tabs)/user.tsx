@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, Text, Image, TouchableOpacity } from 'react-native';
-import ComposeCast from '../../components/ComposeCast';
 import { Link, useNavigation } from 'expo-router';
 import { useRoute } from '@react-navigation/native';
 import { useLogin } from 'farcasterkit-react-native';
@@ -8,9 +7,9 @@ import { useLogin } from 'farcasterkit-react-native';
 
 const UserScreen = () => {
   const { farcasterUser } = useLogin();
-  const route = useRoute();
+  const route = useRoute<any>();
   const fname = route.params?.fname as string;
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const handleBackPress = () => {
     navigation.navigate('index');
   };
