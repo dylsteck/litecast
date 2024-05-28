@@ -2010,14 +2010,10 @@
     axios "^1.6.2"
     viem "^1.19.9"
 
-"@neynar/react-native-signin@^0.2.3":
-  version "0.2.3"
-  resolved "https://registry.yarnpkg.com/@neynar/react-native-signin/-/react-native-signin-0.2.3.tgz#f35ec1688349653174b1f589f011a025daba303f"
-  integrity sha512-oJv9B6b9u/x9h8vMG70OqW3OK/eBpSSTLzhduj4Ky97Z5+TtA1nli8pZRZgOdsgUd9o8lt0doFmNOF6cCX3HVg==
-  dependencies:
-    expo-sensors "^12.5.0"
-    react-native-svg "^14.1.0"
-    react-native-webview "^13.6.4"
+"@neynar/react-native-signin@^1.2.0":
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/@neynar/react-native-signin/-/react-native-signin-1.2.0.tgz#d92ab854c28d4c1ac4475c9feb0aa503ddd48cdd"
+  integrity sha512-qb90wRUOzuz1yKfUaEjvn52nK9D9HkloUD56qKljB+tkgwwA6rwwG0i7c3ufOhGozXPf2eU9wD10UkPW5mVsvQ==
 
 "@noble/curves@1.2.0", "@noble/curves@~1.2.0":
   version "1.2.0"
@@ -2996,6 +2992,15 @@ axios@^1.6.2, axios@^1.6.5:
   integrity sha512-/hDJGff6/c7u0hDkvkGxR/oy6CbCs8ziCsC7SqmhjfozqiJGc8Z11wrv9z9lYfY4K8l+H9TpjcMDX0xOZmx+RA==
   dependencies:
     follow-redirects "^1.15.4"
+    form-data "^4.0.0"
+    proxy-from-env "^1.1.0"
+
+axios@^1.7.2:
+  version "1.7.2"
+  resolved "https://registry.yarnpkg.com/axios/-/axios-1.7.2.tgz#b625db8a7051fbea61c35a3cbb3a1daa7b9c7621"
+  integrity sha512-2A8QhOMrbomlDuiLeK9XibIBzuHeRcqqNOHp0Cyp5EoJ1IFDh+XZH3A6BkXtv0K4gFGCI0Y4BM7B1wOEi0Rmgw==
+  dependencies:
+    follow-redirects "^1.15.6"
     form-data "^4.0.0"
     proxy-from-env "^1.1.0"
 
@@ -4466,13 +4471,6 @@ expo-router@^2.0.0:
     schema-utils "^4.0.1"
     url "^0.11.0"
 
-expo-sensors@^12.5.0:
-  version "12.9.1"
-  resolved "https://registry.yarnpkg.com/expo-sensors/-/expo-sensors-12.9.1.tgz#d7c856782ffcfa0860b2a713ab768f3fb197608b"
-  integrity sha512-G2WYHO+RMU9Vj7wvzjV3lPMPDEBvS3S9/oYs1ToaaS4LR6VH8Dr2pJqspS7n8GFq+n5ftEi/2oqE4EizlHX/lQ==
-  dependencies:
-    invariant "^2.2.4"
-
 expo-sensors@~12.3.0:
   version "12.3.0"
   resolved "https://registry.yarnpkg.com/expo-sensors/-/expo-sensors-12.3.0.tgz#a3f0f86f54cf5d06a4e643d6678bc15ff4a446c9"
@@ -4738,6 +4736,11 @@ follow-redirects@^1.15.4:
   version "1.15.5"
   resolved "https://registry.yarnpkg.com/follow-redirects/-/follow-redirects-1.15.5.tgz#54d4d6d062c0fa7d9d17feb008461550e3ba8020"
   integrity sha512-vSFWUON1B+yAw1VN4xMfxgn5fTUiaOzAJCKBwIIgT/+7CuGy9+r+5gITvP62j3RmaD5Ph65UaERdOSRGUzZtgw==
+
+follow-redirects@^1.15.6:
+  version "1.15.6"
+  resolved "https://registry.yarnpkg.com/follow-redirects/-/follow-redirects-1.15.6.tgz#7f815c0cda4249c74ff09e95ef97c23b5fd0399b"
+  integrity sha512-wWN62YITEaOpSK584EZXJafH1AGpO8RVgElfkuXbTOrPX4fIfOyEpW/CsiNd8JdYrAoOvafRTOEnvsO++qCqFA==
 
 fontfaceobserver@^2.1.0:
   version "2.3.0"
@@ -7580,14 +7583,6 @@ react-native-svg@13.9.0:
   version "13.9.0"
   resolved "https://registry.yarnpkg.com/react-native-svg/-/react-native-svg-13.9.0.tgz#8df8a690dd00362601f074dec5d3a86dd0f99c7f"
   integrity sha512-Ey18POH0dA0ob/QiwCBVrxIiwflhYuw0P0hBlOHeY4J5cdbs8ngdKHeWC/Kt9+ryP6fNoEQ1PUgPYw2Bs/rp5Q==
-  dependencies:
-    css-select "^5.1.0"
-    css-tree "^1.1.3"
-
-react-native-svg@^14.1.0:
-  version "14.1.0"
-  resolved "https://registry.yarnpkg.com/react-native-svg/-/react-native-svg-14.1.0.tgz#7903bddd3c71bf3a8a503918253c839e6edaa724"
-  integrity sha512-HeseElmEk+AXGwFZl3h56s0LtYD9HyGdrpg8yd9QM26X+d7kjETrRQ9vCjtxuT5dCZEIQ5uggU1dQhzasnsCWA==
   dependencies:
     css-select "^5.1.0"
     css-tree "^1.1.3"

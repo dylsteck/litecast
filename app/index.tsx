@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { StyleSheet, Image, SafeAreaView, Platform, StatusBar } from 'react-native';
 import SignInWithNeynar from '../components/SignInWithNeynar';
 import { Text, View } from '../components/Themed';
-import homepageHeader from '../assets/images/homepage-header.png';
+// import homepageHeader from '../assets/images/homepage-header.png';
 import ConnectAsGuest from '../components/ConnectAsGuest';
 import { useLogin } from 'farcasterkit-react-native';
 import { useRouter } from 'expo-router';
@@ -19,7 +19,7 @@ export default function IndexScreen() {
 
   return (
       <SafeAreaView style={styles.container}>
-        <Image style={styles.homepageHeader} source={homepageHeader} resizeMode="contain" />
+        {/* <Image style={styles.homepageHeader} source={homepageHeader} resizeMode="contain" /> */}
         <View style={styles.textContainer}>
           <Text style={styles.title}>Litecast</Text>
           <Text style={styles.subtitle}>A beautiful yet simple Farcaster client</Text>
