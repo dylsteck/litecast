@@ -3,7 +3,6 @@ import _ from 'lodash'
 import React, { useCallback } from 'react'
 import { View, StyleSheet, ActivityIndicator } from 'react-native'
 import { FontAwesome } from '@expo/vector-icons'
-import ComposeCast from '../../components/ComposeCast'
 import Cast from '../../components/Cast'
 import { useRoute } from '@react-navigation/native'
 import { useLatestCasts } from 'farcasterkit-react-native'
@@ -38,7 +37,6 @@ const ChannelScreen = () => {
           ) : null
         }
       />
-      <ComposeCast />
     </View>
   )
 }

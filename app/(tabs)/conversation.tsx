@@ -6,7 +6,6 @@ import { formatDistanceToNow } from 'date-fns';
 import _ from 'lodash';
 import { FontAwesome } from '@expo/vector-icons';
 import { Link } from 'expo-router';
-import ComposeCast from '../../components/ComposeCast';
 import { useLogin } from 'farcasterkit-react-native';
 
 export type NeynarCastV1 = {
@@ -218,7 +217,6 @@ export default function ConversationScreen() {
         renderItem={renderCast}
         keyExtractor={item => item.hash}
       />
-      {thread.length > 0 && <ComposeCast hash={thread[0].hash} />}
     </View>
   );
 }

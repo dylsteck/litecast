@@ -2,7 +2,6 @@ import { FlashList } from '@shopify/flash-list'
 import _ from 'lodash'
 import React, { useCallback } from 'react'
 import { View, StyleSheet, ActivityIndicator } from 'react-native'
-import ComposeCast from '../../components/ComposeCast'
 import { useLatestCasts } from 'farcasterkit-react-native'
 import Cast from '../../components/Cast'
 
@@ -31,7 +30,6 @@ const TabOneScreen = () => {
           ) : null
         }
       />
-      <ComposeCast />
     </View>
   )
 }
