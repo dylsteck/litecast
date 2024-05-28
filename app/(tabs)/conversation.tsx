@@ -74,16 +74,17 @@ export type NeynarCastV1 = {
   replies: {
     count: number;
   };
+  children: any;
 };
 
 export default function ConversationScreen() {
-  const route = useRoute();
+  const route = useRoute<any>();
   const hash = route.params?.hash as string;
   const { farcasterUser } = useLogin();
   const [parentHash, setParentHash] = useState<string | null>(null); // todo: rename, this is just for fetchThread
   const [navigationParentHash, setNavigationParentHash] = useState<string | null>(hash);
   const [thread, setThread] = useState<NeynarCastV1[]>([]);
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const neynarApiKey = process.env.EXPO_PUBLIC_NEYNAR_API_KEY;
 
   const handleBackPress = () => {
@@ -93,8 +94,6 @@ export default function ConversationScreen() {
     // }
     // else{
     //   navigation.setParams({ hash: navigationParentHash })
-    //   setNavigationParentHash(null);
-    // }
     navigation.navigate('index');
     setNavigationParentHash(null);
   };
@@ -171,7 +170,7 @@ export default function ConversationScreen() {
     return thread;
   };
 
-  const renderCast = ({ item: cast }) => {
+  const renderCast = ({ item: cast }: { item: NeynarCastV1 }) => {
     const renderImages = () => {
       // Regex to match image URLs
       const regex = /https?:\/\/\S+\.(?:jpg|jpeg|png|gif)/g;

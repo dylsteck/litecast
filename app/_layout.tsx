@@ -6,6 +6,8 @@ import { NeynarProvider } from 'farcasterkit-react-native';
 import { useEffect } from 'react';
 import { useColorScheme } from 'react-native';
 import GuestHeaderLeft from '../components/GuestHeaderLeft';
+import HomeHeaderLeft from '../components/HomeHeaderLeft';
+import HomeHeaderRight from '../components/HomeHeaderRight';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -55,6 +57,7 @@ function RootLayoutNav() {
       <Stack>
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="guest" options={{ headerShown: true, headerLeft: HomeHeaderLeft, headerRight: HomeHeaderRight }}/>
       </Stack>
     </ThemeProvider>
     </NeynarProvider>

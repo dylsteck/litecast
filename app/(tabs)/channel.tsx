@@ -6,15 +6,13 @@ import { FontAwesome } from '@expo/vector-icons'
 import Cast from '../../components/Cast'
 import { useRoute } from '@react-navigation/native'
 import { useLatestCasts } from 'farcasterkit-react-native'
-
 const ChannelScreen = () => {
-  const route = useRoute()
-  // todo: need to add types/interfaces all of this
+  const route = useRoute<any>()
   const { type, parent_url } = route.params
   const { casts, isLoading, loadMore, isReachingEnd } =
     parent_url && parent_url.length > 0
-      ? useLatestCasts(type as string, parent_url as string)
-      : useLatestCasts(type as string)
+      ? useLatestCasts(type, parent_url)
+      : useLatestCasts(type)
 
   const onEndReached = useCallback(() => {
     if (!isReachingEnd) {

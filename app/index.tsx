@@ -24,6 +24,7 @@ export default function IndexScreen() {
           <Text style={styles.title}>Litecast</Text>
           <Text style={styles.subtitle}>A beautiful yet simple Farcaster client</Text>
           <SignInWithNeynar />
+          <ConnectAsGuest />
         </View>
       </SafeAreaView>
   );
