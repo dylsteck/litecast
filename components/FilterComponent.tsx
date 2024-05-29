@@ -8,23 +8,36 @@ import {
   StyleSheet,
   ScrollView
 } from 'react-native';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 
 interface FilterModalProps {
   visible: boolean;
   onClose: () => void;
 }
 
-const FilterList: React.FC<FilterModalProps> = ({ visible, onClose }) => {
+const FilterModal: React.FC<FilterModalProps> = ({ visible, onClose }) => {
   const [minFID, setMinFID] = useState('');
   const [maxFID, setMaxFID] = useState('');
   const [searchChannels, setSearchChannels] = useState('');
   const [muteChannels, setMuteChannels] = useState('');
+  const [selectedChannels, setSelectedChannels] = useState<string[]>(['CNBC', 'BBC', 'CNN']);
+  const [mutedChannels, setMutedChannels] = useState<string[]>(['CNBC', 'BBC', 'CNN']);
 
   const handleClearAll = () => {
     setMinFID('');
     setMaxFID('');
     setSearchChannels('');
     setMuteChannels('');
+    setSelectedChannels([]);
+    setMutedChannels([]);
+  };
+
+  const removeChannel = (channel: string) => {
+    setSelectedChannels(selectedChannels.filter(c => c !== channel));
+  };
+
+  const removeMutedChannel = (channel: string) => {
+    setMutedChannels(mutedChannels.filter(c => c !== channel));
   };
 
   return (
@@ -32,7 +45,7 @@ const FilterList: React.FC<FilterModalProps> = ({ visible, onClose }) => {
       <View style={styles.modalContainer}>
         <View style={styles.modalContent}>
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <Text style={styles.closeButtonText}>×</Text>
+            <FontAwesome name="times" size={24} color="black" />
           </TouchableOpacity>
           <ScrollView>
             <Text style={styles.header}>Filter</Text>
@@ -67,9 +80,14 @@ const FilterList: React.FC<FilterModalProps> = ({ visible, onClose }) => {
               placeholder="Search channels"
             />
             <View style={styles.chipContainer}>
-              <Text style={styles.chip}>CNBC</Text>
-              <Text style={styles.chip}>BBC</Text>
-              <Text style={styles.chip}>CNN</Text>
+              {selectedChannels.map(channel => (
+                <View key={channel} style={styles.chip}>
+                  <Text className='mr-1'>{channel}</Text>
+                  <TouchableOpacity onPress={() => removeChannel(channel)}>
+                    <FontAwesome name="times" size={16} color="black" />
+                  </TouchableOpacity>
+                </View>
+              ))}
             </View>
 
             <Text style={styles.sectionHeader}>Mute Channels</Text>
@@ -80,9 +98,14 @@ const FilterList: React.FC<FilterModalProps> = ({ visible, onClose }) => {
               placeholder="Mute channels"
             />
             <View style={styles.chipContainer}>
-              <Text style={styles.chip}>CNBC</Text>
-              <Text style={styles.chip}>BBC</Text>
-              <Text style={styles.chip}>CNN</Text>
+              {mutedChannels.map(channel => (
+                <View key={channel} style={styles.chip}>
+                  <Text className='mr-1'>{channel}</Text>
+                  <TouchableOpacity onPress={() => removeMutedChannel(channel)}>
+                    <FontAwesome name="times" size={16} color="black" />
+                  </TouchableOpacity>
+                </View>
+              ))}
             </View>
 
             <View style={styles.buttonRow}>
@@ -110,10 +133,8 @@ const styles = StyleSheet.create({
   modalContent: {
     width: '100%',
     height: '90%',
-    display:'flex',
-    justifyContent:'center',
     backgroundColor: 'white',
-    borderRadius: 0,
+    borderRadius: 10,
     padding: 20,
   },
   closeButton: {
@@ -164,10 +185,13 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   chip: {
-    backgroundColor: '#e0e0e0',
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderColor: 'black',
+    borderWidth: 1, // Added border width
     borderRadius: 15,
     paddingVertical: 5,
-    paddingHorizontal: 10,
+    paddingHorizontal: 15,
     margin: 5,
   },
   buttonRow: {
@@ -196,4 +220,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default FilterList;
+export default FilterModal;
