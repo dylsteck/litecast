@@ -9,6 +9,7 @@ import {
   ScrollView
 } from 'react-native';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
+import useAppContext from '../hooks/useAppContext';
 
 interface FilterModalProps {
   visible: boolean;
@@ -16,6 +17,7 @@ interface FilterModalProps {
 }
 
 const FilterModal: React.FC<FilterModalProps> = ({ visible, onClose }) => {
+  const { setFilter } = useAppContext()
   const [minFID, setMinFID] = useState('');
   const [maxFID, setMaxFID] = useState('');
   const [searchChannels, setSearchChannels] = useState('');
@@ -40,6 +42,24 @@ const FilterModal: React.FC<FilterModalProps> = ({ visible, onClose }) => {
     setMutedChannels(mutedChannels.filter(c => c !== channel));
   };
 
+  const handleSetMinFID = (text: string) => {
+    console.log("MIN FID ", text)
+    setMinFID(text)
+    setFilter((prev: any) => ({
+      ...prev,
+      lowerFid: text
+    }))
+  }
+
+  const handleSetMaxFID = (text: string) => {
+    console.log("MAX FID ", text)
+    setMaxFID(text)
+    setFilter((prev: any) => ({
+      ...prev,
+      upperFid: text
+    }))
+  }
+
   return (
     <Modal visible={visible} animationType="slide" transparent>
       <View style={styles.modalContainer}>
@@ -57,7 +77,7 @@ const FilterModal: React.FC<FilterModalProps> = ({ visible, onClose }) => {
                 <TextInput
                   style={styles.input}
                   value={minFID}
-                  onChangeText={setMinFID}
+                  onChangeText={handleSetMinFID}
                   keyboardType="numeric"
                 />
               </View>
@@ -66,7 +86,7 @@ const FilterModal: React.FC<FilterModalProps> = ({ visible, onClose }) => {
                 <TextInput
                   style={styles.input}
                   value={maxFID}
-                  onChangeText={setMaxFID}
+                  onChangeText={handleSetMaxFID}
                   keyboardType="numeric"
                 />
               </View>

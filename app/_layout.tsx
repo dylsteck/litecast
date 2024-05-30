@@ -54,13 +54,14 @@ export default function RootLayout() {
 }
 
 function RootLayoutNav() {
-  const [fid, setFid] = useState(616)
+  const [fid, setFid] = useState(404104)
   const [filter, setFilter] = useState({
     lowerFid: 0,
     upperFid: Infinity,
     mutedChannels: [],
     showChannels: [],
   })
+  const [filterChannels, setFilterChannels] = useState([])
   const [isFilterVisible, setFilterVisible] = useState(false)
 
   const colorScheme = useColorScheme()
@@ -83,6 +84,7 @@ function RootLayoutNav() {
               name="guest"
               options={{
                 headerShown: true,
+                headerTitle: () => null,
                 headerLeft: HomeHeaderLeft,
                 headerRight: HomeHeaderRight,
               }}
