@@ -33,7 +33,7 @@
     },
     "plugins": [
       "expo-router"
-    ],
+        ],
     "experiments": {
       "typedRoutes": true
     },
@@ -46,5 +46,6 @@
       }
     },
     "owner": "hackerdevesh"
+
   }
 }

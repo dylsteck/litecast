@@ -14,6 +14,7 @@ import GuestHeaderLeft from '../components/GuestHeaderLeft'
 import HomeHeaderLeft from '../components/HomeHeaderLeft'
 import HomeHeaderRight from '../components/HomeHeaderRight'
 import React from 'react'
+import FilterList from '../components/FilterComponent'
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -53,13 +54,15 @@ export default function RootLayout() {
 }
 
 function RootLayoutNav() {
-  const [fid, setFid] = useState(616)
+  const [fid, setFid] = useState(404104)
   const [filter, setFilter] = useState({
     lowerFid: 0,
     upperFid: Infinity,
     mutedChannels: [],
     showChannels: [],
   })
+  const [filterChannels, setFilterChannels] = useState([])
+  const [isFilterVisible, setFilterVisible] = useState(false)
 
   const colorScheme = useColorScheme()
   const neynarApiKey = process.env.EXPO_PUBLIC_NEYNAR_API_KEY
@@ -81,11 +84,16 @@ function RootLayoutNav() {
               name="guest"
               options={{
                 headerShown: true,
+                headerTitle: () => null,
                 headerLeft: HomeHeaderLeft,
                 headerRight: HomeHeaderRight,
               }}
             />
           </Stack>
+          <FilterList
+            visible={isFilterVisible}
+            onClose={() => setFilterVisible(false)}
+          />
         </ThemeProvider>
       </NeynarProvider>
     </AppContext.Provider>
