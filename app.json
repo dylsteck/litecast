@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Litecast",
+    "name": "Cozycast",
     "slug": "cozycast",
     "version": "0.0.17",
     "orientation": "portrait",
@@ -17,14 +17,14 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.dylsteck.litecast"
+      "bundleIdentifier": "com.vidhudev.cozycast"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.dylsteck.litecast"
+      "package": "com.vidhudev.cozycast"
     },
     "web": {
       "bundler": "metro",

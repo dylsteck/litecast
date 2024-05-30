@@ -134,6 +134,13 @@ const Cast = ({ cast }: { cast: NeynarCastV2 }) => {
                 </Text>
               </View>
             </TouchableOpacity>
+            {/* View on Warpcast */}
+            <TouchableOpacity>
+              {/* redirect to warpcast - open in default browser - `https://warpcast.com/${cast.author.username}/${cast.hash}` */}
+              <Link href={`https://warpcast.com/${cast.author.username}/${cast.hash}`}>
+                <FontAwesome name="external-link" size={11} color="black" />
+              </Link>
+            </TouchableOpacity>
           </View>
         </View>
       </View>

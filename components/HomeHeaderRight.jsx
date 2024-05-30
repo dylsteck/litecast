@@ -1,6 +1,6 @@
 import { FontAwesome } from '@expo/vector-icons';
 import { useRoute } from '@react-navigation/native';
-import { Link, useNavigation, useRouter } from 'expo-router';
+import { Link, useNavigation } from 'expo-router';
 import React from 'react';
 import { useEffect, useState } from 'react';
 import { Text, ScrollView, Alert, TouchableOpacity, View, Pressable } from 'react-native';
@@ -9,19 +9,22 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLogin } from 'farcasterkit-react-native';
 import FilterList from './FilterComponent';
 
-const DEV_CHANNEL_URL = 'chain://eip155:1/erc721:0x7dd4e31f1530ac682c8ea4d8016e95773e08d8b0';
+const DEV_CHANNEL_URL = 'https://warpcast.com/~/channel/fbi';
 const PURPLE_CHANNEL_URL = 'chain://eip155:1/erc721:0xa45662638e9f3bbb7a6fecb4b17853b7ba0f3a60';
 
 const HomeHeaderRight = () => {
   const navigation = useNavigation();
-  const router = useRouter();
   const currentRoute = useRoute();
   const fontSize = 18;
   const { setFarcasterUser } = useLogin();
 
+<<<<<<< HEAD:components/HomeHeaderRight.tsx
   const [isFilterVisible, setFilterVisible] = useState(false);
 
   const handlePressNotAvailable = (section: string) => {
+=======
+  const handlePressNotAvailable = (section) => {
+>>>>>>> main:components/HomeHeaderRight.jsx
     Alert.alert(
       'Coming Soon',
       `${section} section will be available soon.`,
@@ -44,7 +47,7 @@ const HomeHeaderRight = () => {
   // }
 
   // todo: fix this function, it's broken
-  const isSelected = (name: string) => {
+  const isSelected = (name) => {
     if(currentRoute === null){
       return false
     }
@@ -78,7 +81,7 @@ const HomeHeaderRight = () => {
             <Text style={{ fontSize, fontWeight: 'normal', opacity: isSelected('index') ? 1 : 0.7 }}>Home</Text>
           </Link>
           <Link href="/(tabs)/channel?type=trending" asChild>
-            <Text style={{ fontSize, fontWeight: 'normal', opacity: isSelected('trending') ? 1 : 0.7 }}>Trending</Text>
+            <Text style={{ fontSize, fontWeight: 'normal', opacity: isSelected('trending') ? 1 : 0.7 }}>All People</Text>
           </Link>
           {/* <Link href={`/(tabs)/channel?type=channel&parent_url=${DEV_CHANNEL_URL}`} asChild>
             <Text style={{ fontSize, fontWeight: 'normal', opacity: isSelected(DEV_CHANNEL_URL) ? 1 : 0.7 }}>/dev</Text>

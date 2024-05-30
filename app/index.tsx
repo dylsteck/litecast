@@ -21,7 +21,7 @@ export default function IndexScreen() {
       <SafeAreaView style={styles.container}>
         {/* <Image style={styles.homepageHeader} source={homepageHeader} resizeMode="contain" /> */}
         <View style={styles.textContainer}>
-          <Text style={styles.title}>Litecast</Text>
+          <Text style={styles.title}>Cozycast</Text>
           <Text style={styles.subtitle}>A beautiful yet simple Farcaster client</Text>
           <SignInWithNeynar />
           <ConnectAsGuest />

@@ -1,13 +1,18 @@
 import { FlashList } from '@shopify/flash-list'
 import _ from 'lodash'
-import React, { useCallback } from 'react'
+import React, { useCallback, useEffect } from 'react'
 import { View, StyleSheet, ActivityIndicator } from 'react-native'
 import { useLatestCasts } from 'farcasterkit-react-native'
 import Cast from '../components/Cast'
+import useAppContext from '../hooks/useAppContext'
 
 const GuestScreen = () => {
   // TODO: edit useLatestCasts logic so it adds dyanmic fid and not mine as static
   const { casts, isLoading, loadMore, isReachingEnd } = useLatestCasts()
+  const { fid, filter, setFid } = useAppContext()
+
+  console.log("FID ", fid)
+  console.log("FILTER ", filter)
 
   const onEndReached = useCallback(() => {
     if (!isReachingEnd) {
