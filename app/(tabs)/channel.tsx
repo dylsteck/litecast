@@ -32,7 +32,6 @@ const ChannelScreen = () => {
   // if type is channel and fid is present than filter casts by fid than filterFeedBasedOnFID with filter
   if (type === "channel" && fid) {
     let filteredCasts = filterFeedBasedOnFID(casts, filter.lowerFid, filter.upperFid)
-    console.log("fileter is",filter)
     if(filter.showChannels?.length > 0) {
       filteredCasts = filterCastsBasedOnChannels(filteredCasts, filter.showChannels)
     }

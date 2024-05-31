@@ -18,7 +18,7 @@ import { LOCAL_STORAGE_KEYS } from '../constants/Farcaster'
 
 export default function IndexScreen() {
   const { farcasterUser } = useLogin()
-  const { setFid } = useAppContext()
+  const { setFid, setFilter } = useAppContext()
   const router = useRouter()
   useEffect(() => {
     if (farcasterUser) {
@@ -33,6 +33,12 @@ export default function IndexScreen() {
         const parsedUser : FarcasterUser = JSON.parse(user)
         setFid(parsedUser?.fid || 404104)
         router.push('/(tabs)')
+      }
+
+      let filters = await AsyncStorage.getItem(LOCAL_STORAGE_KEYS.FILTERS)
+      if (filters) {
+        const parsedFilters = JSON.parse(filters)
+        setFilter(parsedFilters)
       }
     }
     getUser()

@@ -14,8 +14,6 @@ import GuestHeaderLeft from '../components/GuestHeaderLeft'
 import HomeHeaderLeft from '../components/HomeHeaderLeft'
 import HomeHeaderRight from '../components/HomeHeaderRight'
 import React from 'react'
-import AsyncStorage from '@react-native-async-storage/async-storage'
-import { LOCAL_STORAGE_KEYS } from '../constants/Farcaster'
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -62,8 +60,6 @@ function RootLayoutNav() {
     mutedChannels: [],
     showChannels: [],
   })
-  const [filterChannels, setFilterChannels] = useState([])
-  const [isFilterVisible, setFilterVisible] = useState(false)
 
   const colorScheme = useColorScheme()
   const neynarApiKey = process.env.EXPO_PUBLIC_NEYNAR_API_KEY

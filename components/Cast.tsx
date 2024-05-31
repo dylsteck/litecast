@@ -34,7 +34,6 @@ const Cast = ({ cast }: { cast: NeynarCastV2 }) => {
           recasts: [...reactions.recasts, farcasterUser],
         })
       }
-      console.log(`${type}d cast with hash ${hash}`)
     } catch (error) {
       console.error('Error posting reaction:', error)
     }

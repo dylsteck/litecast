@@ -58,10 +58,8 @@ export default function SignInWithNeynar() {
   }
   const fetchAuthorizationUrl = async () => {
     try {
-      console.log('fetching auth url')
       const res = await axios.get(`${API_URL}/get-auth-url`)
       const data = res.data
-      console.log(data)
       return data.authorization_url
     } catch (error) {
       console.log(error)

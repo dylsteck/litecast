@@ -13,6 +13,8 @@ import FontAwesome from '@expo/vector-icons/FontAwesome'
 import useAppContext from '../hooks/useAppContext'
 import { useSearchChannel } from '../hooks/useSearchChannels'
 import { debounce, max } from 'lodash'
+import { LOCAL_STORAGE_KEYS } from '../constants/Farcaster'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 const FilterModal = ({ visible, onClose }) => {
   const { filter, setFilter } = useAppContext()
@@ -35,12 +37,16 @@ const FilterModal = ({ visible, onClose }) => {
   }
 
   const removeChannel = (channel) => {
-    console.log("CHANNEL ", channel)
     setSelectedChannels(selectedChannels.filter((c) => c !== channel))
     setFilter((prev) => ({
       ...prev,
       showChannels: selectedChannels.filter((c) => c !== channel),
     }))
+    let newFilter = {
+      ...filter,
+      showChannels: selectedChannels.filter((c) => c !== channel),
+    }
+    AsyncStorage.setItem(LOCAL_STORAGE_KEYS.FILTERS, JSON.stringify(newFilter))
   }
 
   const removeMutedChannel = (channel) => {
@@ -49,6 +55,11 @@ const FilterModal = ({ visible, onClose }) => {
       ...prev,
       mutedChannels: selectedMutedChannels.filter((c) => c !== channel),
     }))
+    let newFilter = {
+      ...filter,
+      mutedChannels: selectedMutedChannels.filter((c) => c !== channel),
+    }
+    AsyncStorage.setItem(LOCAL_STORAGE_KEYS.FILTERS, JSON.stringify(newFilter))
   }
 
   const handleSetMinFID = (text) => {
@@ -72,6 +83,14 @@ const FilterModal = ({ visible, onClose }) => {
       showChannels: [...prev.showChannels, ...selectedChannels],
       mutedChannels: [...prev.mutedChannels, ...selectedMutedChannels],
     }))
+    let newFilter = {
+      ...filter,
+      lowerFid: minFID,
+      upperFid: maxFID,
+      showChannels: [...filter.showChannels, ...selectedChannels],
+      mutedChannels: [...filter.mutedChannels, ...selectedMutedChannels],
+    }
+    AsyncStorage.setItem(LOCAL_STORAGE_KEYS.FILTERS, JSON.stringify(newFilter))
     onClose()
   }
 
@@ -125,6 +144,21 @@ const FilterModal = ({ visible, onClose }) => {
       debouncedMuteSearch.cancel()
     }
   }, [muteChannels, debouncedMuteSearch])
+
+  useEffect(() => {
+    const getFilters = async () => {
+      let filters = await AsyncStorage.getItem(LOCAL_STORAGE_KEYS.FILTERS)
+      if (filters) {
+        const parsedFilters = JSON.parse(filters)
+        setFilter(parsedFilters)
+        setMinFID(parsedFilters.lowerFid)
+        setMaxFID(parsedFilters.upperFid)
+        setSelectedChannels(parsedFilters.showChannels)
+        setSelectedMutedChannels(parsedFilters.mutedChannels)
+      }
+    }
+    getFilters()
+  }, [])
 
   return (
     <Modal visible={visible} animationType="slide" transparent>
