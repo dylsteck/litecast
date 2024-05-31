@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react'
 import {
   Modal,
   View,
@@ -6,69 +6,84 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  ScrollView
-} from 'react-native';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import useAppContext from '../hooks/useAppContext';
+  ScrollView,
+  Image,
+} from 'react-native'
+import FontAwesome from '@expo/vector-icons/FontAwesome'
+import useAppContext from '../hooks/useAppContext'
+import { useSearchChannel } from '../hooks/useSearchChannels'
+import { debounce } from 'lodash'
 
-interface FilterModalProps {
-  visible: boolean;
-  onClose: () => void;
-}
-
-const FilterModal: React.FC<FilterModalProps> = ({ visible, onClose }) => {
+const FilterModal = ({ visible, onClose }) => {
   const { setFilter } = useAppContext()
-  const [minFID, setMinFID] = useState(0);
-  const [maxFID, setMaxFID] = useState(Infinity);
-  const [searchChannels, setSearchChannels] = useState('');
-  const [muteChannels, setMuteChannels] = useState('');
-  const [selectedChannels, setSelectedChannels] = useState<string[]>(['CNBC', 'BBC', 'CNN']);
-  const [mutedChannels, setMutedChannels] = useState<string[]>(['CNBC', 'BBC', 'CNN']);
+  const [minFID, setMinFID] = useState(0)
+  const [maxFID, setMaxFID] = useState(Infinity)
+  const [searchChannels, setSearchChannels] = useState('')
+  const [fetchedChannels, setFetchedChannels] = useState([])
+  const [muteChannels, setMuteChannels] = useState('')
+  const [selectedChannels, setSelectedChannels] = useState([])
+  const [mutedChannels, setMutedChannels] = useState([])
 
   const handleClearAll = () => {
-    setMinFID(0);
-    setMaxFID(Infinity);
-    setSearchChannels('');
-    setMuteChannels('');
-    setSelectedChannels([]);
-    setMutedChannels([]);
-  };
-
-  const removeChannel = (channel: string) => {
-    setSelectedChannels(selectedChannels.filter(c => c !== channel));
-  };
-
-  const removeMutedChannel = (channel: string) => {
-    setMutedChannels(mutedChannels.filter(c => c !== channel));
-  };
-
-  const handleSetMinFID = (text: string) => {
-    console.log("MIN FID ", text)
-    setMinFID(Number(text))
-    // setFilter((prev: any) => ({
-    //   ...prev,
-    //   lowerFid: text
-    // }))
+    setMinFID(0)
+    setMaxFID(Infinity)
+    setSearchChannels('')
+    setMuteChannels('')
+    setSelectedChannels([])
+    setMutedChannels([])
   }
 
-  const handleSetMaxFID = (text: string) => {
-    console.log("MAX FID ", text)
+  const removeChannel = (channel) => {
+    setSelectedChannels(selectedChannels.filter((c) => c !== channel))
+  }
+
+  const removeMutedChannel = (channel) => {
+    setMutedChannels(mutedChannels.filter((c) => c !== channel))
+  }
+
+  const handleSetMinFID = (text) => {
+    console.log('MIN FID ', text)
+    setMinFID(Number(text))
+  }
+
+  const handleSetMaxFID = (text) => {
+    console.log('MAX FID ', text)
     setMaxFID(Number(text))
-    // setFilter((prev: any) => ({
-    //   ...prev,
-    //   upperFid: text
-    // }))
   }
 
   const handleApply = () => {
-    setFilter({
+    setFilter(prev => ({
+      ...prev,
       lowerFid: minFID,
       upperFid: maxFID,
-      searchChannels: selectedChannels,
-      muteChannels: mutedChannels
-    })
+      showChannels: [...selectedChannels, ...selectedChannels],
+      muteChannels: [...mutedChannels],
+    }))
     onClose()
   }
+
+  const handleAddChannel = (channel) => {
+    setSelectedChannels(prev => [...prev, channel.id])
+    setSearchChannels('')
+    setFetchedChannels([])
+  }
+
+  const debouncedSearch = useCallback(
+    debounce(async (text) => {
+      const { channels } = await useSearchChannel(text)
+      setFetchedChannels(channels)
+    }, 1000),
+    [],
+  )
+
+  useEffect(() => {
+    if (searchChannels?.length > 0) {
+      debouncedSearch(searchChannels)
+    }
+    return () => {
+      debouncedSearch.cancel()
+    }
+  }, [searchChannels, debouncedSearch])
 
   return (
     <Modal visible={visible} animationType="slide" transparent>
@@ -95,7 +110,9 @@ const FilterModal: React.FC<FilterModalProps> = ({ visible, onClose }) => {
                 <Text>Max</Text>
                 <TextInput
                   style={styles.input}
-                  value={maxFID.toString()}
+                  value={
+                    maxFID.toString() === 'Infinity' ? '' : maxFID.toString()
+                  }
                   onChangeText={handleSetMaxFID}
                   keyboardType="numeric"
                 />
@@ -109,10 +126,31 @@ const FilterModal: React.FC<FilterModalProps> = ({ visible, onClose }) => {
               onChangeText={setSearchChannels}
               placeholder="Search channels"
             />
+            {fetchedChannels.map((channel) => (
+              <TouchableOpacity
+                onPress={() => handleAddChannel(channel)}
+                key={channel}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  marginVertical: 10,
+                  padding: 4,
+                  borderWidth: 1,
+                  borderColor: 'gray',
+                  borderRadius: 10,
+                }}
+              >
+                <Image
+                  source={{ uri: channel.image_url }}
+                  style={{ width: 24, height: 24, borderRadius: 10, marginRight: 10 }}
+                />
+                <Text className="mr-1">{channel.name}</Text>
+              </TouchableOpacity>
+            ))}
             <View style={styles.chipContainer}>
-              {selectedChannels.map(channel => (
+              {selectedChannels.map((channel) => (
                 <View key={channel} style={styles.chip}>
-                  <Text className='mr-1'>{channel}</Text>
+                  <Text className="mr-1">{channel}</Text>
                   <TouchableOpacity onPress={() => removeChannel(channel)}>
                     <FontAwesome name="times" size={16} color="black" />
                   </TouchableOpacity>
@@ -128,9 +166,9 @@ const FilterModal: React.FC<FilterModalProps> = ({ visible, onClose }) => {
               placeholder="Mute channels"
             />
             <View style={styles.chipContainer}>
-              {mutedChannels.map(channel => (
+              {mutedChannels.map((channel) => (
                 <View key={channel} style={styles.chip}>
-                  <Text className='mr-1'>{channel}</Text>
+                  <Text className="mr-1">{channel}</Text>
                   <TouchableOpacity onPress={() => removeMutedChannel(channel)}>
                     <FontAwesome name="times" size={16} color="black" />
                   </TouchableOpacity>
@@ -139,10 +177,16 @@ const FilterModal: React.FC<FilterModalProps> = ({ visible, onClose }) => {
             </View>
 
             <View style={styles.buttonRow}>
-              <TouchableOpacity style={styles.clearButton} onPress={handleClearAll}>
+              <TouchableOpacity
+                style={styles.clearButton}
+                onPress={handleClearAll}
+              >
                 <Text style={styles.buttonText}>Clear All</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.applyButton} onPress={handleApply}>
+              <TouchableOpacity
+                style={styles.applyButton}
+                onPress={handleApply}
+              >
                 <Text style={styles.buttonText}>Apply</Text>
               </TouchableOpacity>
             </View>
@@ -150,8 +194,8 @@ const FilterModal: React.FC<FilterModalProps> = ({ visible, onClose }) => {
         </View>
       </View>
     </Modal>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   modalContainer: {
@@ -248,6 +292,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
   },
-});
+})
 
-export default FilterModal;
+export default FilterModal

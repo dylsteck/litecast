@@ -8,7 +8,7 @@ import { useRoute } from '@react-navigation/native'
 // import { useLatestCasts } from 'farcasterkit-react-native'
 import { useLatestCasts } from '../../hooks/useLatestsCasts'
 import useAppContext from '../../hooks/useAppContext'
-import { filterFeedBasedOnFID } from '../../utils/functions'
+import { filterCastsBasedOnChannels, filterFeedBasedOnFID } from '../../utils/functions'
 
 const ChannelScreen = () => {
   const route = useRoute<any>()
@@ -31,7 +31,11 @@ const ChannelScreen = () => {
 
   // if type is channel and fid is present than filter casts by fid than filterFeedBasedOnFID with filter
   if (type === "channel" && fid) {
-    const filteredCasts = filterFeedBasedOnFID(casts, filter.lowerFid, filter.upperFid)
+    let filteredCasts = filterFeedBasedOnFID(casts, filter.lowerFid, filter.upperFid)
+    console.log(filter)
+    if(filter.showChannels?.length > 0) {
+      filteredCasts = filterCastsBasedOnChannels(filteredCasts, filter.showChannels)
+    }
     feed = filteredCasts
   } else {
     feed = casts

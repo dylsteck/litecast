@@ -11,9 +11,6 @@ const GuestScreen = () => {
   const { casts, isLoading, loadMore, isReachingEnd } = useLatestCasts()
   const { fid, filter, setFid } = useAppContext()
 
-  console.log("FID ", fid)
-  console.log("FILTER ", filter)
-
   const onEndReached = useCallback(() => {
     if (!isReachingEnd) {
       loadMore()

@@ -14,7 +14,6 @@ import GuestHeaderLeft from '../components/GuestHeaderLeft'
 import HomeHeaderLeft from '../components/HomeHeaderLeft'
 import HomeHeaderRight from '../components/HomeHeaderRight'
 import React from 'react'
-import FilterList from '../components/FilterComponent'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { LOCAL_STORAGE_KEYS } from '../constants/Farcaster'
 
@@ -92,10 +91,6 @@ function RootLayoutNav() {
               }}
             />
           </Stack>
-          <FilterList
-            visible={isFilterVisible}
-            onClose={() => setFilterVisible(false)}
-          />
         </ThemeProvider>
       </NeynarProvider>
     </AppContext.Provider>
