@@ -18,16 +18,16 @@ interface FilterModalProps {
 
 const FilterModal: React.FC<FilterModalProps> = ({ visible, onClose }) => {
   const { setFilter } = useAppContext()
-  const [minFID, setMinFID] = useState('');
-  const [maxFID, setMaxFID] = useState('');
+  const [minFID, setMinFID] = useState(0);
+  const [maxFID, setMaxFID] = useState(Infinity);
   const [searchChannels, setSearchChannels] = useState('');
   const [muteChannels, setMuteChannels] = useState('');
   const [selectedChannels, setSelectedChannels] = useState<string[]>(['CNBC', 'BBC', 'CNN']);
   const [mutedChannels, setMutedChannels] = useState<string[]>(['CNBC', 'BBC', 'CNN']);
 
   const handleClearAll = () => {
-    setMinFID('');
-    setMaxFID('');
+    setMinFID(0);
+    setMaxFID(Infinity);
     setSearchChannels('');
     setMuteChannels('');
     setSelectedChannels([]);
@@ -44,20 +44,30 @@ const FilterModal: React.FC<FilterModalProps> = ({ visible, onClose }) => {
 
   const handleSetMinFID = (text: string) => {
     console.log("MIN FID ", text)
-    setMinFID(text)
-    setFilter((prev: any) => ({
-      ...prev,
-      lowerFid: text
-    }))
+    setMinFID(Number(text))
+    // setFilter((prev: any) => ({
+    //   ...prev,
+    //   lowerFid: text
+    // }))
   }
 
   const handleSetMaxFID = (text: string) => {
     console.log("MAX FID ", text)
-    setMaxFID(text)
-    setFilter((prev: any) => ({
-      ...prev,
-      upperFid: text
-    }))
+    setMaxFID(Number(text))
+    // setFilter((prev: any) => ({
+    //   ...prev,
+    //   upperFid: text
+    // }))
+  }
+
+  const handleApply = () => {
+    setFilter({
+      lowerFid: minFID,
+      upperFid: maxFID,
+      searchChannels: selectedChannels,
+      muteChannels: mutedChannels
+    })
+    onClose()
   }
 
   return (
@@ -76,7 +86,7 @@ const FilterModal: React.FC<FilterModalProps> = ({ visible, onClose }) => {
                 <Text>Min</Text>
                 <TextInput
                   style={styles.input}
-                  value={minFID}
+                  value={minFID.toString()}
                   onChangeText={handleSetMinFID}
                   keyboardType="numeric"
                 />
@@ -85,7 +95,7 @@ const FilterModal: React.FC<FilterModalProps> = ({ visible, onClose }) => {
                 <Text>Max</Text>
                 <TextInput
                   style={styles.input}
-                  value={maxFID}
+                  value={maxFID.toString()}
                   onChangeText={handleSetMaxFID}
                   keyboardType="numeric"
                 />
@@ -132,7 +142,7 @@ const FilterModal: React.FC<FilterModalProps> = ({ visible, onClose }) => {
               <TouchableOpacity style={styles.clearButton} onPress={handleClearAll}>
                 <Text style={styles.buttonText}>Clear All</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.applyButton} onPress={onClose}>
+              <TouchableOpacity style={styles.applyButton} onPress={handleApply}>
                 <Text style={styles.buttonText}>Apply</Text>
               </TouchableOpacity>
             </View>

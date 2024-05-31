@@ -19,6 +19,7 @@ const HomeHeaderRight = () => {
   const fontSize = 18;
   const { setFarcasterUser } = useLogin();
   const { fid } = useAppContext()
+  const [isSelected, setIsSelected] = useState('home')
   // const fid = 616
 
   const [isFilterVisible, setFilterVisible] = useState(false);
@@ -46,26 +47,24 @@ const HomeHeaderRight = () => {
   // }
 
   // todo: fix this function, it's broken
-  const isSelected = (name) => {
-    if(currentRoute === null){
-      return false
-    }
-    else{
-      if(currentRoute.name === 'channel' && currentRoute.params.type === 'home'){
-        return true
-      }
-      else if(name === 'trending' && currentRoute.name === 'channel' && currentRoute.params.type === 'trending'){
-        return true
-      }
-      else if(name === 'fid' && currentRoute.name === 'channel' && currentRoute.params.fid === fid){
-        return true
-      }
-      else if(name === PURPLE_CHANNEL_URL && currentRoute.name === 'channel' && currentRoute.params.parent_url === PURPLE_CHANNEL_URL){
-        return true
-      }
-    }
-    return false;
-  }
+  // const isSelected = (name) => {
+  //   if(currentRoute === null){
+  //     return false
+  //   }
+  //   else{
+
+  //     if(name === 'home' && currentRoute.name === 'channel' && currentRoute.params.type === 'home'){
+  //       return true
+  //     }
+  //     else if(name === 'trending' && currentRoute.name === 'channel' && currentRoute.params.type === 'trending'){
+  //       return true
+  //     }
+  //     else if(name === 'filter' && currentRoute.name === 'channel' && currentRoute.name === 'channel'){
+  //       return true
+  //     }
+  //   }
+  //   return false;
+  // }
 
   const handleBackToHome = () => {
     navigation.navigate('home')
@@ -73,20 +72,30 @@ const HomeHeaderRight = () => {
   const handleApplyFilters = (fid, channel) => {
     // Apply the filters to your data or update your state here
   };
+
+  const isSelectedHandler = (name) => {
+    if(name === isSelected){
+      return true
+    }
+    else{
+      return false
+    }
+  }
+
   return (
     <View style={{display: 'flex', flexDirection: 'row', gap: 2, paddingTop: '2.5%', paddingBottom: '2.5%' }}>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ flexDirection: 'row', gap: 24, marginRight: 50 }}>
-          <Link href={`/(tabs)/channel?type=home&fid=${fid}`} asChild>
-            <Text style={{ fontSize, fontWeight: 'normal', opacity: isSelected('index') ? 1 : 0.7 }}>Following</Text>
+          <Link onPress={() => setIsSelected('home')} href={`/(tabs)/channel?type=home&fid=${fid}`} asChild>
+            <Text style={{ fontSize, fontWeight: 'normal', opacity: isSelectedHandler('home') ? 1 : 0.6 }}>Following</Text>
           </Link>
-          <Link href="/(tabs)/channel?type=trending" asChild>
-            <Text style={{ fontSize, fontWeight: 'normal', opacity: isSelected('trending') ? 1 : 0.7 }}>All People</Text>
+          <Link onPress={() => setIsSelected('trending')} href="/(tabs)/channel?type=trending" asChild>
+            <Text style={{ fontSize, fontWeight: 'normal', opacity: isSelectedHandler('trending') ? 1 : 0.6 }}>All People</Text>
           </Link>
           {/* <Pressable onPress={() => handlePressNotAvailable('Logout')}>
             <Text style={{ color: 'red', fontSize, fontWeight: 'normal', opacity: 0.7 }}>Logout</Text>
           </Pressable> */}
-          <Link href={`/(tabs)/channel?type=channel&fid=${fid}`} asChild>
-            <Text style={{ fontSize, fontWeight: 'normal', opacity: isSelected('fid') ? 1 : 0.7 }}>Filtered Feed</Text>
+          <Link onPress={() => setIsSelected('filter')} href={`/(tabs)/channel?type=channel&fid=${fid}`} asChild>
+            <Text style={{ fontSize, fontWeight: 'normal', opacity: isSelectedHandler('filter') ? 1 : 0.6 }}>Filtered Feed</Text>
           </Link>
     </ScrollView>
       <Pressable onPress={() => handlePressNotAvailable('Search')}>
