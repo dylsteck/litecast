@@ -12,10 +12,10 @@ import {
 import FontAwesome from '@expo/vector-icons/FontAwesome'
 import useAppContext from '../hooks/useAppContext'
 import { useSearchChannel } from '../hooks/useSearchChannels'
-import { debounce } from 'lodash'
+import { debounce, max } from 'lodash'
 
 const FilterModal = ({ visible, onClose }) => {
-  const { setFilter } = useAppContext()
+  const { filter, setFilter } = useAppContext()
   const [minFID, setMinFID] = useState(0)
   const [maxFID, setMaxFID] = useState(Infinity)
   const [searchChannels, setSearchChannels] = useState('')
@@ -47,9 +47,14 @@ const FilterModal = ({ visible, onClose }) => {
   }
 
   const handleSetMaxFID = (text) => {
-    setMaxFID(Number(text))
-  }
-
+    const numericValue = parseFloat(text);
+    if (!isNaN(numericValue)) {
+      setMaxFID(numericValue);
+    } else {
+      setMaxFID('');
+    }
+  };
+  
   const handleApply = () => {
     setFilter((prev) => ({
       ...prev,
@@ -60,6 +65,11 @@ const FilterModal = ({ visible, onClose }) => {
     }))
     onClose()
   }
+
+  useEffect(() => {
+    const upperFidValue = typeof filter?.upperFid === 'number' ? filter.upperFid.toString() : '';
+    setMaxFID(upperFidValue);
+  }, [filter?.upperFid]);
 
   const handleAddMutedChannel = (channel) => {
     setSelectedMutedChannels((prev) => [...prev, channel.id])

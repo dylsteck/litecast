@@ -103,8 +103,9 @@ const HomeHeaderRight = () => {
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{
           flexDirection: 'row',
-          gap: 24,
-          marginRight: 50,
+          gap: 14,
+          marginRight: 10,
+          width:'100%'
         }}
       >
         <Link
@@ -134,7 +135,7 @@ const HomeHeaderRight = () => {
               opacity: isSelectedHandler('trending') ? 1 : 0.6,
             }}
           >
-            All People
+            Trending
           </Text>
         </Link>
         {/* <Pressable onPress={() => handlePressNotAvailable('Logout')}>
