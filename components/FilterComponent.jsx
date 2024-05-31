@@ -35,11 +35,20 @@ const FilterModal = ({ visible, onClose }) => {
   }
 
   const removeChannel = (channel) => {
+    console.log("CHANNEL ", channel)
     setSelectedChannels(selectedChannels.filter((c) => c !== channel))
+    setFilter((prev) => ({
+      ...prev,
+      showChannels: selectedChannels.filter((c) => c !== channel),
+    }))
   }
 
   const removeMutedChannel = (channel) => {
-    setSelectedMutedChannels(mutedChannels.filter((c) => c !== channel))
+    setSelectedMutedChannels(selectedMutedChannels.filter((c) => c !== channel))
+    setFilter((prev) => ({
+      ...prev,
+      mutedChannels: selectedMutedChannels.filter((c) => c !== channel),
+    }))
   }
 
   const handleSetMinFID = (text) => {
