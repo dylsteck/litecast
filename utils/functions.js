@@ -20,3 +20,7 @@ const getChannelIdFromUrl = (channelUrl = "") => {
 export const filterCastsBasedOnChannels = (casts, channels) => {
     return casts.filter((cast) => channels.includes(getChannelIdFromUrl(cast?.parent_url)))
 }
+
+export const filterCastsToMute = (casts, mutedChannels) => {
+    return casts.filter((cast) => !mutedChannels.includes(getChannelIdFromUrl(cast?.parent_url)))
+}

@@ -20,9 +20,10 @@ const FilterModal = ({ visible, onClose }) => {
   const [maxFID, setMaxFID] = useState(Infinity)
   const [searchChannels, setSearchChannels] = useState('')
   const [fetchedChannels, setFetchedChannels] = useState([])
+  const [fetchedMutedChannels, setFetchedMutedChannels] = useState([])
   const [muteChannels, setMuteChannels] = useState('')
   const [selectedChannels, setSelectedChannels] = useState([])
-  const [mutedChannels, setMutedChannels] = useState([])
+  const [selectedMutedChannels, setSelectedMutedChannels] = useState([])
 
   const handleClearAll = () => {
     setMinFID(0)
@@ -30,7 +31,7 @@ const FilterModal = ({ visible, onClose }) => {
     setSearchChannels('')
     setMuteChannels('')
     setSelectedChannels([])
-    setMutedChannels([])
+    setSelectedMutedChannels([])
   }
 
   const removeChannel = (channel) => {
@@ -38,32 +39,36 @@ const FilterModal = ({ visible, onClose }) => {
   }
 
   const removeMutedChannel = (channel) => {
-    setMutedChannels(mutedChannels.filter((c) => c !== channel))
+    setSelectedMutedChannels(mutedChannels.filter((c) => c !== channel))
   }
 
   const handleSetMinFID = (text) => {
-    console.log('MIN FID ', text)
     setMinFID(Number(text))
   }
 
   const handleSetMaxFID = (text) => {
-    console.log('MAX FID ', text)
     setMaxFID(Number(text))
   }
 
   const handleApply = () => {
-    setFilter(prev => ({
+    setFilter((prev) => ({
       ...prev,
       lowerFid: minFID,
       upperFid: maxFID,
-      showChannels: [...selectedChannels, ...selectedChannels],
-      muteChannels: [...mutedChannels],
+      showChannels: [...prev.showChannels, ...selectedChannels],
+      mutedChannels: [...prev.mutedChannels, ...selectedMutedChannels],
     }))
     onClose()
   }
 
+  const handleAddMutedChannel = (channel) => {
+    setSelectedMutedChannels((prev) => [...prev, channel.id])
+    setMuteChannels('')
+    setFetchedMutedChannels([])
+  }
+
   const handleAddChannel = (channel) => {
-    setSelectedChannels(prev => [...prev, channel.id])
+    setSelectedChannels((prev) => [...prev, channel.id])
     setSearchChannels('')
     setFetchedChannels([])
   }
@@ -84,6 +89,23 @@ const FilterModal = ({ visible, onClose }) => {
       debouncedSearch.cancel()
     }
   }, [searchChannels, debouncedSearch])
+
+  const debouncedMuteSearch = useCallback(
+    debounce(async (text) => {
+      const { channels } = await useSearchChannel(text)
+      setFetchedMutedChannels(channels)
+    }, 1000),
+    [],
+  )
+
+  useEffect(() => {
+    if (muteChannels?.length > 0) {
+      debouncedMuteSearch(muteChannels)
+    }
+    return () => {
+      debouncedMuteSearch.cancel()
+    }
+  }, [muteChannels, debouncedMuteSearch])
 
   return (
     <Modal visible={visible} animationType="slide" transparent>
@@ -142,7 +164,12 @@ const FilterModal = ({ visible, onClose }) => {
               >
                 <Image
                   source={{ uri: channel.image_url }}
-                  style={{ width: 24, height: 24, borderRadius: 10, marginRight: 10 }}
+                  style={{
+                    width: 24,
+                    height: 24,
+                    borderRadius: 10,
+                    marginRight: 10,
+                  }}
                 />
                 <Text className="mr-1">{channel.name}</Text>
               </TouchableOpacity>
@@ -165,8 +192,34 @@ const FilterModal = ({ visible, onClose }) => {
               onChangeText={setMuteChannels}
               placeholder="Mute channels"
             />
+            {fetchedMutedChannels.map((channel) => (
+              <TouchableOpacity
+                onPress={() => handleAddMutedChannel(channel)}
+                key={channel}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  marginVertical: 10,
+                  padding: 4,
+                  borderWidth: 1,
+                  borderColor: 'gray',
+                  borderRadius: 10,
+                }}
+              >
+                <Image
+                  source={{ uri: channel.image_url }}
+                  style={{
+                    width: 24,
+                    height: 24,
+                    borderRadius: 10,
+                    marginRight: 10,
+                  }}
+                />
+                <Text className="mr-1">{channel.name}</Text>
+              </TouchableOpacity>
+            ))}
             <View style={styles.chipContainer}>
-              {mutedChannels.map((channel) => (
+              {selectedMutedChannels.map((channel) => (
                 <View key={channel} style={styles.chip}>
                   <Text className="mr-1">{channel}</Text>
                   <TouchableOpacity onPress={() => removeMutedChannel(channel)}>

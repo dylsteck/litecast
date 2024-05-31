@@ -8,7 +8,7 @@ import { useRoute } from '@react-navigation/native'
 // import { useLatestCasts } from 'farcasterkit-react-native'
 import { useLatestCasts } from '../../hooks/useLatestsCasts'
 import useAppContext from '../../hooks/useAppContext'
-import { filterCastsBasedOnChannels, filterFeedBasedOnFID } from '../../utils/functions'
+import { filterCastsBasedOnChannels, filterFeedBasedOnFID, filterCastsToMute } from '../../utils/functions'
 
 const ChannelScreen = () => {
   const route = useRoute<any>()
@@ -35,6 +35,9 @@ const ChannelScreen = () => {
     console.log(filter)
     if(filter.showChannels?.length > 0) {
       filteredCasts = filterCastsBasedOnChannels(filteredCasts, filter.showChannels)
+    }
+    if(filter.mutedChannels?.length > 0) {
+      filteredCasts = filterCastsToMute(filteredCasts, filter.mutedChannels)
     }
     feed = filteredCasts
   } else {
