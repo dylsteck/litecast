@@ -6,7 +6,7 @@ import {
 } from '@react-navigation/native'
 import { useFonts } from 'expo-font'
 import { SplashScreen, Stack } from 'expo-router'
-import { NeynarProvider } from 'farcasterkit-react-native'
+import { FarcasterUser, NeynarProvider } from 'farcasterkit-react-native'
 import { useEffect, useState } from 'react'
 import { useColorScheme } from 'react-native'
 import AppContext from '../utils/context'
@@ -15,6 +15,8 @@ import HomeHeaderLeft from '../components/HomeHeaderLeft'
 import HomeHeaderRight from '../components/HomeHeaderRight'
 import React from 'react'
 import FilterList from '../components/FilterComponent'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import { LOCAL_STORAGE_KEYS } from '../constants/Farcaster'
 
 export {
   // Catch any errors thrown by the Layout component.

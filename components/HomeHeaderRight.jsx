@@ -83,7 +83,7 @@ const HomeHeaderRight = () => {
   }
 
   return (
-    <View style={{display: 'flex', flexDirection: 'row', gap: 2, paddingTop: '2.5%', paddingBottom: '2.5%' }}>
+    <View style={{display: 'flex', flexDirection: 'row', gap: 2, paddingTop: '2.5%', paddingBottom: '2.5%', width: '100%' }}>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ flexDirection: 'row', gap: 24, marginRight: 50 }}>
           <Link onPress={() => setIsSelected('home')} href={`/(tabs)/channel?type=home&fid=${fid}`} asChild>
             <Text style={{ fontSize, fontWeight: 'normal', opacity: isSelectedHandler('home') ? 1 : 0.6 }}>Following</Text>

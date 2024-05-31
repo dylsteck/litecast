@@ -10,18 +10,33 @@ import SignInWithNeynar from '../components/SignInWithNeynar'
 import { Text, View } from '../components/Themed'
 // import homepageHeader from '../assets/images/homepage-header.png';
 import ConnectAsGuest from '../components/ConnectAsGuest'
-import { useLogin } from 'farcasterkit-react-native'
+import { FarcasterUser, useLogin } from 'farcasterkit-react-native'
 import { useRouter } from 'expo-router'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import useAppContext from '../hooks/useAppContext'
+import { LOCAL_STORAGE_KEYS } from '../constants/Farcaster'
 
 export default function IndexScreen() {
   const { farcasterUser } = useLogin()
+  const { setFid } = useAppContext()
   const router = useRouter()
   useEffect(() => {
     if (farcasterUser) {
       router.push('/(tabs)')
     }
   }, [farcasterUser])
+
+  useEffect(() => {
+    const getUser = async () => {
+      let user = await AsyncStorage.getItem(LOCAL_STORAGE_KEYS.FARCASTER_USER)
+      if (user) {
+        const parsedUser : FarcasterUser = JSON.parse(user)
+        setFid(parsedUser?.fid || 404104)
+        router.push('/(tabs)')
+      }
+    }
+    getUser()
+  }, [])
 
   return (
     <SafeAreaView style={styles.container}>
