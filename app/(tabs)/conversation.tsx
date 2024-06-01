@@ -172,7 +172,7 @@ export default function ConversationScreen() {
     return thread
   }
 
-  const renderCast = ({ item: cast }: { item: NeynarCastV1 }) => {
+  const renderCast = ({ item: cast, index }: { item: NeynarCastV1, index: number }) => {
     const renderImages = () => {
       // Regex to match image URLs
       const regex = /https?:\/\/\S+\.(?:jpg|jpeg|png|gif)/g
@@ -195,7 +195,7 @@ export default function ConversationScreen() {
     }
 
     return (
-      <TouchableOpacity onPress={() => handleCastPress(cast.hash)}>
+      <TouchableOpacity key={index} onPress={() => handleCastPress(cast.hash)}>
         <View style={styles.castContainer}>
           <Image
             source={{ uri: cast.author.pfp.url }}
@@ -234,7 +234,7 @@ export default function ConversationScreen() {
         contentContainerStyle={styles.scrollView}
         data={thread}
         renderItem={renderCast}
-        keyExtractor={(item) => item.hash}
+        keyExtractor={(_, index) => index.toString()}
       />
     </View>
   )

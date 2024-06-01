@@ -22,8 +22,8 @@ const GuestScreen = () => {
       <FlashList
         contentContainerStyle={styles.flashList}
         data={casts}
-        renderItem={({ item }) => <Cast key={item.hash} cast={item} />}
-        keyExtractor={(item) => item.hash}
+        renderItem={({ item, index }) => <Cast key={index} cast={item} />}
+        keyExtractor={(_, index) => index.toString()}
         onEndReached={onEndReached}
         onEndReachedThreshold={0.1}
         ListFooterComponent={() =>

@@ -1,165 +1,126 @@
-import React, { useCallback, useEffect, useState } from 'react'
-import {
-  Modal,
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-  Image,
-} from 'react-native'
-import FontAwesome from '@expo/vector-icons/FontAwesome'
-import useAppContext from '../hooks/useAppContext'
-import { useSearchChannel } from '../hooks/useSearchChannels'
-import { debounce, max } from 'lodash'
-import { LOCAL_STORAGE_KEYS } from '../constants/Farcaster'
-import AsyncStorage from '@react-native-async-storage/async-storage'
+import React, { useCallback, useEffect, useState } from 'react';
+import { Modal, View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Image } from 'react-native';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import useAppContext from '../hooks/useAppContext';
+import { useSearchChannel } from '../hooks/useSearchChannels';
+import { debounce } from 'lodash';
+import { LOCAL_STORAGE_KEYS } from '../constants/Farcaster';
 
 const FilterModal = ({ visible, onClose }) => {
-  const { filter, setFilter } = useAppContext()
-  const [minFID, setMinFID] = useState(0)
-  const [maxFID, setMaxFID] = useState(Infinity)
-  const [searchChannels, setSearchChannels] = useState('')
-  const [fetchedChannels, setFetchedChannels] = useState([])
-  const [fetchedMutedChannels, setFetchedMutedChannels] = useState([])
-  const [muteChannels, setMuteChannels] = useState('')
-  const [selectedChannels, setSelectedChannels] = useState([])
-  const [selectedMutedChannels, setSelectedMutedChannels] = useState([])
+  const { filter, setFilter } = useAppContext();
+  const [minFID, setMinFID] = useState(0);
+  const [maxFID, setMaxFID] = useState(Infinity);
+  const [searchChannels, setSearchChannels] = useState('');
+  const [muteChannels, setMuteChannels] = useState('');
+  const [fetchedChannels, setFetchedChannels] = useState([]);
+  const [fetchedMutedChannels, setFetchedMutedChannels] = useState([]);
+  const [selectedChannels, setSelectedChannels] = useState([]);
+  const [selectedMutedChannels, setSelectedMutedChannels] = useState([]);
 
-  const handleClearAll = () => {
-    setMinFID(0)
-    setMaxFID(Infinity)
-    setSearchChannels('')
-    setMuteChannels('')
-    setSelectedChannels([])
-    setSelectedMutedChannels([])
-    AsyncStorage.removeItem(LOCAL_STORAGE_KEYS.FILTERS)
-  }
+  const handleClearAll = useCallback(() => {
+    setMinFID(0);
+    setMaxFID(Infinity);
+    setSearchChannels('');
+    setMuteChannels('');
+    setSelectedChannels([]);
+    setSelectedMutedChannels([]);
+    setFilter({
+      lowerFid: 0,
+      upperFid: Infinity,
+      showChannels: [],
+      mutedChannels: [],
+    })
+    AsyncStorage.setItem(LOCAL_STORAGE_KEYS.FILTERS, JSON.stringify({
+      lowerFid: 0,
+      upperFid: Infinity,
+      showChannels: [],
+      mutedChannels: [],
+    }));
+  }, []);
 
-  const removeChannel = (channel) => {
-    setSelectedChannels(selectedChannels.filter((c) => c !== channel))
-    setFilter((prev) => ({
-      ...prev,
-      showChannels: selectedChannels.filter((c) => c !== channel),
-    }))
-    let newFilter = {
-      ...filter,
-      showChannels: selectedChannels.filter((c) => c !== channel),
-    }
-    AsyncStorage.setItem(LOCAL_STORAGE_KEYS.FILTERS, JSON.stringify(newFilter))
-  }
-
-  const removeMutedChannel = (channel) => {
-    setSelectedMutedChannels(selectedMutedChannels.filter((c) => c !== channel))
-    setFilter((prev) => ({
-      ...prev,
-      mutedChannels: selectedMutedChannels.filter((c) => c !== channel),
-    }))
-    let newFilter = {
-      ...filter,
-      mutedChannels: selectedMutedChannels.filter((c) => c !== channel),
-    }
-    AsyncStorage.setItem(LOCAL_STORAGE_KEYS.FILTERS, JSON.stringify(newFilter))
-  }
-
-  const handleSetMinFID = (text) => {
-    setMinFID(Number(text))
-  }
+  const updateFilter = useCallback((newFilter) => {
+    setFilter(newFilter);
+    AsyncStorage.setItem(LOCAL_STORAGE_KEYS.FILTERS, JSON.stringify(newFilter));
+  }, [setFilter]);
 
   const handleSetMaxFID = (text) => {
     const numericValue = parseFloat(text);
-    if (!isNaN(numericValue)) {
-      setMaxFID(numericValue);
-    } else {
-      setMaxFID('');
-    }
+    setMaxFID(!isNaN(numericValue) ? numericValue : '');
   };
-  
-  const handleApply = () => {
-    setFilter((prev) => ({
-      ...prev,
-      lowerFid: minFID,
-      upperFid: maxFID,
-      showChannels: [...prev.showChannels, ...selectedChannels],
-      mutedChannels: [...prev.mutedChannels, ...selectedMutedChannels],
-    }))
-    let newFilter = {
+
+  const handleApply = useCallback(() => {
+    const newFilter = {
       ...filter,
       lowerFid: minFID,
       upperFid: maxFID,
-      showChannels: [...filter.showChannels, ...selectedChannels],
-      mutedChannels: [...filter.mutedChannels, ...selectedMutedChannels],
-    }
-    AsyncStorage.setItem(LOCAL_STORAGE_KEYS.FILTERS, JSON.stringify(newFilter))
-    onClose()
-  }
+      showChannels: [...selectedChannels],
+      mutedChannels: [...selectedMutedChannels],
+    };
+    updateFilter(newFilter);
+    onClose();
+  }, [filter, minFID, maxFID, selectedChannels, selectedMutedChannels, onClose, updateFilter]);
 
   useEffect(() => {
-    const upperFidValue = typeof filter?.upperFid === 'number' ? filter.upperFid.toString() : '';
-    setMaxFID(upperFidValue);
-  }, [filter?.upperFid]);
-
-  const handleAddMutedChannel = (channel) => {
-    setSelectedMutedChannels((prev) => [...prev, channel.id])
-    setMuteChannels('')
-    setFetchedMutedChannels([])
-  }
-
-  const handleAddChannel = (channel) => {
-    setSelectedChannels((prev) => [...prev, channel.id])
-    setSearchChannels('')
-    setFetchedChannels([])
-  }
+    const fetchFilters = async () => {
+      const filters = await AsyncStorage.getItem(LOCAL_STORAGE_KEYS.FILTERS);
+      if (filters) {
+        const parsedFilters = JSON.parse(filters);
+        setFilter(parsedFilters);
+        setMinFID(parsedFilters.lowerFid);
+        setMaxFID(parsedFilters.upperFid);
+        setSelectedChannels(parsedFilters.showChannels);
+        setSelectedMutedChannels(parsedFilters.mutedChannels);
+      }
+    };
+    fetchFilters();
+  }, [setFilter]);
 
   const debouncedSearch = useCallback(
     debounce(async (text) => {
-      const { channels } = await useSearchChannel(text)
-      setFetchedChannels(channels)
+      const { channels } = await useSearchChannel(text);
+      setFetchedChannels(channels);
     }, 1000),
     [],
-  )
+  );
 
   useEffect(() => {
     if (searchChannels?.length > 0) {
-      debouncedSearch(searchChannels)
+      debouncedSearch(searchChannels);
     }
     return () => {
-      debouncedSearch.cancel()
-    }
-  }, [searchChannels, debouncedSearch])
+      debouncedSearch.cancel();
+    };
+  }, [searchChannels, debouncedSearch]);
 
   const debouncedMuteSearch = useCallback(
     debounce(async (text) => {
-      const { channels } = await useSearchChannel(text)
-      setFetchedMutedChannels(channels)
+      const { channels } = await useSearchChannel(text);
+      setFetchedMutedChannels(channels);
     }, 1000),
     [],
-  )
+  );
 
   useEffect(() => {
     if (muteChannels?.length > 0) {
-      debouncedMuteSearch(muteChannels)
+      debouncedMuteSearch(muteChannels);
     }
     return () => {
-      debouncedMuteSearch.cancel()
-    }
-  }, [muteChannels, debouncedMuteSearch])
+      debouncedMuteSearch.cancel();
+    };
+  }, [muteChannels, debouncedMuteSearch]);
 
-  useEffect(() => {
-    const getFilters = async () => {
-      let filters = await AsyncStorage.getItem(LOCAL_STORAGE_KEYS.FILTERS)
-      if (filters) {
-        const parsedFilters = JSON.parse(filters)
-        setFilter(parsedFilters)
-        setMinFID(parsedFilters.lowerFid)
-        setMaxFID(parsedFilters.upperFid)
-        setSelectedChannels(parsedFilters.showChannels)
-        setSelectedMutedChannels(parsedFilters.mutedChannels)
-      }
-    }
-    getFilters()
-  }, [])
+  const handleAddChannel = (channel) => {
+    setSearchChannels('')
+    setSelectedChannels([...selectedChannels, channel.id])
+    setFetchedChannels([])
+  }
+
+  const handleAddMuteChannel = (channel) => {
+    setMuteChannels('')
+    setSelectedMutedChannels([...selectedMutedChannels, channel.id])
+    setFetchedMutedChannels([])
+  }
 
   return (
     <Modal visible={visible} animationType="slide" transparent>
@@ -170,130 +131,58 @@ const FilterModal = ({ visible, onClose }) => {
           </TouchableOpacity>
           <ScrollView>
             <Text style={styles.header}>Filter</Text>
-
             <Text style={styles.sectionHeader}>FID</Text>
             <View style={styles.inputRow}>
               <View style={styles.inputContainer}>
                 <Text>Min</Text>
-                <TextInput
-                  style={styles.input}
-                  value={minFID.toString()}
-                  onChangeText={handleSetMinFID}
-                  keyboardType="numeric"
-                />
+                <TextInput style={styles.input} value={minFID?.toString()} onChangeText={(text) => setMinFID(Number(text))} keyboardType="numeric" />
               </View>
               <View style={styles.inputContainer}>
                 <Text>Max</Text>
-                <TextInput
-                  style={styles.input}
-                  value={
-                    maxFID.toString() === 'Infinity' ? '' : maxFID.toString()
-                  }
-                  onChangeText={handleSetMaxFID}
-                  keyboardType="numeric"
-                />
+                <TextInput style={styles.input} value={maxFID?.toString() === 'Infinity' ? '' : maxFID?.toString()} onChangeText={handleSetMaxFID} keyboardType="numeric" />
               </View>
             </View>
-
             <Text style={styles.sectionHeader}>Search Channels</Text>
-            <TextInput
-              style={styles.searchInput}
-              value={searchChannels}
-              onChangeText={setSearchChannels}
-              placeholder="Search channels"
-            />
-            {fetchedChannels.map((channel) => (
-              <TouchableOpacity
-                onPress={() => handleAddChannel(channel)}
-                key={channel}
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  marginVertical: 10,
-                  padding: 4,
-                  borderWidth: 1,
-                  borderColor: 'gray',
-                  borderRadius: 10,
-                }}
-              >
-                <Image
-                  source={{ uri: channel.image_url }}
-                  style={{
-                    width: 24,
-                    height: 24,
-                    borderRadius: 10,
-                    marginRight: 10,
-                  }}
-                />
-                <Text className="mr-1">{channel.name}</Text>
+            <TextInput style={styles.searchInput} value={searchChannels} onChangeText={setSearchChannels} placeholder="Search channels" />
+            {fetchedChannels?.slice(0,5).map((channel) => (
+              <TouchableOpacity key={channel.id} onPress={() => handleAddChannel(channel)} style={styles.channelContainer}>
+                <Image source={{ uri: channel.image_url }} style={styles.channelImage} />
+                <Text>{channel.name}</Text>
               </TouchableOpacity>
             ))}
             <View style={styles.chipContainer}>
               {selectedChannels.map((channel) => (
                 <View key={channel} style={styles.chip}>
-                  <Text className="mr-1">{channel}</Text>
-                  <TouchableOpacity onPress={() => removeChannel(channel)}>
+                  <Text>{channel}</Text>
+                  <TouchableOpacity onPress={() => setSelectedChannels(selectedChannels.filter((c) => c !== channel))}>
                     <FontAwesome name="times" size={16} color="black" />
                   </TouchableOpacity>
                 </View>
               ))}
             </View>
-
             <Text style={styles.sectionHeader}>Mute Channels</Text>
-            <TextInput
-              style={styles.searchInput}
-              value={muteChannels}
-              onChangeText={setMuteChannels}
-              placeholder="Mute channels"
-            />
+            <TextInput style={styles.searchInput} value={muteChannels} onChangeText={setMuteChannels} placeholder="Mute channels" />
             {fetchedMutedChannels.map((channel) => (
-              <TouchableOpacity
-                onPress={() => handleAddMutedChannel(channel)}
-                key={channel}
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  marginVertical: 10,
-                  padding: 4,
-                  borderWidth: 1,
-                  borderColor: 'gray',
-                  borderRadius: 10,
-                }}
-              >
-                <Image
-                  source={{ uri: channel.image_url }}
-                  style={{
-                    width: 24,
-                    height: 24,
-                    borderRadius: 10,
-                    marginRight: 10,
-                  }}
-                />
-                <Text className="mr-1">{channel.name}</Text>
+              <TouchableOpacity key={channel.id} onPress={() => handleAddMuteChannel(channel)} style={styles.channelContainer}>
+                <Image source={{ uri: channel.image_url }} style={styles.channelImage} />
+                <Text>{channel.name}</Text>
               </TouchableOpacity>
             ))}
             <View style={styles.chipContainer}>
-              {selectedMutedChannels.map((channel) => (
+              {selectedMutedChannels?.slice(0,5).map((channel) => (
                 <View key={channel} style={styles.chip}>
-                  <Text className="mr-1">{channel}</Text>
-                  <TouchableOpacity onPress={() => removeMutedChannel(channel)}>
+                  <Text>{channel}</Text>
+                  <TouchableOpacity onPress={() => setSelectedMutedChannels(selectedMutedChannels.filter((c) => c !== channel))}>
                     <FontAwesome name="times" size={16} color="black" />
                   </TouchableOpacity>
                 </View>
               ))}
             </View>
-
             <View style={styles.buttonRow}>
-              <TouchableOpacity
-                style={styles.clearButton}
-                onPress={handleClearAll}
-              >
+              <TouchableOpacity style={styles.clearButton} onPress={handleClearAll}>
                 <Text style={styles.buttonText}>Clear All</Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.applyButton}
-                onPress={handleApply}
-              >
+              <TouchableOpacity style={styles.applyButton} onPress={handleApply}>
                 <Text style={styles.buttonText}>Apply</Text>
               </TouchableOpacity>
             </View>
@@ -301,8 +190,8 @@ const FilterModal = ({ visible, onClose }) => {
         </View>
       </View>
     </Modal>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   modalContainer: {
@@ -323,9 +212,6 @@ const styles = StyleSheet.create({
     top: 10,
     right: 10,
     zIndex: 1,
-  },
-  closeButtonText: {
-    fontSize: 24,
   },
   header: {
     fontSize: 24,
@@ -369,7 +255,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderColor: 'black',
-    borderWidth: 1, // Added border width
+    borderWidth: 1,
     borderRadius: 15,
     paddingVertical: 5,
     paddingHorizontal: 15,
@@ -399,6 +285,21 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
   },
-})
+  channelContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 10,
+    padding: 4,
+    borderWidth: 1,
+    borderColor: 'gray',
+    borderRadius: 10,
+  },
+  channelImage: {
+    width: 24,
+    height: 24,
+    borderRadius: 10,
+    marginRight: 10,
+  },
+});
 
-export default FilterModal
+export default React.memo(FilterModal);
