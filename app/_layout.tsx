@@ -54,6 +54,7 @@ export default function RootLayout() {
 
 function RootLayoutNav() {
   const [fid, setFid] = useState(404104)
+  const [user, setUser] = useState<FarcasterUser | null>(null)
   const [filter, setFilter] = useState({
     lowerFid: 0,
     upperFid: Infinity,
@@ -66,7 +67,7 @@ function RootLayoutNav() {
   const fckitApiUrl = process.env.EXPO_PUBLIC_API_URL
 
   return (
-    <AppContext.Provider value={{ fid, setFid, filter, setFilter }}>
+    <AppContext.Provider value={{ fid, setFid, filter, setFilter, user, setUser }}>
       <NeynarProvider
         apiKey={neynarApiKey as string}
         fcKitApiUrl={fckitApiUrl as string}

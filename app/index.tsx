@@ -18,7 +18,7 @@ import { LOCAL_STORAGE_KEYS } from '../constants/Farcaster'
 
 export default function IndexScreen() {
   const { farcasterUser } = useLogin()
-  const { setFid, setFilter } = useAppContext()
+  const { setFid, setFilter, setUser } = useAppContext()
   const router = useRouter()
   useEffect(() => {
     if (farcasterUser) {
@@ -32,6 +32,7 @@ export default function IndexScreen() {
       if (user) {
         const parsedUser : FarcasterUser = JSON.parse(user)
         setFid(parsedUser?.fid || 404104)
+        setUser(parsedUser)
         router.push('/(tabs)')
       }
 
