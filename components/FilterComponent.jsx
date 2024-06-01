@@ -34,6 +34,7 @@ const FilterModal = ({ visible, onClose }) => {
     setMuteChannels('')
     setSelectedChannels([])
     setSelectedMutedChannels([])
+    AsyncStorage.removeItem(LOCAL_STORAGE_KEYS.FILTERS)
   }
 
   const removeChannel = (channel) => {
