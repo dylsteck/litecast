@@ -233,6 +233,7 @@ export default function ConversationScreen() {
       <FlashList
         contentContainerStyle={styles.scrollView}
         data={thread}
+        estimatedItemSize={100}
         renderItem={renderCast}
         keyExtractor={(_, index) => index.toString()}
       />

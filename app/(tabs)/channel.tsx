@@ -14,6 +14,8 @@ const ChannelScreen = () => {
 
   const { casts, isLoading, loadMore, isReachingEnd } = useLatestCasts(type, parent_url, fid);
 
+  console.log("CHANNEL SCREEN ", JSON.stringify(route.params, null, 2))
+
   const onEndReached = useCallback(() => {
     if (!isReachingEnd) {
       loadMore();
@@ -45,6 +47,7 @@ const ChannelScreen = () => {
         keyExtractor={(_, index) => index.toString()}
         onEndReached={onEndReached}
         onEndReachedThreshold={0.1}
+        estimatedItemSize={100}
         ListFooterComponent={() =>
           isLoading && !isReachingEnd ? <ActivityIndicator size="large" color="#000000" /> : null
         }

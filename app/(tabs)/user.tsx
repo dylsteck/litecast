@@ -15,19 +15,6 @@ const UserScreen = () => {
     navigation.navigate('index')
   }
 
-  // TODO: re-implement for other user-pages to fetch their data
-  // const [warpcastUser, setWarpcastUser] = useState<WarpcastUserProfile | null>(null);
-  // useEffect(() => {
-  //   (async function fetchWarpcastUser() {
-  //     if(farcasterUser !== null) {
-  //       const response = await fetch(`https://client.warpcast.com/v2/user?fid=${farcasterUser.fid}`);
-  //       const data = await response.json() as WarpcastUserProfileResponse;
-  //       const user = data.result.user;
-  //       setWarpcastUser(user);
-  //     }
-  //   })();
-  // }, [farcasterUser]);
-
   useEffect(() => {
     navigation.setOptions({
       headerLeft: () => (

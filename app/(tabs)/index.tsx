@@ -24,6 +24,7 @@ const TabOneScreen = () => {
         keyExtractor={(_, index) => index.toString()}
         onEndReached={onEndReached}
         onEndReachedThreshold={0.1}
+        estimatedItemSize={100}
         ListFooterComponent={() =>
           isLoading && !isReachingEnd ? (
             <ActivityIndicator size="large" color="#000000" />
