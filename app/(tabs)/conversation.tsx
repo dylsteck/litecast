@@ -216,13 +216,13 @@ export default function ConversationScreen() {
             <Text style={styles.castText}>{cast.text}</Text>
             {renderImages()}
           </View>
-          <TouchableOpacity>
+          {/* <TouchableOpacity>
             <Link
               href={`https://warpcast.com/${cast.author.username}/${cast.hash}`}
             >
               <FontAwesome name="external-link" size={11} color="black" />
             </Link>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
       </TouchableOpacity>
     )
