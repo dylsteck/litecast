@@ -15,7 +15,6 @@ import { useRouter } from 'expo-router'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import useAppContext from '../hooks/useAppContext'
 import { LOCAL_STORAGE_KEYS } from '../constants/Farcaster'
-import Onboarding from './onboarding'
 import AppIntroSlider from "react-native-app-intro-slider";
 import { COLORS, SIZES } from '../constants/theme';
 
