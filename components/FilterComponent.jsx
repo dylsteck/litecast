@@ -6,6 +6,7 @@ import useAppContext from '../hooks/useAppContext';
 import { useSearchChannel } from '../hooks/useSearchChannels';
 import { debounce } from 'lodash';
 import { LOCAL_STORAGE_KEYS } from '../constants/Farcaster';
+import toast from 'react-hot-toast/headless'
 
 const FilterModal = ({ visible, onClose }) => {
   const { filter, setFilter } = useAppContext();
@@ -19,6 +20,9 @@ const FilterModal = ({ visible, onClose }) => {
   const [selectedMutedChannels, setSelectedMutedChannels] = useState([]);
 
   const handleClearAll = useCallback(() => {
+    toast('Filters Removd', {
+      icon: '❌',
+    });
     setMinFID(0);
     setMaxFID(Infinity);
     setSearchChannels('');
@@ -50,6 +54,9 @@ const FilterModal = ({ visible, onClose }) => {
   };
 
   const handleApply = useCallback(() => {
+    toast('Filters Applied', {
+      icon: '🔥',
+    });
     const newFilter = {
       ...filter,
       lowerFid: minFID,

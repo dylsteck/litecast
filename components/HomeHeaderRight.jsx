@@ -12,6 +12,7 @@ import {
 import { Link, useRouter } from 'expo-router'
 import useAppContext from '../hooks/useAppContext'
 import FilterList from './FilterComponent'
+import { Notifications } from './Notification'
 
 const HomeHeaderRight = () => {
   const navigation = useNavigation()
@@ -34,19 +35,23 @@ const HomeHeaderRight = () => {
       >
         <Text style={[styles.linkText]}>CozyCast</Text>
       </Pressable>
-      <Pressable style={styles.filterBtn} onPress={() => setFilterVisible(true)}>
-          <FontAwesome
-            name="filter"
-            size={18}
-            color="#565555"
-            style={styles.filterIcon}
-          />
-        </Pressable>
+      <Pressable
+        style={styles.filterBtn}
+        onPress={() => setFilterVisible(true)}
+      >
+        <FontAwesome
+          name="filter"
+          size={18}
+          color="#565555"
+          style={styles.filterIcon}
+        />
+      </Pressable>
 
       <FilterList
         visible={isFilterVisible}
         onClose={() => setFilterVisible(false)}
       />
+      <Notifications />
     </View>
   )
 }
@@ -79,7 +84,7 @@ const styles = StyleSheet.create({
     right: 10,
     top: 0,
     bottom: 0,
-  }
+  },
 })
 
 export default HomeHeaderRight
