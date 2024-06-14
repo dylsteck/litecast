@@ -11,15 +11,15 @@ export const useLatestCasts = (type = 'home', parentUrl = '', fid = 616) => {
     pageIndex: number,
     previousPageData: { next?: { cursor: string } } | null,
   ) => {
-    const homeCastsUrl = `https://api.neynar.com/v2/farcaster/feed?feed_type=following&fid=${fid}&limit=25&cursor=${
+    const homeCastsUrl = `https://api.neynar.com/v2/farcaster/feed?feed_type=following&fid=${fid}&limit=100&cursor=${
       previousPageData?.next?.cursor || ''
     }`
     const trendingCastsUrl =
       parentUrl.length > 0
-        ? `https://api.neynar.com/v2/farcaster/feed?feed_type=filter&filter_type=parent_url&fid=${fid}&parent_url=${parentUrl}&with_recasts=true&limit=25&cursor=${
+        ? `https://api.neynar.com/v2/farcaster/feed?feed_type=filter&filter_type=parent_url&fid=${fid}&parent_url=${parentUrl}&with_recasts=true&limit=100&cursor=${
             previousPageData?.next?.cursor || ''
           }`
-        : `https://api.neynar.com/v2/farcaster/feed?feed_type=filter&filter_type=global_trending&fid=${fid}&with_recasts=true&limit=25&cursor=${
+        : `https://api.neynar.com/v2/farcaster/feed?feed_type=filter&filter_type=global_trending&fid=${fid}&with_recasts=true&limit=100&cursor=${
             previousPageData?.next?.cursor || ''
           }`
     if (previousPageData && !previousPageData.next) return null
