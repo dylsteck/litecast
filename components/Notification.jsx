@@ -46,12 +46,14 @@ const Toast = ({ t, updateHeight, offset }) => {
     Animated.timing(fadeAnim, {
       toValue: t.visible ? 1 : 0,
       duration: 300,
+      useNativeDriver: true,
     }).start()
   }, [fadeAnim, t.visible])
 
   useEffect(() => {
     Animated.spring(posAnim, {
       toValue: t.visible ? offset : -80,
+      useNativeDriver: true,
     }).start()
   }, [posAnim, offset, t.visible])
 

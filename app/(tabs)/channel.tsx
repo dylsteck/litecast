@@ -1,20 +1,21 @@
 import { FlashList } from '@shopify/flash-list';
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, StyleSheet, ActivityIndicator } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import Cast from '../../components/Cast';
 import { useLatestCasts } from '../../hooks/useLatestsCasts';
 import useAppContext from '../../hooks/useAppContext';
 import { filterCastsBasedOnChannels, filterFeedBasedOnFID, filterCastsToMute } from '../../utils/functions';
+import { eventEmitter } from '../../utils/event';
 
 const ChannelScreen = () => {
   const route = useRoute<any>();
   const { filter } = useAppContext();
   const { type, parent_url, fid } = route.params;
+  const [feed, setFeed] = useState<any[]>([]);
+  const [isFilterChanged, setIsFilterChanged] = useState(false);
 
   const { casts, isLoading, loadMore, isReachingEnd } = useLatestCasts(type, parent_url, fid);
-
-  console.log("CHANNEL SCREEN ", JSON.stringify(route.params, null, 2))
 
   const onEndReached = useCallback(() => {
     if (!isReachingEnd) {
@@ -22,21 +23,50 @@ const ChannelScreen = () => {
     }
   }, [isReachingEnd, loadMore]);
 
-  const feed: NeynarCastV2[] = useMemo(() => {
-    if (type === 'channel' && fid) {
-      let filteredCasts = filterFeedBasedOnFID(casts, filter.lowerFid, filter.upperFid);
-      if (filter.showChannels?.length > 0) {
-        filteredCasts = filterCastsBasedOnChannels(filteredCasts, filter.showChannels);
-      }
-      if (filter.mutedChannels?.length > 0) {
-        filteredCasts = filterCastsToMute(filteredCasts, filter.mutedChannels);
-      }
-      return filteredCasts;
-    }
-    return casts;
-  }, [casts, filter, type, fid]);
+  // const filteredCasts = useMemo(() => {
+  //   let filtered = filterFeedBasedOnFID(casts, filter.lowerFid, filter.upperFid);
+  //   if (filter.showChannels.length > 0) {
+  //     filtered = filterCastsBasedOnChannels(filtered, filter.showChannels);
+  //   }
+  //   if (filter.mutedChannels.length > 0) {
+  //     filtered = filterCastsToMute(filtered, filter.mutedChannels);
+  //   }
+  //   if (filter.isPowerBadgeHolder) {
+  //     filtered = filtered.filter((cast: { author: { power_badge: any; }; }) => cast.author?.power_badge);
+  //   }
+  //   return filtered;
+  // }, [isFilterChanged, filter.lowerFid, filter.upperFid, filter.showChannels, filter.mutedChannels, filter.isPowerBadgeHolder]);
 
-  // console.log("FILTER ", JSON.stringify(filter, null, 2))
+  // useEffect(() => {
+  //   setFeed(filteredCasts);
+  // }, [filteredCasts]);
+
+  useEffect(() => {
+    let filteredCasts = filterFeedBasedOnFID(casts, filter.lowerFid, filter.upperFid);
+    if (filter.showChannels.length > 0) {
+      filteredCasts = filterCastsBasedOnChannels(filteredCasts, filter.showChannels);
+    }
+    if (filter.mutedChannels.length > 0) {
+      filteredCasts = filterCastsToMute(filteredCasts, filter.mutedChannels);
+    }
+    if (filter.isPowerBadgeHolder) {
+      filteredCasts = filteredCasts.filter((cast: { author: { power_badge: any; }; }) => cast.author?.power_badge);
+    }
+    setFeed(filteredCasts);
+  }, [isFilterChanged, filter])
+
+  useEffect(() => {
+    const handleFilterChange = () => {
+      console.log('filter changed');
+      setIsFilterChanged(prev => !prev)
+    };
+
+    eventEmitter.on('filterChanged', handleFilterChange);
+    
+    return () => {
+      eventEmitter.off('filterChanged', handleFilterChange);
+    };
+  }, []);
 
   return (
     <View style={styles.container}>
