@@ -19,6 +19,7 @@ import {
 import { eventEmitter } from '../../utils/event'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { LOCAL_STORAGE_KEYS } from '../../constants/Farcaster'
+import { set } from 'lodash'
 
 const ChannelScreen = () => {
   const route = useRoute<any>()
@@ -39,46 +40,48 @@ const ChannelScreen = () => {
     }
   }, [isReachingEnd, loadMore])
 
-  // const filteredCasts = useMemo(() => {
-  //   let filtered = filterFeedBasedOnFID(casts, filter.lowerFid, filter.upperFid);
-  //   if (filter.showChannels.length > 0) {
-  //     filtered = filterCastsBasedOnChannels(filtered, filter.showChannels);
-  //   }
-  //   if (filter.mutedChannels.length > 0) {
-  //     filtered = filterCastsToMute(filtered, filter.mutedChannels);
-  //   }
-  //   if (filter.isPowerBadgeHolder) {
-  //     filtered = filtered.filter((cast: { author: { power_badge: any; }; }) => cast.author?.power_badge);
-  //   }
-  //   return filtered;
-  // }, [isFilterChanged, filter.lowerFid, filter.upperFid, filter.showChannels, filter.mutedChannels, filter.isPowerBadgeHolder]);
+  const filteredCasts = useMemo(() => {
+    let filtered = filterFeedBasedOnFID(casts, filter.lowerFid, filter.upperFid);
+    if (filter.showChannels.length > 0) {
+      filtered = filterCastsBasedOnChannels(filtered, filter.showChannels);
+    }
+    if (filter.mutedChannels.length > 0) {
+      filtered = filterCastsToMute(filtered, filter.mutedChannels);
+    }
+    if (filter.isPowerBadgeHolder) {
+      filtered = filtered.filter((cast: { author: { power_badge: any; }; }) => cast.author?.power_badge);
+    }
+    console.log('filtered', filtered.length)
+    // return filtered;
+    setFeed(filtered);
+  }, [casts, isFilterChanged, filter.lowerFid, filter.upperFid, filter.showChannels, filter.mutedChannels, filter.isPowerBadgeHolder]);
 
   // useEffect(() => {
   //   setFeed(filteredCasts);
-  // }, [filteredCasts]);
+  // }, [isFilterChanged, filteredCasts, casts]);
 
-  useEffect(() => {
-    let filteredCasts = filterFeedBasedOnFID(
-      casts,
-      filter.lowerFid,
-      filter.upperFid,
-    )
-    if (filter.showChannels.length > 0) {
-      filteredCasts = filterCastsBasedOnChannels(
-        filteredCasts,
-        filter.showChannels,
-      )
-    }
-    if (filter.mutedChannels.length > 0) {
-      filteredCasts = filterCastsToMute(filteredCasts, filter.mutedChannels)
-    }
-    if (filter.isPowerBadgeHolder) {
-      filteredCasts = filteredCasts.filter(
-        (cast: { author: { power_badge: any } }) => cast.author?.power_badge,
-      )
-    }
-    setFeed(filteredCasts)
-  }, [isFilterChanged, filter])
+  // useEffect(() => {
+  //   let filteredCasts = filterFeedBasedOnFID(
+  //     casts,
+  //     filter.lowerFid,
+  //     filter.upperFid,
+  //   )
+  //   if (filter.showChannels.length > 0) {
+  //     filteredCasts = filterCastsBasedOnChannels(
+  //       filteredCasts,
+  //       filter.showChannels,
+  //     )
+  //   }
+  //   if (filter.mutedChannels.length > 0) {
+  //     filteredCasts = filterCastsToMute(filteredCasts, filter.mutedChannels)
+  //   }
+  //   if (filter.isPowerBadgeHolder) {
+  //     filteredCasts = filteredCasts.filter(
+  //       (cast: { author: { power_badge: any } }) => cast.author?.power_badge,
+  //     )
+  //   }
+  //   setFeed(filteredCasts)
+  // }, [isFilterChanged, filter])
 
   useEffect(() => {
     const handleFilterChange = () => {

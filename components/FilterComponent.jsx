@@ -143,6 +143,19 @@ const FilterModal = ({ visible, onClose }) => {
     eventEmitter.emit('filterChanged', filter);
   }, [filter]);
 
+  useEffect(() => {
+    const handleApplyFilter = (newFilter) => {
+      updateFilter(newFilter);
+      AsyncStorage.setItem(LOCAL_STORAGE_KEYS.FILTERS, JSON.stringify(newFilter));
+    }
+
+    eventEmitter.on('filterChanged', handleApplyFilter)
+
+    return () => {
+      eventEmitter.off('filterChanged', handleApplyFilter)
+    }
+  }, [])
+
   return (
     <Modal visible={visible} animationType="slide" transparent>
       <View style={styles.modalContainer}>
