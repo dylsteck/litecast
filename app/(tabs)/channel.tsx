@@ -51,7 +51,6 @@ const ChannelScreen = () => {
     if (filter.isPowerBadgeHolder) {
       filtered = filtered.filter((cast: { author: { power_badge: any; }; }) => cast.author?.power_badge);
     }
-    console.log('filtered', filtered.length)
     // return filtered;
     setFeed(filtered);
   }, [casts, isFilterChanged, filter.lowerFid, filter.upperFid, filter.showChannels, filter.mutedChannels, filter.isPowerBadgeHolder]);
