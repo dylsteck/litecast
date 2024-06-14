@@ -24,21 +24,27 @@ const slides = [
   {
     id: 1,
     title: 'Ever feel overwhelmed by your feed?',
-    description: 'Take control with CozyCast! ‍♀️.',
-    image: require('../assets/images/allFilters.png')
+    description: 'Take control with CozyCast!',
+    image: require('../assets/images/slider1.png')
   },
   {
     id: 2,
-    title: 'Choose A Tasty Dish',
-    description: '“Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat"',
-    image: require('../assets/images/allFilters.png')
-
+    title: 'View Casts from specific FID range',
+    description: 'Take control with CozyCast!, Filter your feed with Custom Fids.',
+    image: require('../assets/images/Slider2.png')
   },
   {
     id: 3,
-    title: 'Pick Up The Delivery',
-    description: '“Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat"',
-    image: require('../assets/images/allFilters.png')
+    title: 'Feeds from your favourite channels',
+    description: 'Filter your feed with casts from selected channels.',
+    image: require('../assets/images/Slider3.png')
+
+  },
+  {
+    id: 4,
+    title: 'Mute Casts from channels',
+    description: 'Filter your feed by musting casts from specified channels.',
+    image: require('../assets/images/Slider4.png')
 
   }
 ]
@@ -122,8 +128,9 @@ export default function IndexScreen() {
               </Text>
               <Text style={{
                 textAlign: 'center',
-                paddingTop: 5,
-                color: COLORS.title
+                paddingTop: 25,
+                color: COLORS.title,
+                fontSize: SIZES.h2
               }}>
                 {item.description}
               </Text>

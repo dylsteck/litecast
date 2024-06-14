@@ -32,7 +32,7 @@ const HomeHeaderRight = () => {
           router.push(`/(tabs)/channel?type=channel&fid=${fid}`)
         }}
       >
-        <Text style={[styles.linkText]}>Filtered Feed</Text>
+        <Text style={[styles.linkText]}>CozyCast</Text>
       </Pressable>
       <Pressable style={styles.filterBtn} onPress={() => setFilterVisible(true)}>
           <FontAwesome
