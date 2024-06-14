@@ -23,18 +23,18 @@ const slides = [
   {
     id: 1,
     title: 'Ever feel overwhelmed by your feed?',
-    description: 'Take control with CozyCast!',
+    description: 'Take control with CozyCast! Setup feeds by clicking the filter icon.',
     image: require('../assets/images/slider1.png')
   },
   {
     id: 2,
     title: 'View Casts from specific FID range',
-    description: 'Take control with CozyCast!, Filter your feed with Custom Fids.',
+    description: 'Want to view casts from OGs? Filter your feed with Custom Fids.',
     image: require('../assets/images/Slider2.png')
   },
   {
     id: 3,
-    title: 'Feeds from your favourite channels',
+    title: 'Casts from your favourite channels',
     description: 'Filter your feed with casts from selected channels.',
     image: require('../assets/images/Slider3.png')
 
@@ -87,7 +87,7 @@ export default function IndexScreen() {
         <Text style={{
           color: 'black',
           fontWeight: '600',
-          fontSize: 32,
+          fontSize: 26,
         }}>
           {label}
         </Text>
