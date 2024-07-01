@@ -7,8 +7,8 @@
       "developmentClient": true,
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_NEYNAR_API_KEY": "D4E05ACA-2432-47A0-ACDF-897B3321EA53",
-        "EXPO_PUBLIC_NEYNAR_CLIENT_ID": "d31a8b55-27f8-4185-b4b1-b2251fcab75d",
+        "EXPO_PUBLIC_NEYNAR_API_KEY": "9396240E-B23C-4A5E-AA62-412D555E6F13",
+        "EXPO_PUBLIC_NEYNAR_CLIENT_ID": "6966d1ac-ca08-4168-86e6-20b296f367ac",
         "EXPO_PUBLIC_API_URL": "https://api.farcasterkit.com"
       }
     },
@@ -16,8 +16,8 @@
       "developmentClient": true,
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_NEYNAR_API_KEY": "D4E05ACA-2432-47A0-ACDF-897B3321EA53",
-        "EXPO_PUBLIC_NEYNAR_CLIENT_ID": "d31a8b55-27f8-4185-b4b1-b2251fcab75d",
+        "EXPO_PUBLIC_NEYNAR_API_KEY": "9396240E-B23C-4A5E-AA62-412D555E6F13",
+        "EXPO_PUBLIC_NEYNAR_CLIENT_ID": "6966d1ac-ca08-4168-86e6-20b296f367ac",
         "EXPO_PUBLIC_API_URL": "https://api.farcasterkit.com"
       },
       "ios": {
@@ -27,15 +27,15 @@
     "preview": {
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_NEYNAR_API_KEY": "D4E05ACA-2432-47A0-ACDF-897B3321EA53",
-        "EXPO_PUBLIC_NEYNAR_CLIENT_ID": "d31a8b55-27f8-4185-b4b1-b2251fcab75d",
+        "EXPO_PUBLIC_NEYNAR_API_KEY": "9396240E-B23C-4A5E-AA62-412D555E6F13",
+        "EXPO_PUBLIC_NEYNAR_CLIENT_ID": "6966d1ac-ca08-4168-86e6-20b296f367ac",
         "EXPO_PUBLIC_API_URL": "https://api.farcasterkit.com"
       }
     },
     "production": {
       "env": {
-        "EXPO_PUBLIC_NEYNAR_API_KEY": "D4E05ACA-2432-47A0-ACDF-897B3321EA53",
-        "EXPO_PUBLIC_NEYNAR_CLIENT_ID": "d31a8b55-27f8-4185-b4b1-b2251fcab75d",
+        "EXPO_PUBLIC_NEYNAR_API_KEY": "9396240E-B23C-4A5E-AA62-412D555E6F13",
+        "EXPO_PUBLIC_NEYNAR_CLIENT_ID": "6966d1ac-ca08-4168-86e6-20b296f367ac",
         "EXPO_PUBLIC_API_URL": "https://api.farcasterkit.com"
       }
     }
