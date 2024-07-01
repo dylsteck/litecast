@@ -15,7 +15,6 @@ const TabOneScreen = () => {
     }
   }, [isReachingEnd, loadMore])
 
-  console.log("CASTS ", casts)
   return (
     <View style={styles.container}>
       {casts?.length > 0 && (

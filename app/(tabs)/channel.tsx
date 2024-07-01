@@ -55,36 +55,8 @@ const ChannelScreen = () => {
     setFeed(filtered);
   }, [casts, isFilterChanged, filter.lowerFid, filter.upperFid, filter.showChannels, filter.mutedChannels, filter.isPowerBadgeHolder]);
 
-  // useEffect(() => {
-  //   setFeed(filteredCasts);
-  // }, [isFilterChanged, filteredCasts, casts]);
-
-  // useEffect(() => {
-  //   let filteredCasts = filterFeedBasedOnFID(
-  //     casts,
-  //     filter.lowerFid,
-  //     filter.upperFid,
-  //   )
-  //   if (filter.showChannels.length > 0) {
-  //     filteredCasts = filterCastsBasedOnChannels(
-  //       filteredCasts,
-  //       filter.showChannels,
-  //     )
-  //   }
-  //   if (filter.mutedChannels.length > 0) {
-  //     filteredCasts = filterCastsToMute(filteredCasts, filter.mutedChannels)
-  //   }
-  //   if (filter.isPowerBadgeHolder) {
-  //     filteredCasts = filteredCasts.filter(
-  //       (cast: { author: { power_badge: any } }) => cast.author?.power_badge,
-  //     )
-  //   }
-  //   setFeed(filteredCasts)
-  // }, [isFilterChanged, filter])
-
   useEffect(() => {
     const handleFilterChange = () => {
-      console.log('filter changed')
       setIsFilterChanged((prev) => !prev)
     }
 
@@ -112,7 +84,6 @@ const ChannelScreen = () => {
   }
 
   // console.log("FILTER ", JSON.stringify(filter, null, 2))
-  console.log("FEED ", feed)
   return (
     <View style={styles.container}>
       {feed && feed.length > 0 && !isLoading ? (
