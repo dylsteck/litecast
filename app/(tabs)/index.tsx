@@ -15,22 +15,25 @@ const TabOneScreen = () => {
     }
   }, [isReachingEnd, loadMore])
 
+  console.log("CASTS ", casts)
   return (
     <View style={styles.container}>
-      <FlashList
-        contentContainerStyle={styles.flashList}
-        data={casts}
-        renderItem={({ item, index }) => <Cast key={index} cast={item} />}
-        keyExtractor={(_, index) => index.toString()}
-        onEndReached={onEndReached}
-        onEndReachedThreshold={0.1}
-        estimatedItemSize={100}
-        ListFooterComponent={() =>
-          isLoading && !isReachingEnd ? (
-            <ActivityIndicator size="large" color="#000000" />
-          ) : null
-        }
-      />
+      {casts?.length > 0 && (
+        <FlashList
+          contentContainerStyle={styles.flashList}
+          data={casts}
+          renderItem={({ item, index }) => <Cast key={index} cast={item} />}
+          keyExtractor={(_, index) => index.toString()}
+          onEndReached={onEndReached}
+          onEndReachedThreshold={0.1}
+          estimatedItemSize={100}
+          ListFooterComponent={() =>
+            isLoading && !isReachingEnd ? (
+              <ActivityIndicator size="large" color="#000000" />
+            ) : null
+          }
+        />
+      )}
     </View>
   )
 }

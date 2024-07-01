@@ -112,6 +112,7 @@ const ChannelScreen = () => {
   }
 
   // console.log("FILTER ", JSON.stringify(filter, null, 2))
+  console.log("FEED ", feed)
   return (
     <View style={styles.container}>
       {feed && feed.length > 0 && !isLoading ? (

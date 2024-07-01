@@ -51,12 +51,12 @@ const slides = [
 
 export default function IndexScreen() {
   const { farcasterUser } = useLogin()
-  const { setFid, setFilter, setUser } = useAppContext()
+  const { fid, setFid, setFilter, setUser } = useAppContext()
   const [login, setLogin] = useState(false)
   const router = useRouter()
   useEffect(() => {
     if (farcasterUser) {
-      router.push('/(tabs)')
+      router.push(`/(tabs)/channel?type=channel&fid=${farcasterUser?.fid ?? 404104}` as any)
     }
   }, [farcasterUser])
 
@@ -67,7 +67,7 @@ export default function IndexScreen() {
         const parsedUser : FarcasterUser = JSON.parse(user)
         setFid(parsedUser?.fid || 404104)
         setUser(parsedUser)
-        router.push('/(tabs)')
+        router.push(`/(tabs)/channel?type=channel&fid=${fid}` as any)
       }
 
       let filters = await AsyncStorage.getItem(LOCAL_STORAGE_KEYS.FILTERS)

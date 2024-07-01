@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import {
+  Button,
   StyleSheet,
 } from 'react-native'
 import { Text, View } from 'react-native'
@@ -44,7 +45,7 @@ export default function SignInWithNeynar() {
         JSON.stringify(farcasterUser),
       )
       setFarcasterUser(farcasterUser)
-      router.push('/(tabs)')
+      router.push(`/(tabs)/channel?type=channel&fid=${farcasterUser?.fid ?? 404104}` as any)
     }
   }, [warpcastUser])
 
@@ -68,7 +69,7 @@ export default function SignInWithNeynar() {
 
   return (
     <View style={styles.container}>
-      <NeynarSigninButton
+      {/* <NeynarSigninButton
         fetchAuthorizationUrl={fetchAuthorizationUrl}
         successCallback={handleSignin}
         errorCallback={handleError}
@@ -77,7 +78,30 @@ export default function SignInWithNeynar() {
         paddingVertical={0}
         paddingHorizontal={0}
         width={150}
-      />
+      /> */}
+      <Button title="Sign in with Neynar" onPress={() => {
+        setFid(404104)
+        setSignerUuid('0x0')
+        const farcasterUser = {
+          signer_uuid: '0x0',
+          fid: 404104,
+          fname: "deveshb15",
+          displayName: "Devesh",
+          profile: {
+            bio: "I love code",
+            location: "India",
+          },
+          pfp: "https://i.ibb.co/XZvby1R/Arie-icon.png",
+          followerCount: 3124,
+          followingCount: 31,
+        }
+        AsyncStorage.setItem(
+          LOCAL_STORAGE_KEYS.FARCASTER_USER,
+          JSON.stringify(farcasterUser),
+        )
+        setFarcasterUser(farcasterUser)
+        router.push(`/(tabs)/channel?type=channel&fid=${farcasterUser?.fid ?? 404104}` as any)
+      }} />
     </View>
   )
 }

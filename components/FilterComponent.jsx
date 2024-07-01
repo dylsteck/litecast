@@ -147,6 +147,12 @@ const FilterModal = ({ visible, onClose }) => {
     const handleApplyFilter = (newFilter) => {
       updateFilter(newFilter);
       AsyncStorage.setItem(LOCAL_STORAGE_KEYS.FILTERS, JSON.stringify(newFilter));
+      setMaxFID(newFilter.upperFid)
+      setMinFID(newFilter.lowerFid)
+      setSelectedChannels(newFilter.showChannels);
+      setSelectedMutedChannels(newFilter.mutedChannels);
+      setFilterChange((prev) => !prev);
+      setIsPowerBadgeHolder(newFilter.isPowerBadgeHolder);
     }
 
     eventEmitter.on('filterChanged', handleApplyFilter)
