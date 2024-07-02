@@ -88,6 +88,7 @@ export default function IndexScreen() {
           color: 'black',
           fontWeight: '600',
           fontSize: 26,
+          backgroundColor: 'white'
         }}>
           {label}
         </Text>
@@ -109,6 +110,7 @@ export default function IndexScreen() {
               alignItems: 'center',
               padding: 15,
               paddingTop: 100,
+              backgroundColor:"white"
             }}>
               <Image
                 source={item.image}
