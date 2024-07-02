@@ -2,7 +2,7 @@
   "expo": {
     "name": "Cozycast",
     "slug": "cozycast",
-    "version": "0.0.17",
+    "version": "0.0.20",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
