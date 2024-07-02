@@ -42,7 +42,7 @@ const slides = [
   {
     id: 4,
     title: 'Mute Casts from channels',
-    description: 'Filter your feed by musting casts from specified channels.',
+    description: 'Filter your feed by muting casts from specified channels.',
     image: require('../assets/images/Slider4.png')
 
   }
