@@ -41,19 +41,29 @@ const ChannelScreen = () => {
   }, [isReachingEnd, loadMore])
 
   const filteredCasts = useMemo(() => {
-    let filtered = filterFeedBasedOnFID(casts, filter.lowerFid, filter.upperFid);
+    let filtered = filterFeedBasedOnFID(casts, filter.lowerFid, filter.upperFid)
     if (filter.showChannels.length > 0) {
-      filtered = filterCastsBasedOnChannels(filtered, filter.showChannels);
+      filtered = filterCastsBasedOnChannels(filtered, filter.showChannels)
     }
     if (filter.mutedChannels.length > 0) {
-      filtered = filterCastsToMute(filtered, filter.mutedChannels);
+      filtered = filterCastsToMute(filtered, filter.mutedChannels)
     }
     if (filter.isPowerBadgeHolder) {
-      filtered = filtered.filter((cast: { author: { power_badge: any; }; }) => cast.author?.power_badge);
+      filtered = filtered.filter(
+        (cast: { author: { power_badge: any } }) => cast.author?.power_badge,
+      )
     }
     // return filtered;
-    setFeed(filtered);
-  }, [casts, isFilterChanged, filter.lowerFid, filter.upperFid, filter.showChannels, filter.mutedChannels, filter.isPowerBadgeHolder]);
+    setFeed(filtered)
+  }, [
+    casts,
+    isFilterChanged,
+    filter.lowerFid,
+    filter.upperFid,
+    filter.showChannels,
+    filter.mutedChannels,
+    filter.isPowerBadgeHolder,
+  ])
 
   useEffect(() => {
     const handleFilterChange = () => {
@@ -76,10 +86,7 @@ const ChannelScreen = () => {
       isPowerBadgeHolder: false,
     }
     setFilter(newFilter)
-    AsyncStorage.setItem(
-      LOCAL_STORAGE_KEYS.FILTERS,
-      JSON.stringify(newFilter),
-    )
+    AsyncStorage.setItem(LOCAL_STORAGE_KEYS.FILTERS, JSON.stringify(newFilter))
     eventEmitter.emit('filterChanged', newFilter)
   }
 
@@ -101,6 +108,18 @@ const ChannelScreen = () => {
             ) : null
           }
         />
+      ) : isLoading ? (
+        <View
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            height: '37%',
+            alignItems: 'center',
+            margin: 30,
+          }}
+        >
+          <ActivityIndicator size="large" color="#000000" />
+        </View>
       ) : (
         <View
           style={{

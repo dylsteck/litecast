@@ -17,7 +17,7 @@ const TabOneScreen = () => {
 
   return (
     <View style={styles.container}>
-      {casts?.length > 0 && (
+      {casts?.length > 0 ? (
         <FlashList
           contentContainerStyle={styles.flashList}
           data={casts}
@@ -32,6 +32,18 @@ const TabOneScreen = () => {
             ) : null
           }
         />
+      ) : (
+        <View
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            height: '37%',
+            alignItems: 'center',
+            margin: 30,
+          }}
+        >
+          <ActivityIndicator size="large" color="#000000" />
+        </View>
       )}
     </View>
   )
