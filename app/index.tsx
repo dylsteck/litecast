@@ -82,13 +82,13 @@ export default function IndexScreen() {
   const buttonLabel = (label: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | null | undefined) => {
     return(
       <View style={{
-        padding: 12
+        padding: 12,
+        backgroundColor: 'white'
       }}>
         <Text style={{
           color: 'black',
           fontWeight: '600',
           fontSize: 26,
-          backgroundColor: 'white'
         }}>
           {label}
         </Text>
