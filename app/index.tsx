@@ -156,7 +156,7 @@ export default function IndexScreen() {
           A beautiful yet simple Farcaster client
         </Text>
         <SignInWithNeynar />
-        <ConnectAsGuest />
+        {/* <ConnectAsGuest /> */}
       </View>
  </>
     }

@@ -79,7 +79,7 @@ const Toast = ({ t, updateHeight, offset }) => {
           margin: Constants.statusBarHeight + 10,
           backgroundColor: '#000',
           width: 150,
-          borderRadius: '30px',
+          borderRadius: 30,
           flexDirection: 'row',
           alignItems: 'center',
           paddingVertical: 8,

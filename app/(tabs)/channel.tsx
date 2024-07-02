@@ -152,16 +152,14 @@ const styles = StyleSheet.create({
   },
   applyButton: {
     backgroundColor: '#007bff',
-    padding: 15,
+    padding: 12,
     borderRadius: 10,
-    flex: 1,
     alignItems: 'center',
   },
   buttonText: {
     color: 'white',
     fontWeight: 'bold',
     fontSize: 18,
-    height: 126,
     fontFamily: 'SpaceMono',
   },
 })

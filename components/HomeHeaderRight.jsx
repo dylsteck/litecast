@@ -37,7 +37,7 @@ const HomeHeaderRight = () => {
       </Pressable>
       <Pressable
         style={styles.filterBtn}
-        onPress={() => setFilterVisible(true)}
+        onPress={() => setFilterVisible(prev => !prev)}
       >
         <FontAwesome
           name="filter"
@@ -49,7 +49,7 @@ const HomeHeaderRight = () => {
 
       <FilterList
         visible={isFilterVisible}
-        onClose={() => setFilterVisible(false)}
+        onClose={() => setFilterVisible(prev => !prev)}
       />
       <Notifications />
     </View>
