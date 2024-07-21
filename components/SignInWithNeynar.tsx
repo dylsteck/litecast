@@ -79,7 +79,7 @@ export default function SignInWithNeynar() {
         paddingHorizontal={0}
         width={150}
       />
-      {/* <Button title="Sign in with Neynar" onPress={() => {
+      <Button title="Sign in with Neynar" onPress={() => {
         setFid(404104)
         setSignerUuid('0x0')
         const farcasterUser = {
@@ -101,7 +101,7 @@ export default function SignInWithNeynar() {
         )
         setFarcasterUser(farcasterUser)
         router.push(`/(tabs)/channel?type=channel&fid=${farcasterUser?.fid ?? 404104}` as any)
-      }} /> */}
+      }} />
     </View>
   )
 }

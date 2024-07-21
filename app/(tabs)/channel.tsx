@@ -96,7 +96,7 @@ const ChannelScreen = () => {
       {feed && feed.length > 0 && !isLoading ? (
         <FlashList
           contentContainerStyle={styles.flashList}
-          data={feed}
+          data={feed.reverse()}
           renderItem={({ item, index }) => <Cast key={index} cast={item} />}
           keyExtractor={(_, index) => index.toString()}
           onEndReached={onEndReached}
@@ -107,6 +107,8 @@ const ChannelScreen = () => {
               <ActivityIndicator size="large" color="#000000" />
             ) : null
           }
+          refreshing={isLoading}
+          onRefresh={loadMore}
         />
       ) : isLoading ? (
         <View

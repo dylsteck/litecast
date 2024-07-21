@@ -27,29 +27,54 @@ const HomeHeaderRight = () => {
 
   return (
     <View style={styles.container}>
-      <Pressable
-        onPress={() => {
-          handleSelect('filter')
-          router.push(`/(tabs)/channel?type=channel&fid=${fid}`)
+      <View
+        style={{
+          display: 'flex',
+          flexDirection: 'row',
+          justifyContent: 'center',
+          alignItems: 'center',
+          gap: 12,
         }}
       >
-        <Text style={[styles.linkText]}>CozyCast</Text>
-      </Pressable>
+        <Pressable
+          onPress={() => {
+            handleSelect('filter')
+            router.push(`/(tabs)/channel?type=channel&fid=${fid}`)
+          }}
+        >
+          <Text style={{
+            ...styles.linkText,
+            color: isSelected === 'filter' ? 'black' : 'grey',
+          }}>Following</Text>
+        </Pressable>
+        <Pressable
+          onPress={() => {
+            handleSelect('global')
+            router.push(`/(tabs)/channel?type=all`)
+          }}
+        >
+          <Text style={{
+            ...styles.linkText,
+            color: isSelected === 'global' ? 'black' : 'grey',
+          }}>Global Feed</Text>
+        </Pressable>
+      </View>
+
       <Pressable
-        style={styles.filterBtn}
-        onPress={() => setFilterVisible(prev => !prev)}
-      >
-        <FontAwesome
-          name="filter"
-          size={18}
-          color="#565555"
-          style={styles.filterIcon}
-        />
-      </Pressable>
+          style={styles.filterBtn}
+          onPress={() => setFilterVisible((prev) => !prev)}
+        >
+          <FontAwesome
+            name="filter"
+            size={18}
+            color="#565555"
+            style={styles.filterIcon}
+          />
+        </Pressable>
 
       <FilterList
         visible={isFilterVisible}
-        onClose={() => setFilterVisible(prev => !prev)}
+        onClose={() => setFilterVisible((prev) => !prev)}
       />
       <Notifications />
     </View>
