@@ -8,6 +8,8 @@ import { debounce } from 'lodash';
 import { LOCAL_STORAGE_KEYS } from '../constants/Farcaster';
 import toast from 'react-hot-toast/headless'
 import { eventEmitter } from '../utils/event';
+import { NeynarAPIClient } from "@neynar/nodejs-sdk";
+
 
 const FilterModal = ({ visible, onClose }) => {
   const { filter, setFilter, setFilterChange } = useAppContext();
@@ -20,6 +22,13 @@ const FilterModal = ({ visible, onClose }) => {
   const [selectedChannels, setSelectedChannels] = useState([]);
   const [selectedMutedChannels, setSelectedMutedChannels] = useState([]);
   const [isPowerBadgeHolder, setIsPowerBadgeHolder] = useState(false);
+  const [nftSearchQuery, setNftSearchQuery] = useState('');
+  const [nftSearchResults, setNftSearchResults] = useState([]);
+  const [selectedNFTs, setSelectedNFTs] = useState([]);
+  
+  const client = new NeynarAPIClient("bd631d77-430b-4dc5-99c8-d2347a781220");
+  
+  console.log('neynar client is', client)
 
   const handleClearAll = useCallback(() => {
     toast('Filters Removd', {
@@ -31,12 +40,14 @@ const FilterModal = ({ visible, onClose }) => {
     setMuteChannels('');
     setSelectedChannels([]);
     setSelectedMutedChannels([]);
+    setSelectedNFTs([]);
     setFilter({
       lowerFid: 0,
       upperFid: Infinity,
       showChannels: [],
       mutedChannels: [],
       isPowerBadgeHolder: false,
+      nftFilters: [],
     })
     AsyncStorage.setItem(LOCAL_STORAGE_KEYS.FILTERS, JSON.stringify({
       lowerFid: 0,
@@ -44,6 +55,7 @@ const FilterModal = ({ visible, onClose }) => {
       showChannels: [],
       mutedChannels: [],
       isPowerBadgeHolder: false,
+      nftFilters: [],
     }));
     setFilterChange((prev) => !prev);
   }, []);
@@ -63,7 +75,7 @@ const FilterModal = ({ visible, onClose }) => {
     toast('Filters Applied', {
       icon: '🔥',
     });
-
+  
     const newFilter = {
       ...filter,
       lowerFid: minFID,
@@ -71,11 +83,16 @@ const FilterModal = ({ visible, onClose }) => {
       showChannels: [...selectedChannels],
       mutedChannels: [...selectedMutedChannels],
       isPowerBadgeHolder,
+      nftFilters: selectedNFTs.map(nft => ({
+        id: nft.id,
+        name: nft.name,
+        address: nft.address,
+        holders: nft.holders
+      })),
     };
     updateFilter(newFilter);
     onClose();
-  }, [filter, minFID, maxFID, selectedChannels, selectedMutedChannels, isPowerBadgeHolder, onClose, updateFilter]);
-
+  }, [filter, minFID, maxFID, selectedChannels, selectedMutedChannels, isPowerBadgeHolder, selectedNFTs, onClose, updateFilter]);
   useEffect(() => {
     const fetchFilters = async () => {
       const filters = await AsyncStorage.getItem(LOCAL_STORAGE_KEYS.FILTERS);
@@ -88,6 +105,8 @@ const FilterModal = ({ visible, onClose }) => {
         setSelectedMutedChannels(parsedFilters.mutedChannels);
         setFilterChange((prev) => !prev);
         setIsPowerBadgeHolder(parsedFilters.isPowerBadgeHolder);
+        setSelectedNFTs(parsedFilters.nftFilters || []);
+
       }
     };
     fetchFilters();
@@ -153,6 +172,7 @@ const FilterModal = ({ visible, onClose }) => {
       setSelectedMutedChannels(newFilter.mutedChannels);
       setFilterChange((prev) => !prev);
       setIsPowerBadgeHolder(newFilter.isPowerBadgeHolder);
+      setSelectedNFTs(newFilter.nftFilters);
     }
 
     eventEmitter.on('filterChanged', handleApplyFilter)
@@ -162,6 +182,52 @@ const FilterModal = ({ visible, onClose }) => {
     }
   }, [])
 
+  const debouncedNFTSearch = useCallback(
+    debounce(async (query) => {
+      // This is a placeholder. In a real implementation, you'd call an API to search for NFTs
+      const mockResults = [
+        { id: '1', name: 'Alpaca NFT', address: '0x03ad6cd7410ce01a8b9ed26a080f8f9c1d7cc222' },
+        { id: '2', name: 'Bored Ape Yacht Club', address: '0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D' },
+        // Add more mock results as needed
+      ].filter(nft => nft.name.toLowerCase().includes(query.toLowerCase()));
+      setNftSearchResults(mockResults);
+    }, 300),
+    []
+  );
+
+  useEffect(() => {
+    if (nftSearchQuery) {
+      debouncedNFTSearch(nftSearchQuery);
+    } else {
+      setNftSearchResults([]);
+    }
+  }, [nftSearchQuery, debouncedNFTSearch]);
+
+  const handleAddNFT = async (nft) => {
+    console.log('nft is', nft)
+    if (!selectedNFTs.some(selected => selected.id === nft.id)) {
+      const holders = await fetchNFTHolders(nft);
+      setSelectedNFTs(prevSelectedNFTs => [...(prevSelectedNFTs || []), { ...nft, holders }]);
+    }
+    setNftSearchQuery('');
+  };
+
+  const handleRemoveNFT = (nftId) => {
+    setSelectedNFTs(selectedNFTs.filter(nft => nft.id !== nftId));
+  };
+
+
+  const fetchNFTHolders = async (nft) => {
+    try {
+      const addresses = await getAddr(nft.address);
+      console.log('length of add', addresses.lengthbored)
+      const fids = await fidLookup(client, addresses);
+      return fids;
+    } catch (error) {
+      console.error('Error fetching NFT holders:', error);
+      return [];
+    }
+  };
   return (
     <Modal visible={visible} animationType="slide" transparent>
       <View style={styles.modalContainer}>
@@ -223,6 +289,30 @@ const FilterModal = ({ visible, onClose }) => {
                   </TouchableOpacity>
                 </View>
               ))}
+            </View>
+            <Text style={styles.sectionHeader}>NFT Token Gate</Text>
+            <TextInput
+              style={styles.searchInput}
+              value={nftSearchQuery}
+              onChangeText={setNftSearchQuery}
+              placeholder="Search for NFTs"
+            />
+            {nftSearchResults.map((nft) => (
+              <TouchableOpacity key={nft.id} onPress={() => handleAddNFT(nft)} style={styles.channelContainer}>
+                <Text>{nft.name}</Text>
+              </TouchableOpacity>
+            ))}
+            <View style={styles.chipContainer}>
+            <View style={styles.chipContainer}>
+            {selectedNFTs?.map((nft) => (
+              <View key={nft.id} style={styles.chip}>
+                <Text>{nft.name} ({nft.holders ? nft.holders.length : 'Loading...'} holders)</Text>
+                <TouchableOpacity onPress={() => handleRemoveNFT(nft.id)}>
+                  <FontAwesome name="times" size={16} color="black" />
+                </TouchableOpacity>
+              </View>
+            ))}
+          </View>
             </View>
             <View style={styles.buttonRow}>
               <TouchableOpacity style={styles.clearButton} onPress={handleClearAll}>
@@ -350,3 +440,31 @@ const styles = StyleSheet.create({
 });
 
 export default React.memo(FilterModal);
+
+// Helper functions for NFT holder verification
+const getAddr = async (nftAddr) => {
+  console.log('inside getAddrsa')
+  const apiKey = "85k4RjXbG7LGJstg3qKoXwU5n3P_6CrK";
+  const baseUrl = `https://eth-mainnet.g.alchemy.com/nft/v3/${apiKey}/getOwnersForContract?`;
+  const url = `${baseUrl}contractAddress=${nftAddr}&withTokenBalances=false`;
+
+  const result = await fetch(url, {
+    headers: { accept: "application/json" },
+  });
+  const data = await result.json();
+  return data.owners;
+};
+
+const fidLookup = async (client, addrs) => {
+  const fids = await Promise.all(
+    addrs.map(async (addr) => {
+      try {
+				const response = await client.lookupUserByVerification(addr);
+        return response ? response.result.user.fid : undefined;
+      } catch (error) {
+        return undefined;
+      }
+    }),
+  );
+  return fids.filter((fid) => fid !== undefined);
+};
