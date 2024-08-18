@@ -8,7 +8,8 @@ import { debounce } from 'lodash';
 import { LOCAL_STORAGE_KEYS } from '../constants/Farcaster';
 import toast from 'react-hot-toast/headless'
 import { eventEmitter } from '../utils/event';
-import { NeynarAPIClient } from "@neynar/nodejs-sdk";
+import axios from 'axios';
+import { API_URL } from '../constants'
 
 
 const FilterModal = ({ visible, onClose }) => {
@@ -25,10 +26,6 @@ const FilterModal = ({ visible, onClose }) => {
   const [nftSearchQuery, setNftSearchQuery] = useState('');
   const [nftSearchResults, setNftSearchResults] = useState([]);
   const [selectedNFTs, setSelectedNFTs] = useState([]);
-  
-  const client = new NeynarAPIClient("bd631d77-430b-4dc5-99c8-d2347a781220");
-  
-  console.log('neynar client is', client)
 
   const handleClearAll = useCallback(() => {
     toast('Filters Removd', {
@@ -188,6 +185,9 @@ const FilterModal = ({ visible, onClose }) => {
       const mockResults = [
         { id: '1', name: 'Alpaca NFT', address: '0x03ad6cd7410ce01a8b9ed26a080f8f9c1d7cc222' },
         { id: '2', name: 'Bored Ape Yacht Club', address: '0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D' },
+        { id: '3', name: 'Nouns', address: '0x9C8fF314C9Bc7F6e59A9d9225Fb22946427eDC03' },
+        { id: '4', name: 'CryptoPunks', address: '0xb47e3cd837dDF8e4c57F05d70Ab865de6e193BBB' },
+        
         // Add more mock results as needed
       ].filter(nft => nft.name.toLowerCase().includes(query.toLowerCase()));
       setNftSearchResults(mockResults);
@@ -219,10 +219,10 @@ const FilterModal = ({ visible, onClose }) => {
 
   const fetchNFTHolders = async (nft) => {
     try {
-      const addresses = await getAddr(nft.address);
-      console.log('length of add', addresses.lengthbored)
-      const fids = await fidLookup(client, addresses);
-      return fids;
+      console.log('api ur', API_URL)
+      const response = await axios.get(`${API_URL}/nft-holders/${nft.address}`);
+      console.log('respons is', response)
+      return response.data.fids;
     } catch (error) {
       console.error('Error fetching NFT holders:', error);
       return [];
@@ -440,31 +440,3 @@ const styles = StyleSheet.create({
 });
 
 export default React.memo(FilterModal);
-
-// Helper functions for NFT holder verification
-const getAddr = async (nftAddr) => {
-  console.log('inside getAddrsa')
-  const apiKey = "85k4RjXbG7LGJstg3qKoXwU5n3P_6CrK";
-  const baseUrl = `https://eth-mainnet.g.alchemy.com/nft/v3/${apiKey}/getOwnersForContract?`;
-  const url = `${baseUrl}contractAddress=${nftAddr}&withTokenBalances=false`;
-
-  const result = await fetch(url, {
-    headers: { accept: "application/json" },
-  });
-  const data = await result.json();
-  return data.owners;
-};
-
-const fidLookup = async (client, addrs) => {
-  const fids = await Promise.all(
-    addrs.map(async (addr) => {
-      try {
-				const response = await client.lookupUserByVerification(addr);
-        return response ? response.result.user.fid : undefined;
-      } catch (error) {
-        return undefined;
-      }
-    }),
-  );
-  return fids.filter((fid) => fid !== undefined);
-};
