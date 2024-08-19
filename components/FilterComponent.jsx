@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Modal, View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Image } from 'react-native';
+import { Modal, View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Image, ActivityIndicator } from 'react-native';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import useAppContext from '../hooks/useAppContext';
@@ -26,6 +26,8 @@ const FilterModal = ({ visible, onClose }) => {
   const [nftSearchQuery, setNftSearchQuery] = useState('');
   const [nftSearchResults, setNftSearchResults] = useState([]);
   const [selectedNFTs, setSelectedNFTs] = useState([]);
+  const [tokenGatedData,setTokenGatedData] = useState();
+  const [loading, setLoading] = useState(false);
 
   const handleClearAll = useCallback(() => {
     toast('Filters Removd', {
@@ -92,6 +94,7 @@ const FilterModal = ({ visible, onClose }) => {
   }, [filter, minFID, maxFID, selectedChannels, selectedMutedChannels, isPowerBadgeHolder, selectedNFTs, onClose, updateFilter]);
   useEffect(() => {
     const fetchFilters = async () => {
+      // setLoading(true);
       const filters = await AsyncStorage.getItem(LOCAL_STORAGE_KEYS.FILTERS);
       if (filters) {
         const parsedFilters = JSON.parse(filters);
@@ -105,6 +108,7 @@ const FilterModal = ({ visible, onClose }) => {
         setSelectedNFTs(parsedFilters.nftFilters || []);
 
       }
+      // setLoading(false);
     };
     fetchFilters();
   }, [setFilter]);
@@ -204,25 +208,26 @@ const FilterModal = ({ visible, onClose }) => {
   }, [nftSearchQuery, debouncedNFTSearch]);
 
   const handleAddNFT = async (nft) => {
-    console.log('nft is', nft)
+    setLoading(true);
     if (!selectedNFTs.some(selected => selected.id === nft.id)) {
       const holders = await fetchNFTHolders(nft);
       setSelectedNFTs(prevSelectedNFTs => [...(prevSelectedNFTs || []), { ...nft, holders }]);
     }
     setNftSearchQuery('');
+    setLoading(false);
   };
 
   const handleRemoveNFT = (nftId) => {
+    setTokenGatedData();
     setSelectedNFTs(selectedNFTs.filter(nft => nft.id !== nftId));
   };
 
 
   const fetchNFTHolders = async (nft) => {
     try {
-      console.log('api ur', API_URL)
       const response = await axios.get(`${API_URL}/nft-holders/${nft.address}`);
-      console.log('respons is', response)
-      return response.data.fids;
+      setTokenGatedData(response.data)
+      return response.data.casts;
     } catch (error) {
       console.error('Error fetching NFT holders:', error);
       return [];
@@ -291,6 +296,7 @@ const FilterModal = ({ visible, onClose }) => {
               ))}
             </View>
             <Text style={styles.sectionHeader}>NFT Token Gate</Text>
+            
             <TextInput
               style={styles.searchInput}
               value={nftSearchQuery}
@@ -302,11 +308,13 @@ const FilterModal = ({ visible, onClose }) => {
                 <Text>{nft.name}</Text>
               </TouchableOpacity>
             ))}
+              {loading && <ActivityIndicator size="large" color="#0000ff" />}
             <View style={styles.chipContainer}>
             <View style={styles.chipContainer}>
             {selectedNFTs?.map((nft) => (
+              
               <View key={nft.id} style={styles.chip}>
-                <Text>{nft.name} ({nft.holders ? nft.holders.length : 'Loading...'} holders)</Text>
+                <Text>{nft.name} ({tokenGatedData?.fids ? tokenGatedData?.fids : 'Loading...'} holders)</Text>
                 <TouchableOpacity onPress={() => handleRemoveNFT(nft.id)}>
                   <FontAwesome name="times" size={16} color="black" />
                 </TouchableOpacity>
