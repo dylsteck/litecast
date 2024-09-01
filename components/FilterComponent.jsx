@@ -27,6 +27,7 @@ const FilterModal = ({ visible, onClose }) => {
   const [nftSearchResults, setNftSearchResults] = useState([]);
   const [selectedNFTs, setSelectedNFTs] = useState([]);
   const [tokenGatedData,setTokenGatedData] = useState();
+  const [tokenGatedFeed, setTokenGatedFeed] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const handleClearAll = useCallback(() => {
@@ -40,6 +41,7 @@ const FilterModal = ({ visible, onClose }) => {
     setSelectedChannels([]);
     setSelectedMutedChannels([]);
     setSelectedNFTs([]);
+    setTokenGatedFeed([]);
     setFilter({
       lowerFid: 0,
       upperFid: Infinity,
@@ -47,6 +49,7 @@ const FilterModal = ({ visible, onClose }) => {
       mutedChannels: [],
       isPowerBadgeHolder: false,
       nftFilters: [],
+      tokenFeed: [],
     })
     AsyncStorage.setItem(LOCAL_STORAGE_KEYS.FILTERS, JSON.stringify({
       lowerFid: 0,
@@ -55,6 +58,7 @@ const FilterModal = ({ visible, onClose }) => {
       mutedChannels: [],
       isPowerBadgeHolder: false,
       nftFilters: [],
+      tokenFeed: [],
     }));
     setFilterChange((prev) => !prev);
   }, []);
@@ -106,7 +110,7 @@ const FilterModal = ({ visible, onClose }) => {
         setFilterChange((prev) => !prev);
         setIsPowerBadgeHolder(parsedFilters.isPowerBadgeHolder);
         setSelectedNFTs(parsedFilters.nftFilters || []);
-
+        setTokenGatedFeed(parsedFilters.tokenFeed || []);
       }
       // setLoading(false);
     };
@@ -174,6 +178,8 @@ const FilterModal = ({ visible, onClose }) => {
       setFilterChange((prev) => !prev);
       setIsPowerBadgeHolder(newFilter.isPowerBadgeHolder);
       setSelectedNFTs(newFilter.nftFilters);
+      setTokenGatedFeed(newFilter.tokenFeed);
+      setTokenGatedFeed(newFilter.tokenFeed);
     }
 
     eventEmitter.on('filterChanged', handleApplyFilter)
@@ -182,6 +188,18 @@ const FilterModal = ({ visible, onClose }) => {
       eventEmitter.off('filterChanged', handleApplyFilter)
     }
   }, [])
+
+  useEffect(() => {
+    console.log('tokenGatedData', tokenGatedData?.feed?.casts?.length)
+    if(tokenGatedData?.feed?.casts?.length > 0) {
+      const newTokenFeed = tokenGatedData?.feed?.casts
+      const newFilter = {
+        ...filter,
+        tokenFeed: newTokenFeed
+      }
+      updateFilter(newFilter);
+    }
+  }, [tokenGatedData])
 
   const debouncedNFTSearch = useCallback(
     debounce(async (query) => {
@@ -233,6 +251,7 @@ const FilterModal = ({ visible, onClose }) => {
       return [];
     }
   };
+
   return (
     <Modal visible={visible} animationType="slide" transparent>
       <View style={styles.modalContainer}>

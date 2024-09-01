@@ -54,7 +54,11 @@ const ChannelScreen = () => {
       )
     }
     // return filtered;
-    setFeed(filtered)
+    if(filter?.tokenFeed?.length > 0) {
+      setFeed([...filter?.tokenFeed,...filtered])
+    } else {
+      setFeed(filtered)
+    }
   }, [
     casts,
     isFilterChanged,
@@ -63,6 +67,7 @@ const ChannelScreen = () => {
     filter.showChannels,
     filter.mutedChannels,
     filter.isPowerBadgeHolder,
+    filter?.tokenFeed
   ])
 
   useEffect(() => {
@@ -84,11 +89,14 @@ const ChannelScreen = () => {
       showChannels: [],
       mutedChannels: [],
       isPowerBadgeHolder: false,
+      tokenFeed: []
     }
     setFilter(newFilter)
     AsyncStorage.setItem(LOCAL_STORAGE_KEYS.FILTERS, JSON.stringify(newFilter))
     eventEmitter.emit('filterChanged', newFilter)
   }
+
+  console.log("FEED ", feed?.length)
 
   // console.log("FILTER ", JSON.stringify(filter, null, 2))
   return (

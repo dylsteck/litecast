@@ -63,13 +63,14 @@ function RootLayoutNav() {
     showChannels: [],
     isPowerBadgeHolder: false,
   })
+  const [tokenFeed, setTokenFeed] = useState([])
 
   const colorScheme = useColorScheme()
   const neynarApiKey = process.env.EXPO_PUBLIC_NEYNAR_API_KEY
   const fckitApiUrl = process.env.EXPO_PUBLIC_API_URL
 
   return (
-    <AppContext.Provider value={{ fid, setFid, filter, setFilter, user, setUser, filterChange, setFilterChange }}>
+    <AppContext.Provider value={{ fid, setFid, filter, setFilter, user, setUser, filterChange, setFilterChange, tokenFeed, setTokenFeed }}>
       <NeynarProvider
         apiKey={neynarApiKey as string}
         fcKitApiUrl={fckitApiUrl as string}
