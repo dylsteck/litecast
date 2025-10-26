@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { View, StyleSheet, Text, Image, ScrollView, TouchableOpacity, SafeAreaView, Platform, StatusBar, ActivityIndicator } from 'react-native';
-import { BlurView } from 'expo-blur';
+import { View, StyleSheet, Text, Image, ScrollView, SafeAreaView, Platform, StatusBar, ActivityIndicator } from 'react-native';
+import { Button, Host, HStack, ContentUnavailableView } from '@expo/ui/swift-ui';
 import { FontAwesome } from '@expo/vector-icons';
 import { LegendList } from '@legendapp/list';
 import { useUser } from '../../hooks/queries/useUser';
@@ -118,37 +118,20 @@ const UserScreen = () => {
 
         {/* Tabs */}
         <View style={styles.tabsWrapper}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.tabsContent}
-          >
-            {tabs.map((tab) => (
-              <TouchableOpacity
-                key={tab.id}
-                onPress={() => setActiveTab(tab.id)}
-                activeOpacity={0.7}
-              >
-                {activeTab === tab.id ? (
-                  <BlurView
-                    intensity={80}
-                    tint="light"
-                    style={[styles.tab, styles.activeTab]}
-                  >
-                    <Text style={styles.activeTabText}>
-                      {tab.label}
-                    </Text>
-                  </BlurView>
-                ) : (
-                  <View style={styles.tab}>
-                    <Text style={styles.tabText}>
-                      {tab.label}
-                    </Text>
-                  </View>
-                )}
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
+          <Host matchContents>
+            <HStack spacing={8}>
+              {tabs.map((tab) => (
+                <Button
+                  key={tab.id}
+                  variant={activeTab === tab.id ? "glassProminent" : "glass"}
+                  controlSize="small"
+                  onPress={() => setActiveTab(tab.id)}
+                >
+                  {tab.label}
+                </Button>
+              ))}
+            </HStack>
+          </Host>
         </View>
 
         {/* Content */}
@@ -166,14 +149,19 @@ const UserScreen = () => {
           }
           ListEmptyComponent={() =>
             !isLoading ? (
-              <View style={styles.emptyContainer}>
-                <FontAwesome 
-                  name={activeTab === 'likes' ? 'heart-o' : activeTab === 'recasts' ? 'retweet' : 'comment-o'} 
-                  size={48} 
-                  color="#DDD" 
+              <Host style={styles.emptyContainer}>
+                <ContentUnavailableView
+                  title={`No ${activeTab} yet`}
+                  systemImage={
+                    activeTab === 'likes' 
+                      ? 'heart.slash' 
+                      : activeTab === 'recasts' 
+                      ? 'arrow.2.squarepath' 
+                      : 'bubble.left.and.bubble.right'
+                  }
+                  description={`${user.display_name} hasn't ${activeTab === 'likes' ? 'liked any casts' : activeTab === 'recasts' ? 'recasted anything' : 'posted any casts'} yet`}
                 />
-                <Text style={styles.emptyText}>No {activeTab} yet</Text>
-              </View>
+              </Host>
             ) : null
           }
         />
@@ -259,30 +247,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
   },
-  tabsContent: {
-    gap: 8,
-  },
-  tab: {
-    paddingHorizontal: 18,
-    paddingVertical: 8,
-    borderRadius: 18,
-    marginRight: 8,
-    backgroundColor: 'transparent',
-  },
-  activeTab: {
-    backgroundColor: 'rgba(139, 92, 246, 0.88)',
-    borderWidth: 0.5,
-    borderColor: 'rgba(255, 255, 255, 0.25)',
-  },
-  tabText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#999',
-  },
-  activeTabText: {
-    color: '#FFF',
-    fontWeight: '700',
-  },
   loader: {
     marginVertical: 20,
   },
@@ -306,14 +270,6 @@ const styles = StyleSheet.create({
   },
   emptyContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 40,
-  },
-  emptyText: {
-    fontSize: 16,
-    color: '#999',
-    marginTop: 16,
   },
 });
 

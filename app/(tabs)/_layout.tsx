@@ -1,65 +1,29 @@
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { Tabs } from 'expo-router';
-import { useColorScheme } from 'react-native';
-import HomeHeaderLeft from '../../components/HomeHeaderLeft';
-import HomeHeaderRight from '../../components/HomeHeaderRight';
-import LiquidGlassTabBar from '../../components/LiquidGlassTabBar';
+import { Icon, Label, NativeTabs } from "expo-router/unstable-native-tabs";
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
   return (
-    <Tabs
-      tabBar={(props) => <LiquidGlassTabBar {...props} />}
-      screenOptions={{
-        headerShown: false,
-      }}
-    >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Home',
-        }}
-      />
-      <Tabs.Screen
-        name="explore"
-        options={{
-          title: 'Explore',
-        }}
-      />
-      <Tabs.Screen
-        name="notifications"
-        options={{
-          title: 'Notifications',
-        }}
-      />
-      <Tabs.Screen
-        name="user"
-        options={{
-          title: 'Profile',
-        }}
-      />
-      <Tabs.Screen
-        name="channel"
-        options={{
-          href: null, // Hide from tabs
-          title: '',
-        }}
-      />
-      <Tabs.Screen
-        name="conversation"
-        options={{
-          href: null, // Hide from tabs
-          title: '',
-        }}
-      />
-      <Tabs.Screen
-        name="search"
-        options={{
-          href: null, // Hide from tabs
-          title: 'Search',
-        }}
-      />
-    </Tabs>
+    <NativeTabs>
+      <NativeTabs.Trigger name="index">
+        <Label>Home</Label>
+        <Icon sf="house.fill" />
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="explore">
+        <Label>Explore</Label>
+        <Icon sf="magnifyingglass" />
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="notifications">
+        <Label>Notifications</Label>
+        <Icon sf="bell.fill" />
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="user">
+        <Label>Profile</Label>
+        <Icon sf="person.fill" />
+      </NativeTabs.Trigger>
+      
+      {/* Hidden screens */}
+      <NativeTabs.Screen name="channel" options={{ href: null }} />
+      <NativeTabs.Screen name="conversation" options={{ href: null }} />
+      <NativeTabs.Screen name="search" options={{ href: null }} />
+    </NativeTabs>
   );
 }

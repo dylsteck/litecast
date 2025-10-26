@@ -2,7 +2,8 @@ import React, { useCallback, useMemo } from 'react'
 import { View, StyleSheet, ActivityIndicator, Text, SafeAreaView, Platform, StatusBar, TouchableOpacity } from 'react-native'
 import { LegendList } from '@legendapp/list'
 import { FontAwesome } from '@expo/vector-icons'
-import { BlurView } from 'expo-blur'
+import { GlassView } from 'expo-glass-effect'
+import { Button, Host, ContentUnavailableView } from '@expo/ui/swift-ui'
 import ComposeCast from '../../components/ComposeCast'
 import Cast from '../../components/Cast'
 import { useChannelFeed } from '../../hooks/queries/useChannelFeed'
@@ -25,7 +26,7 @@ const TabOneScreen = () => {
     return (
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.errorContainer}>
-          <BlurView intensity={20} tint="light" style={styles.errorCard}>
+          <GlassView tint="light" style={styles.errorCard}>
             <View style={styles.errorIconContainer}>
               <FontAwesome name="exclamation-triangle" size={48} color="#EF4444" />
             </View>
@@ -35,16 +36,16 @@ const TabOneScreen = () => {
                 ? 'API key is not configured'
                 : 'Check your connection and try again'}
             </Text>
-            <TouchableOpacity 
-              onPress={() => refetch()}
-              activeOpacity={0.8}
-            >
-              <BlurView intensity={80} tint="light" style={styles.retryButton}>
-                <FontAwesome name="refresh" size={16} color="#FFF" />
-                <Text style={styles.retryButtonText}>Try Again</Text>
-              </BlurView>
-            </TouchableOpacity>
-          </BlurView>
+            <Host style={{ width: 140 }}>
+              <Button
+                variant="glassProminent"
+                systemImage="arrow.clockwise"
+                onPress={() => refetch()}
+              >
+                Try Again
+              </Button>
+            </Host>
+          </GlassView>
         </View>
       </SafeAreaView>
     )
@@ -67,9 +68,13 @@ const TabOneScreen = () => {
           }
           ListEmptyComponent={() =>
             !isLoading ? (
-              <View style={styles.emptyContainer}>
-                <Text style={styles.emptyText}>No trending casts</Text>
-              </View>
+              <Host style={styles.emptyContainer}>
+                <ContentUnavailableView
+                  title="No trending casts"
+                  systemImage="chart.line.downtrend.xyaxis"
+                  description="Check back later for trending content"
+                />
+              </Host>
             ) : null
           }
         />
@@ -124,41 +129,8 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     lineHeight: 22,
   },
-  retryButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 28,
-    paddingVertical: 14,
-    gap: 10,
-    borderRadius: 24,
-    overflow: 'hidden',
-    backgroundColor: 'rgba(139, 92, 246, 0.92)',
-    borderWidth: 0.5,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#8B5CF6',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
-      },
-      android: {
-        elevation: 6,
-      },
-    }),
-  },
-  retryButtonText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#FFF',
-  },
   emptyContainer: {
-    padding: 40,
-    alignItems: 'center',
-  },
-  emptyText: {
-    fontSize: 16,
-    color: '#666',
+    flex: 1,
   },
 })
 

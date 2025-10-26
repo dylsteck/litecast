@@ -2,7 +2,7 @@ import React from 'react';
 import { View, StyleSheet, Text, Image, TouchableOpacity } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { Link } from 'expo-router';
-import { BlurView } from 'expo-blur';
+import { GlassView } from 'expo-glass-effect';
 import { formatDistanceToNow } from 'date-fns';
 import { NeynarNotification } from '../lib/neynar/types';
 import _ from 'lodash';
@@ -105,7 +105,7 @@ const Notification = ({ notification }: NotificationProps) => {
   const notificationText = getNotificationText();
   
   const content = (
-    <BlurView intensity={60} tint="systemMaterial" style={styles.glassContainer}>
+    <GlassView tint="light" style={styles.glassContainer}>
       <View style={styles.notificationContainer}>
         {/* Activity Icon on Left */}
         <View style={styles.iconContainer}>
@@ -142,7 +142,7 @@ const Notification = ({ notification }: NotificationProps) => {
           )}
         </View>
       </View>
-    </BlurView>
+    </GlassView>
   );
 
   if (notification.cast) {

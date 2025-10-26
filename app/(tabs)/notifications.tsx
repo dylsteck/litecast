@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { View, StyleSheet, Text, SafeAreaView, Platform, StatusBar, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, Text, SafeAreaView, Platform, StatusBar, ScrollView, ActivityIndicator } from 'react-native';
 import { LegendList } from '@legendapp/list';
-import { BlurView } from 'expo-blur';
+import { Button, Host, HStack, ContentUnavailableView } from '@expo/ui/swift-ui';
 import { useNotifications } from '../../hooks/queries/useNotifications';
 import { DEFAULT_FID } from '../../lib/neynar/constants';
 import { NotificationType } from '../../lib/neynar/types';
@@ -49,38 +49,22 @@ const NotificationsScreen = () => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.tabsContainer}
-          contentContainerStyle={styles.tabsContent}
-        >
-          {tabs.map((tab) => (
-            <TouchableOpacity
-              key={tab.id}
-              onPress={() => setActiveTab(tab.id)}
-              activeOpacity={0.7}
-            >
-              {activeTab === tab.id ? (
-                <BlurView
-                  intensity={80}
-                  tint="light"
-                  style={[styles.tab, styles.activeTab]}
+        <View style={styles.tabsContainer}>
+          <Host matchContents>
+            <HStack spacing={8}>
+              {tabs.map((tab) => (
+                <Button
+                  key={tab.id}
+                  variant={activeTab === tab.id ? "glassProminent" : "glass"}
+                  controlSize="small"
+                  onPress={() => setActiveTab(tab.id)}
                 >
-                  <Text style={styles.activeTabText}>
-                    {tab.label}
-                  </Text>
-                </BlurView>
-              ) : (
-                <View style={styles.tab}>
-                  <Text style={styles.tabText}>
-                    {tab.label}
-                  </Text>
-                </View>
-              )}
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
+                  {tab.label}
+                </Button>
+              ))}
+            </HStack>
+          </Host>
+        </View>
 
         <LegendList
           data={notifications}
@@ -96,9 +80,13 @@ const NotificationsScreen = () => {
           }
           ListEmptyComponent={() =>
             !isLoading ? (
-              <View style={styles.emptyContainer}>
-                <Text style={styles.emptyText}>No notifications</Text>
-              </View>
+              <Host style={styles.emptyContainer}>
+                <ContentUnavailableView
+                  title="All caught up!"
+                  systemImage="bell.slash"
+                  description="No notifications to show"
+                />
+              </Host>
             ) : null
           }
         />
@@ -118,33 +106,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   tabsContainer: {
-    maxHeight: 60,
     paddingVertical: 12,
-  },
-  tabsContent: {
     paddingHorizontal: 16,
-    gap: 8,
-  },
-  tab: {
-    paddingHorizontal: 18,
-    paddingVertical: 8,
-    borderRadius: 18,
-    marginRight: 8,
-    backgroundColor: 'transparent',
-  },
-  activeTab: {
-    backgroundColor: 'rgba(139, 92, 246, 0.88)',
-    borderWidth: 0.5,
-    borderColor: 'rgba(255, 255, 255, 0.25)',
-  },
-  tabText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#999',
-  },
-  activeTabText: {
-    color: '#FFF',
-    fontWeight: '700',
   },
   loader: {
     marginVertical: 20,
@@ -168,12 +131,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   emptyContainer: {
-    padding: 40,
-    alignItems: 'center',
-  },
-  emptyText: {
-    fontSize: 16,
-    color: '#666',
+    flex: 1,
   },
 });
 

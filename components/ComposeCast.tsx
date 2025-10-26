@@ -1,8 +1,7 @@
 import React, { useState, useCallback } from 'react';
-import { View, TextInput, StyleSheet, TouchableOpacity, Image, KeyboardAvoidingView, Platform } from 'react-native';
-// todo: fix cannot find module error for images
-import CastIcon from '../assets/images/castIcon.png';
-import { BlurView } from 'expo-blur';
+import { View, TextInput, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
+import { GlassView } from 'expo-glass-effect';
+import { Button, Host } from '@expo/ui/swift-ui';
 
 const ComposeCast = ({ hash }: { hash?: string }) => {
   const DEFAULT_PLACEHOLDER = 'cast something...';
@@ -19,14 +18,13 @@ const ComposeCast = ({ hash }: { hash?: string }) => {
 
   return (
     <KeyboardAvoidingView
-    style={{ marginTop: 0 }}
-    behavior={Platform.OS === "ios" ? "padding" : "height"}
-    keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 0}
+      style={{ marginTop: 0 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 0}
     >
       <View style={{ flex: 1 }}>
         <View style={{ flex: 1, justifyContent: 'flex-end' }}>
-          <BlurView
-            intensity={50}
+          <GlassView
             tint="light"
             style={styles.glassInputWrapper}
           >
@@ -35,14 +33,21 @@ const ComposeCast = ({ hash }: { hash?: string }) => {
                 value={text}
                 onChangeText={setText}
                 placeholder={placeholder}
-                placeholderTextColor={"#000"}
+                placeholderTextColor={"#666"}
                 style={styles.composeInput}
               />
-              <TouchableOpacity onPress={handleCast} style={styles.composeButton}>
-                <Image source={CastIcon} style={styles.icon} />
-              </TouchableOpacity>
+              <Host style={{ width: 80 }}>
+                <Button
+                  variant="glassProminent"
+                  systemImage="paperplane.fill"
+                  controlSize="small"
+                  onPress={handleCast}
+                >
+                  Cast
+                </Button>
+              </Host>
             </View>
-          </BlurView>
+          </GlassView>
         </View>
       </View>
     </KeyboardAvoidingView>
@@ -51,31 +56,23 @@ const ComposeCast = ({ hash }: { hash?: string }) => {
 
 const styles = StyleSheet.create({
   glassInputWrapper: {
-    margin: 10,
-    marginBottom: 25,
-    borderRadius: 20,
+    margin: 12,
+    marginBottom: 28,
+    borderRadius: 24,
     overflow: 'hidden',
-    backgroundColor: 'rgba(242, 242, 242, 0.8)',
-  },
-  composeButton: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 2,
-    paddingRight: 0,
   },
   composeInputContainer: {
     flexDirection: 'row',
-    minHeight: 40,
-    paddingHorizontal: 15,
-    paddingVertical: 10,
+    alignItems: 'center',
+    minHeight: 44,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    gap: 8,
   },
   composeInput: {
     flex: 1,
-  },
-  icon: {
-    height: 24,
-    resizeMode: 'contain',
-    width: 24,
+    fontSize: 16,
+    color: '#000',
   },
 });
 

@@ -4,7 +4,7 @@ import React from 'react'
 import { View, StyleSheet, Text, Image, TouchableOpacity, Platform } from 'react-native'
 import { FontAwesome } from '@expo/vector-icons'
 import { Link } from 'expo-router'
-import { BlurView } from 'expo-blur'
+import { GlassView } from 'expo-glass-effect'
 import { NeynarCast } from '../lib/neynar/types'
 
 const Cast = ({ cast }: { cast: NeynarCast }) => {
@@ -39,9 +39,8 @@ const Cast = ({ cast }: { cast: NeynarCast }) => {
   })
   return (
     <Link href={`/conversation?hash=${cast.hash}`}>
-      <BlurView
-        intensity={60}
-        tint="systemMaterial"
+      <GlassView
+        tint="light"
         style={styles.glassContainer}
       >
         <View style={styles.castContainer}>
@@ -103,7 +102,7 @@ const Cast = ({ cast }: { cast: NeynarCast }) => {
           </View>
         </View>
         </View>
-      </BlurView>
+      </GlassView>
     </Link>
   )
 }
