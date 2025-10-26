@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity, ActivityIndicator, SafeAreaView, Platform, StatusBar } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { LegendList } from '@legendapp/list';
@@ -7,7 +7,7 @@ import _ from 'lodash';
 import { FontAwesome } from '@expo/vector-icons';
 import { Link } from 'expo-router';
 import ComposeCast from '../../components/ComposeCast';
-import { useThread } from '../../hooks/queries/useThread';
+import { useCastWithReplies } from '../../hooks/queries/useCastWithReplies';
 import { NeynarCast } from '../../lib/neynar/types';
 
 export type NeynarCastV1 = {
@@ -83,16 +83,18 @@ export default function ConversationScreen() {
   const hash = route.params?.hash as string;
   const navigation = useNavigation();
   
-  const { data: threadData, isLoading, error } = useThread(hash);
+  const { cast, replies, isLoading, error } = useCastWithReplies(hash);
   
-  // Transform thread data into flat array for rendering
+  // Transform into flat array for rendering
   const thread = useMemo(() => {
-    if (!threadData?.conversation) return [];
-    
-    const { cast, direct_replies } = threadData.conversation;
-    const replies = direct_replies || [];
+    if (!cast) return [];
+    console.log('📊 Thread assembled:', { 
+      mainCast: 1,
+      replies: replies.length,
+      total: 1 + replies.length,
+    });
     return [cast, ...replies];
-  }, [threadData]);
+  }, [cast, replies]);
 
   const handleBackPress = () => {
     navigation.navigate('index');
@@ -102,56 +104,58 @@ export default function ConversationScreen() {
     navigation.setParams({ hash: childHash });
   };
 
-  useEffect(() => {
-    navigation.setOptions({
-      headerLeft: () => (
-        <TouchableOpacity onPress={handleBackPress}>
-          <Text style={{paddingLeft: 15, fontWeight: '300'}}>Back</Text>
-        </TouchableOpacity>
-      ),
-      title: 'Thread',
-      headerTitleStyle: {
-        color: 'black'
-      }
-    });
-  }, [navigation]);
+  const isMainCast = (index: number) => index === 0;
 
-  const renderCast = ({ item: cast }: { item: NeynarCast }) => {
+  const renderCast = ({ item: cast, index }: { item: NeynarCast; index: number }) => {
     const renderImages = () => {
-      // Regex to match image URLs
       const regex = /https?:\/\/\S+\.(?:jpg|jpeg|png|gif)/g;
-    
-      // Find matches in cast.text
       const textMatches = cast.text.match(regex) || [];
-    
-      // Extract URLs from cast.embeds
       const embedMatches = cast.embeds
         .filter(embed => embed.url && embed.url.match(regex))
         .map(embed => embed.url);
-    
-      // Combine and de-duplicate URLs from text and embeds
       const allMatches = Array.from(new Set([...textMatches, ...embedMatches]));
-    
-      // Render images
+      
       return allMatches.map((url) => (
-        <Image key={url} source={{ uri: url }} style={styles.image} />
+        <Image key={url} source={{ uri: url }} style={isMainCast(index) ? styles.mainImage : styles.image} />
       ));
     };
     
+    const relativeTime = _.replace(formatDistanceToNow(new Date(cast.timestamp)), 'about ', '');
+    
     return(
-      <TouchableOpacity onPress={() => handleCastPress(cast.hash)}>
-        <View style={styles.castContainer}>
-          <Image source={{ uri: cast.author.pfp_url }} style={styles.pfpImage} />
-          <View style={styles.contentContainer}>
-            <View style={styles.headerContainer}>
-              <Text style={styles.displayName}>{cast.author.display_name}</Text>
-              <Text style={styles.timestamp}>{_.replace(formatDistanceToNow(new Date(cast.timestamp)), 'about ', '')} ago</Text>
-            </View>
-            <Text style={styles.castText}>{cast.text}</Text>
-            {renderImages()}
+      <View style={[styles.castContainer, isMainCast(index) && styles.mainCastContainer]}>
+        <Link href={`/profile?fid=${cast.author.fid}`} asChild>
+          <TouchableOpacity>
+            <Image source={{ uri: cast.author.pfp_url }} style={styles.pfpImage} />
+          </TouchableOpacity>
+        </Link>
+        <View style={styles.contentContainer}>
+          <View style={styles.headerContainer}>
+            <Text style={styles.displayName}>{cast.author.display_name}</Text>
+            <Text style={styles.username}>@{cast.author.username}</Text>
           </View>
+          <Text style={[styles.castText, isMainCast(index) && styles.mainCastText]}>{cast.text}</Text>
+          {renderImages()}
+          <Text style={styles.timestamp}>{relativeTime} ago</Text>
+          
+          {isMainCast(index) && (
+            <View style={styles.reactionsContainer}>
+              <View style={styles.reactionItem}>
+                <FontAwesome name="comment-o" size={14} color="#666" />
+                <Text style={styles.reactionText}>{cast.replies.count}</Text>
+              </View>
+              <View style={styles.reactionItem}>
+                <FontAwesome name="retweet" size={14} color="#666" />
+                <Text style={styles.reactionText}>{cast.reactions.recasts_count}</Text>
+              </View>
+              <View style={styles.reactionItem}>
+                <FontAwesome name="heart-o" size={14} color="#666" />
+                <Text style={styles.reactionText}>{cast.reactions.likes_count}</Text>
+              </View>
+            </View>
+          )}
         </View>
-      </TouchableOpacity>
+      </View>
     );
   };
 
@@ -176,21 +180,26 @@ export default function ConversationScreen() {
     );
   }
 
+  if (thread.length === 0) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>No conversation found</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         <LegendList
           data={thread}
           renderItem={renderCast}
-          keyExtractor={item => item.hash}
+          keyExtractor={(item, index) => `${item.hash}-${index}`}
           recycleItems
-          ListEmptyComponent={() => (
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>No conversation found</Text>
-            </View>
-          )}
         />
-        {thread.length > 0 && <ComposeCast hash={thread[0].hash} />}
+        <ComposeCast hash={thread[0].hash} />
       </View>
     </SafeAreaView>
   );
@@ -239,43 +248,82 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   castContainer: {
-    borderBottomWidth: 1,
-    borderColor: '#eaeaea',
     flexDirection: 'row',
-    padding: 10,
-    paddingLeft: 15,
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0, 0, 0, 0.05)',
+  },
+  mainCastContainer: {
+    paddingBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0, 0, 0, 0.1)',
   },
   contentContainer: {
     flex: 1,
-    justifyContent: 'center',
-    padding: 10,
+    gap: 8,
   },
   headerContainer: {
-    alignItems: 'center',
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
+    alignItems: 'center',
+    gap: 6,
   },
   displayName: {
     fontWeight: 'bold',
+    fontSize: 15,
+    color: '#000',
+  },
+  username: {
+    fontSize: 14,
+    color: '#666',
   },
   timestamp: {
     color: '#999',
+    fontSize: 13,
+    marginTop: 4,
   },
   castText: {
-    color: '#000000',
+    color: '#000',
+    fontSize: 16,
+    lineHeight: 22,
+  },
+  mainCastText: {
+    fontSize: 18,
+    lineHeight: 24,
+    fontWeight: '400',
   },
   pfpImage: {
-    borderRadius: 25,
-    height: 25,
-    width: 25,
-    marginRight: 2,
-    marginTop: 9
+    borderRadius: 20,
+    height: 40,
+    width: 40,
+    marginRight: 12,
   },
   image: {
-    width: 100, // Set your desired image width
-    height: 100, // Set your desired image height
-    marginRight: 4,
-    paddingBottom: 4,
+    width: '100%',
+    height: 160,
+    borderRadius: 12,
+    marginTop: 8,
+    backgroundColor: '#f0f0f0',
+  },
+  mainImage: {
+    width: '100%',
+    height: 240,
+    borderRadius: 12,
+    marginTop: 8,
+    backgroundColor: '#f0f0f0',
+  },
+  reactionsContainer: {
+    flexDirection: 'row',
+    gap: 24,
+    marginTop: 12,
+  },
+  reactionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  reactionText: {
+    fontSize: 14,
+    color: '#666',
+    fontWeight: '500',
   },
 });

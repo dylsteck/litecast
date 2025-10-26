@@ -1,11 +1,12 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { View, StyleSheet, Text, SafeAreaView, Platform, StatusBar, ScrollView, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, SafeAreaView, Platform, StatusBar, ActivityIndicator } from 'react-native';
 import { LegendList } from '@legendapp/list';
-import { Button, Host, HStack, ContentUnavailableView } from '@expo/ui/swift-ui';
 import { useNotifications } from '../../hooks/queries/useNotifications';
 import { DEFAULT_FID } from '../../lib/neynar/constants';
 import { NotificationType } from '../../lib/neynar/types';
 import Notification from '../../components/Notification';
+import { TabPills } from '../../components/TabPills';
+import { EmptyState } from '../../components/EmptyState';
 
 type TabType = 'all' | NotificationType;
 
@@ -49,22 +50,11 @@ const NotificationsScreen = () => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        <View style={styles.tabsContainer}>
-          <Host matchContents>
-            <HStack spacing={8}>
-              {tabs.map((tab) => (
-                <Button
-                  key={tab.id}
-                  variant={activeTab === tab.id ? "glassProminent" : "glass"}
-                  controlSize="small"
-                  onPress={() => setActiveTab(tab.id)}
-                >
-                  {tab.label}
-                </Button>
-              ))}
-            </HStack>
-          </Host>
-        </View>
+        <TabPills 
+          tabs={tabs} 
+          activeTab={activeTab} 
+          onTabChange={setActiveTab}
+        />
 
         <LegendList
           data={notifications}
@@ -80,13 +70,11 @@ const NotificationsScreen = () => {
           }
           ListEmptyComponent={() =>
             !isLoading ? (
-              <Host style={styles.emptyContainer}>
-                <ContentUnavailableView
-                  title="All caught up!"
-                  systemImage="bell.slash"
-                  description="No notifications to show"
-                />
-              </Host>
+              <EmptyState 
+                icon="bell-slash-o"
+                title="All caught up!"
+                subtitle="No notifications to show"
+              />
             ) : null
           }
         />
@@ -104,10 +92,6 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: '#fff',
     flex: 1,
-  },
-  tabsContainer: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
   },
   loader: {
     marginVertical: 20,
@@ -129,9 +113,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
     textAlign: 'center',
-  },
-  emptyContainer: {
-    flex: 1,
   },
 });
 

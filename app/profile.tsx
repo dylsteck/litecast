@@ -2,13 +2,13 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { View, StyleSheet, Text, Image, SafeAreaView, Platform, StatusBar, ActivityIndicator } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { LegendList } from '@legendapp/list';
-import { useUser } from '../../hooks/queries/useUser';
-import { useUserCasts } from '../../hooks/queries/useUserCasts';
-import { useUserReactions } from '../../hooks/queries/useUserReactions';
-import { DEFAULT_FID } from '../../lib/neynar/constants';
-import Cast from '../../components/Cast';
-import { TabPills } from '../../components/TabPills';
-import { EmptyState } from '../../components/EmptyState';
+import { useLocalSearchParams } from 'expo-router';
+import { useUser } from '../hooks/queries/useUser';
+import { useUserCasts } from '../hooks/queries/useUserCasts';
+import { useUserReactions } from '../hooks/queries/useUserReactions';
+import Cast from '../components/Cast';
+import { TabPills } from '../components/TabPills';
+import { EmptyState } from '../components/EmptyState';
 
 type TabType = 'casts' | 'recasts' | 'likes';
 
@@ -28,22 +28,26 @@ const formatCount = (count: number): string => {
   return count.toString();
 };
 
-const UserScreen = () => {
+export default function ProfileScreen() {
+  const { fid, username } = useLocalSearchParams<{ fid?: string; username?: string }>();
   const [activeTab, setActiveTab] = useState<TabType>('casts');
   
-  const { data: userData, isLoading: userLoading, error: userError } = useUser(DEFAULT_FID);
+  const fidOrUsername = fid ? parseInt(fid) : username || '';
+  
+  const { data: userData, isLoading: userLoading, error: userError } = useUser(fidOrUsername);
   
   // Casts tab
+  const userFid = userData?.user?.fid;
   const { data: castsData, isLoading: castsLoading, fetchNextPage: fetchCastsNextPage, hasNextPage: hasCastsNextPage, isFetchingNextPage: isFetchingCastsNextPage, error: castsError } = 
-    useUserCasts(DEFAULT_FID, false);
+    useUserCasts(userFid || 0, false);
   
   // Recasts tab
   const { data: recastsData, isLoading: recastsLoading, fetchNextPage: fetchRecastsNextPage, hasNextPage: hasRecastsNextPage, isFetchingNextPage: isFetchingRecastsNextPage, error: recastsError } = 
-    useUserReactions(DEFAULT_FID, 'recasts');
+    useUserReactions(userFid || 0, 'recasts');
   
   // Likes tab
   const { data: likesData, isLoading: likesLoading, fetchNextPage: fetchLikesNextPage, hasNextPage: hasLikesNextPage, isFetchingNextPage: isFetchingLikesNextPage, error: likesError } = 
-    useUserReactions(DEFAULT_FID, 'likes');
+    useUserReactions(userFid || 0, 'likes');
 
   const casts = useMemo(() => {
     if (activeTab === 'casts') {
@@ -93,7 +97,7 @@ const UserScreen = () => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        {/* Profile Header - Ultra Compact */}
+        {/* Profile Header */}
         <View style={styles.profileHeader}>
           <View style={styles.topSection}>
             <Image
@@ -103,9 +107,9 @@ const UserScreen = () => {
             <View style={styles.infoSection}>
               <View style={styles.nameRow}>
                 <Text style={styles.displayName}>{user.display_name}</Text>
-            {user.power_badge && (
-                <FontAwesome name="bolt" size={14} color="#000" />
-              )}
+                {user.power_badge && (
+                  <FontAwesome name="bolt" size={14} color="#000" />
+                )}
               </View>
               <Text style={styles.username}>@{user.username}</Text>
             </View>
@@ -166,7 +170,7 @@ const UserScreen = () => {
       </View>
     </SafeAreaView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   safeArea: {
@@ -261,4 +265,3 @@ const styles = StyleSheet.create({
   },
 });
 
-export default UserScreen;

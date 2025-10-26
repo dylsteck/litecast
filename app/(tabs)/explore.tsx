@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import { View, StyleSheet, Text, SafeAreaView, Platform, StatusBar, TextInput, ScrollView, Image, TouchableOpacity, ActivityIndicator } from 'react-native'
-import { GlassView } from 'expo-glass-effect'
-import { Host, ContentUnavailableView } from '@expo/ui/swift-ui'
+import { BlurView } from 'expo-blur'
 import { FontAwesome } from '@expo/vector-icons'
 import { Link } from 'expo-router'
 import { useSearch } from '../../hooks/queries/useSearch'
@@ -17,8 +16,9 @@ const ExploreScreen = () => {
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         <View style={styles.searchContainer}>
-          <GlassView
-            tint="light"
+          <BlurView
+            intensity={60}
+            tint="systemMaterial"
             style={styles.glassSearchBox}
           >
             <FontAwesome name="search" size={16} color="#999" style={styles.searchIcon} />
@@ -36,12 +36,12 @@ const ExploreScreen = () => {
                 <FontAwesome name="times-circle" size={16} color="#999" />
               </TouchableOpacity>
             )}
-          </GlassView>
+          </BlurView>
         </View>
 
         {isLoading ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#8B5CF6" />
+            <ActivityIndicator size="large" color="#000" />
           </View>
         ) : searchQuery.length > 0 && hasResults ? (
           <ScrollView style={styles.resultsContainer}>
@@ -50,9 +50,9 @@ const ExploreScreen = () => {
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Users</Text>
                 {users.map((user) => (
-                  <Link key={user.fid} href={`/user?fid=${user.fid}`} asChild>
+                  <Link key={user.fid} href={`/profile?fid=${user.fid}`} asChild>
                     <TouchableOpacity>
-                      <GlassView tint="light" style={styles.userItem}>
+                      <BlurView intensity={60} tint="systemMaterial" style={styles.userItem}>
                         <Image source={{ uri: user.pfp_url }} style={styles.userAvatar} />
                         <View style={styles.userInfo}>
                           <Text style={styles.userName}>{user.display_name}</Text>
@@ -64,9 +64,9 @@ const ExploreScreen = () => {
                           )}
                         </View>
                         {user.power_badge && (
-                          <FontAwesome name="bolt" size={14} color="#8B5CF6" />
+                          <FontAwesome name="bolt" size={14} color="#000" />
                         )}
-                      </GlassView>
+                      </BlurView>
                     </TouchableOpacity>
                   </Link>
                 ))}
@@ -88,7 +88,7 @@ const ExploreScreen = () => {
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Mini Apps</Text>
                 {frames.map((frame) => (
-                  <GlassView key={frame.uuid} tint="light" style={styles.frameItem}>
+                  <BlurView key={frame.uuid} intensity={60} tint="systemMaterial" style={styles.frameItem}>
                     <Image source={{ uri: frame.image }} style={styles.frameImage} />
                     <View style={styles.frameInfo}>
                       <Text style={styles.frameName}>{frame.name}</Text>
@@ -105,27 +105,23 @@ const ExploreScreen = () => {
                         </Text>
                       </View>
                     </View>
-                  </GlassView>
+                  </BlurView>
                 ))}
               </View>
             )}
           </ScrollView>
         ) : searchQuery.length > 0 ? (
-          <Host style={styles.emptyContainer}>
-            <ContentUnavailableView
-              title="No results found"
-              systemImage="magnifyingglass"
-              description="Try a different search term"
-            />
-          </Host>
+          <View style={styles.emptyContainer}>
+            <FontAwesome name="search" size={48} color="#DDD" />
+            <Text style={styles.emptyText}>No results found</Text>
+            <Text style={styles.emptySubtext}>Try a different search term</Text>
+          </View>
         ) : (
-          <Host style={styles.emptyContainer}>
-            <ContentUnavailableView
-              title="Search Farcaster"
-              systemImage="magnifyingglass"
-              description="Find casts, users, and mini apps"
-            />
-          </Host>
+          <View style={styles.emptyContainer}>
+            <FontAwesome name="search" size={48} color="#DDD" />
+            <Text style={styles.emptyText}>Search Farcaster</Text>
+            <Text style={styles.emptySubtext}>Find casts, users, and mini apps</Text>
+          </View>
         )}
       </View>
     </SafeAreaView>
@@ -258,6 +254,20 @@ const styles = StyleSheet.create({
   },
   emptyContainer: {
     flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 40,
+  },
+  emptyText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#666',
+    marginTop: 16,
+  },
+  emptySubtext: {
+    fontSize: 14,
+    color: '#999',
+    marginTop: 8,
   },
 })
 

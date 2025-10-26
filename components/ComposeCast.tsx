@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
-import { View, TextInput, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
-import { GlassView } from 'expo-glass-effect';
-import { Button, Host } from '@expo/ui/swift-ui';
+import { View, TextInput, StyleSheet, TouchableOpacity, Image, KeyboardAvoidingView, Platform } from 'react-native';
+import { BlurView } from 'expo-blur';
+import { FontAwesome } from '@expo/vector-icons';
 
 const ComposeCast = ({ hash }: { hash?: string }) => {
   const DEFAULT_PLACEHOLDER = 'cast something...';
@@ -24,8 +24,9 @@ const ComposeCast = ({ hash }: { hash?: string }) => {
     >
       <View style={{ flex: 1 }}>
         <View style={{ flex: 1, justifyContent: 'flex-end' }}>
-          <GlassView
-            tint="light"
+          <BlurView
+            intensity={80}
+            tint="systemMaterial"
             style={styles.glassInputWrapper}
           >
             <View style={styles.composeInputContainer}>
@@ -36,18 +37,17 @@ const ComposeCast = ({ hash }: { hash?: string }) => {
                 placeholderTextColor={"#666"}
                 style={styles.composeInput}
               />
-              <Host style={{ width: 80 }}>
-                <Button
-                  variant="glassProminent"
-                  systemImage="paperplane.fill"
-                  controlSize="small"
-                  onPress={handleCast}
+              <TouchableOpacity onPress={handleCast} style={styles.composeButton}>
+                <BlurView
+                  intensity={100}
+                  tint="light"
+                  style={styles.sendButton}
                 >
-                  Cast
-                </Button>
-              </Host>
+                  <FontAwesome name="send" size={16} color="#000" />
+                </BlurView>
+              </TouchableOpacity>
             </View>
-          </GlassView>
+          </BlurView>
         </View>
       </View>
     </KeyboardAvoidingView>
@@ -57,9 +57,10 @@ const ComposeCast = ({ hash }: { hash?: string }) => {
 const styles = StyleSheet.create({
   glassInputWrapper: {
     margin: 12,
-    marginBottom: 28,
+    marginBottom: 100,
     borderRadius: 24,
     overflow: 'hidden',
+    backgroundColor: 'rgba(255, 255, 255, 0.75)',
   },
   composeInputContainer: {
     flexDirection: 'row',
@@ -73,6 +74,20 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     color: '#000',
+  },
+  composeButton: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  sendButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.08)',
+    borderWidth: 0.5,
+    borderColor: 'rgba(0, 0, 0, 0.1)',
   },
 });
 

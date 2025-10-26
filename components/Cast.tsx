@@ -2,10 +2,11 @@ import _ from 'lodash'
 import { formatDistanceToNow } from 'date-fns'
 import React from 'react'
 import { View, StyleSheet, Text, Image, TouchableOpacity, Platform } from 'react-native'
-import { FontAwesome } from '@expo/vector-icons'
 import { Link } from 'expo-router'
-import { GlassView } from 'expo-glass-effect'
+import { BlurView } from 'expo-blur'
 import { NeynarCast } from '../lib/neynar/types'
+import { UserAvatar } from './UserAvatar'
+import { ReactionBar } from './ReactionBar'
 
 const Cast = ({ cast }: { cast: NeynarCast }) => {
   const handleReaction = async (type: 'like' | 'recast', hash: string) => {
@@ -30,7 +31,12 @@ const Cast = ({ cast }: { cast: NeynarCast }) => {
 
     // Render images
     return allMatches.map((url) => (
-      <Image key={url} source={{ uri: url }} style={styles.image} />
+      <Image 
+        key={url} 
+        source={{ uri: url }} 
+        style={styles.image}
+        resizeMode="cover"
+      />
     ))
   }
 
@@ -38,16 +44,18 @@ const Cast = ({ cast }: { cast: NeynarCast }) => {
     addSuffix: true,
   })
   return (
-    <Link href={`/conversation?hash=${cast.hash}`}>
-      <GlassView
-        tint="light"
-        style={styles.glassContainer}
-      >
-        <View style={styles.castContainer}>
-          <Image
-            source={{ uri: cast.author.pfp_url ?? '' }}
-            style={styles.pfpImage}
-          />
+    <BlurView
+      intensity={0}
+      tint="default"
+      style={styles.glassContainer}
+    >
+      <View style={styles.castContainer}>
+        <UserAvatar 
+          fid={cast.author.fid} 
+          pfpUrl={cast.author.pfp_url ?? ''} 
+          size={30}
+        />
+        <Link href={`/conversation?hash=${cast.hash}`} style={{ flex: 1 }}>
           <View style={styles.contentContainer}>
           <View style={styles.headerContainer}>
             <Text style={styles.displayName}>
@@ -58,87 +66,44 @@ const Cast = ({ cast }: { cast: NeynarCast }) => {
             </Text>
             {/* <Text style={styles.timestamp}>{_.replace(relativeTime, 'about ', '')}</Text> */}
           </View>
-          <Text style={styles.castText}>{cast.text}</Text>
+          <Text style={styles.castText} numberOfLines={6}>
+            {cast.text}
+          </Text>
           {renderImages()}
-          <View style={styles.reactionsContainer}>
-            <View style={styles.reactionsGroupContainer}>
-              <FontAwesome name="comment-o" size={11} color="black" />
-              <Text style={styles.reactionText}> {cast.replies.count}</Text>
-            </View>
-            <TouchableOpacity
-              disabled={true}
-              onPress={() => handleReaction('recast', cast.hash)}
-            >
-              <View style={styles.reactionsGroupContainer}>
-                <FontAwesome
-                  name="retweet"
-                  size={11}
-                  color="black"
-                  style={{ opacity: 50 }}
-                />
-                <Text style={styles.reactionText}>
-                  {' '}
-                  {cast.reactions.recasts_count}
-                </Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-              disabled={true}
-              onPress={() => handleReaction('like', cast.hash)}
-            >
-              <View style={styles.reactionsGroupContainer}>
-                <FontAwesome
-                  name="heart-o"
-                  size={11}
-                  color="black"
-                  style={{ opacity: 50 }}
-                />
-                <Text style={styles.reactionTextFirst}>
-                  {' '}
-                  {cast.reactions.likes_count}
-                </Text>
-              </View>
-            </TouchableOpacity>
+          <ReactionBar 
+            reactions={[
+              { icon: 'comment', count: cast.replies.count },
+              { icon: 'retweet', count: cast.reactions.recasts_count, onPress: () => handleReaction('recast', cast.hash) },
+              { icon: 'heart', count: cast.reactions.likes_count, onPress: () => handleReaction('like', cast.hash) },
+            ]}
+          />
           </View>
-        </View>
-        </View>
-      </GlassView>
-    </Link>
+        </Link>
+      </View>
+    </BlurView>
   )
 }
 
 const styles = StyleSheet.create({
   glassContainer: {
-    marginHorizontal: 8,
-    marginVertical: 4,
-    borderRadius: 16,
-    overflow: 'hidden',
-    backgroundColor: 'rgba(255, 255, 255, 0.75)',
-    borderWidth: 0.5,
-    borderColor: 'rgba(255, 255, 255, 0.18)',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.06,
-        shadowRadius: 8,
-      },
-      android: {
-        elevation: 2,
-      },
-    }),
+    backgroundColor: 'transparent',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0, 0, 0, 0.08)',
   },
   castContainer: {
     flexDirection: 'row',
-    padding: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
     width: '100%',
+    backgroundColor: 'transparent',
   },
   castText: {
-    color: '#333',
-    fontSize: 14,
-    lineHeight: 18,
+    color: '#000',
+    fontSize: 16,
+    lineHeight: 22,
     paddingRight: 8,
-    paddingBottom: 3,
+    paddingBottom: 4,
+    fontWeight: '400',
   },
   container: {
     backgroundColor: '#fff',
@@ -165,34 +130,6 @@ const styles = StyleSheet.create({
   icon: {
     resizeMode: 'contain',
   },
-  pfpImage: {
-    borderRadius: 25,
-    height: 30,
-    marginLeft: 10,
-    marginRight: 15,
-    width: 30,
-  },
-  reactionText: {
-    color: '#000',
-    fontSize: 11,
-  },
-  reactionTextFirst: {
-    color: '#000',
-    fontSize: 11,
-  },
-  reactionsContainer: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-    gap: 24,
-    marginTop: 4,
-    paddingBottom: 1,
-  },
-  reactionsGroupContainer: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    marginRight: 4,
-  },
   timestamp: {
     color: '#666',
     fontSize: 12,
@@ -205,10 +142,14 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   image: {
-    width: 100, // Set your desired image width
-    height: 100, // Set your desired image height
-    marginRight: 4,
-    paddingBottom: 4,
+    width: '100%',
+    aspectRatio: 16 / 9,
+    borderRadius: 12,
+    marginTop: 8,
+    marginBottom: 4,
+    backgroundColor: '#f5f5f5',
+    borderWidth: 1,
+    borderColor: 'rgba(0, 0, 0, 0.08)',
   },
 })
 

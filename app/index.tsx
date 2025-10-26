@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     borderRadius: 24,
     overflow: 'hidden',
-    backgroundColor: '#8B5CF6',
+    backgroundColor: '#000',
   },
   loginButton: {
     paddingVertical: 12,

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, TouchableOpacity, Platform } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Platform, Text } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { FontAwesome } from '@expo/vector-icons';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
@@ -9,6 +9,20 @@ export default function LiquidGlassTabBar({ state, descriptors, navigation }: Bo
   const visibleRoutes = state.routes.filter(route => 
     ['index', 'explore', 'notifications', 'user'].includes(route.name)
   );
+
+  // Hide tab bar on conversation page
+  const currentRoute = state.routes[state.index].name;
+  if (currentRoute === 'conversation' || currentRoute === 'channel') {
+    return null;
+  }
+
+  const getLabel = (routeName: string) => {
+    if (routeName === 'index') return 'Home';
+    if (routeName === 'explore') return 'Explore';
+    if (routeName === 'notifications') return 'Inbox';
+    if (routeName === 'user') return 'Profile';
+    return '';
+  };
 
   return (
     <View style={styles.container}>
@@ -45,17 +59,10 @@ export default function LiquidGlassTabBar({ state, descriptors, navigation }: Bo
                 onPress={onPress}
                 style={styles.tabItem}
               >
-                {isFocused && (
-                  <BlurView
-                    intensity={50}
-                    tint="light"
-                    style={styles.activeIndicator}
-                  />
-                )}
                 <FontAwesome
                   name={iconName}
                   size={24}
-                  color={isFocused ? '#8B5CF6' : '#666'}
+                  color={isFocused ? '#000' : '#8E8E93'}
                   style={styles.icon}
                 />
               </TouchableOpacity>
@@ -70,57 +77,43 @@ export default function LiquidGlassTabBar({ state, descriptors, navigation }: Bo
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    bottom: 30,
+    bottom: 20,
     left: 20,
-    right: 20,
     zIndex: 100,
-    alignItems: 'center',
   },
   tabBar: {
-    borderRadius: 28,
+    borderRadius: 24,
     overflow: 'hidden',
-    backgroundColor: 'rgba(255, 255, 255, 0.72)',
+    backgroundColor: 'rgba(255, 255, 255, 0.85)',
     borderWidth: 0.5,
-    borderColor: 'rgba(255, 255, 255, 0.18)',
+    borderColor: 'rgba(0, 0, 0, 0.08)',
     ...Platform.select({
       ios: {
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.12,
-        shadowRadius: 16,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 12,
       },
       android: {
-        elevation: 12,
+        elevation: 8,
       },
     }),
   },
   tabBarInner: {
     flexDirection: 'row',
-    paddingHorizontal: 20,
-    paddingVertical: 14,
-    gap: 32,
-    justifyContent: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 8,
+    gap: 4,
   },
   tabItem: {
     alignItems: 'center',
     justifyContent: 'center',
-    position: 'relative',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-  },
-  activeIndicator: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    borderRadius: 16,
-    backgroundColor: 'rgba(139, 92, 246, 0.12)',
+    paddingHorizontal: 8,
+    paddingVertical: 6,
   },
   icon: {
     width: 28,
     textAlign: 'center',
-    zIndex: 1,
   },
 });
 

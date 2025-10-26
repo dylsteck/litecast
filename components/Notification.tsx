@@ -2,7 +2,6 @@ import React from 'react';
 import { View, StyleSheet, Text, Image, TouchableOpacity } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { Link } from 'expo-router';
-import { GlassView } from 'expo-glass-effect';
 import { formatDistanceToNow } from 'date-fns';
 import { NeynarNotification } from '../lib/neynar/types';
 import _ from 'lodash';
@@ -20,13 +19,13 @@ const Notification = ({ notification }: NotificationProps) => {
     switch (notification.type) {
       case 'mentions':
       case 'replies':
-        return <FontAwesome name="comment" size={16} color="#8B5CF6" />;
+        return <FontAwesome name="comment" size={16} color="#000" />;
       case 'recasts':
-        return <FontAwesome name="retweet" size={16} color="#10B981" />;
+        return <FontAwesome name="retweet" size={16} color="#000" />;
       case 'likes':
-        return <FontAwesome name="heart" size={16} color="#EF4444" />;
+        return <FontAwesome name="heart" size={16} color="#000" />;
       case 'follows':
-        return <FontAwesome name="user-plus" size={16} color="#3B82F6" />;
+        return <FontAwesome name="user-plus" size={16} color="#000" />;
       default:
         return <FontAwesome name="bell" size={16} color="#666" />;
     }
@@ -105,7 +104,7 @@ const Notification = ({ notification }: NotificationProps) => {
   const notificationText = getNotificationText();
   
   const content = (
-    <GlassView tint="light" style={styles.glassContainer}>
+    <View style={styles.glassContainer}>
       <View style={styles.notificationContainer}>
         {/* Activity Icon on Left */}
         <View style={styles.iconContainer}>
@@ -142,7 +141,7 @@ const Notification = ({ notification }: NotificationProps) => {
           )}
         </View>
       </View>
-    </GlassView>
+    </View>
   );
 
   if (notification.cast) {
@@ -160,11 +159,6 @@ const styles = StyleSheet.create({
   glassContainer: {
     marginHorizontal: 8,
     marginVertical: 4,
-    borderRadius: 16,
-    overflow: 'hidden',
-    backgroundColor: 'rgba(255, 255, 255, 0.75)',
-    borderWidth: 0.5,
-    borderColor: 'rgba(255, 255, 255, 0.18)',
   },
   notificationContainer: {
     flexDirection: 'row',
@@ -175,7 +169,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+    backgroundColor: 'rgba(0, 0, 0, 0.08)',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,

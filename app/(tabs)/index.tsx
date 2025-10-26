@@ -1,15 +1,15 @@
 import React, { useCallback, useMemo } from 'react'
-import { View, StyleSheet, ActivityIndicator, Text, SafeAreaView, Platform, StatusBar, TouchableOpacity } from 'react-native'
+import { View, StyleSheet, ActivityIndicator, Text, SafeAreaView, Platform, StatusBar, TouchableOpacity, RefreshControl } from 'react-native'
 import { LegendList } from '@legendapp/list'
 import { FontAwesome } from '@expo/vector-icons'
-import { GlassView } from 'expo-glass-effect'
-import { Button, Host, ContentUnavailableView } from '@expo/ui/swift-ui'
+import { BlurView } from 'expo-blur'
 import ComposeCast from '../../components/ComposeCast'
 import Cast from '../../components/Cast'
 import { useChannelFeed } from '../../hooks/queries/useChannelFeed'
+import { EmptyState } from '../../components/EmptyState'
 
 const TabOneScreen = () => {
-  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage, error, refetch } = useChannelFeed('trending')
+  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage, error, refetch, isRefetching } = useChannelFeed('trending')
 
   // Flatten pages into a single array of casts
   const casts = useMemo(() => {
@@ -22,11 +22,15 @@ const TabOneScreen = () => {
     }
   }, [hasNextPage, isFetchingNextPage, fetchNextPage])
 
+  const onRefresh = useCallback(() => {
+    refetch()
+  }, [refetch])
+
   if (error) {
     return (
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.errorContainer}>
-          <GlassView tint="light" style={styles.errorCard}>
+          <BlurView intensity={20} tint="light" style={styles.errorCard}>
             <View style={styles.errorIconContainer}>
               <FontAwesome name="exclamation-triangle" size={48} color="#EF4444" />
             </View>
@@ -36,16 +40,16 @@ const TabOneScreen = () => {
                 ? 'API key is not configured'
                 : 'Check your connection and try again'}
             </Text>
-            <Host style={{ width: 140 }}>
-              <Button
-                variant="glassProminent"
-                systemImage="arrow.clockwise"
-                onPress={() => refetch()}
-              >
-                Try Again
-              </Button>
-            </Host>
-          </GlassView>
+            <TouchableOpacity 
+              onPress={() => refetch()}
+              activeOpacity={0.8}
+            >
+              <BlurView intensity={80} tint="light" style={styles.retryButton}>
+                <FontAwesome name="refresh" size={16} color="#FFF" />
+                <Text style={styles.retryButtonText}>Try Again</Text>
+              </BlurView>
+            </TouchableOpacity>
+          </BlurView>
         </View>
       </SafeAreaView>
     )
@@ -57,24 +61,30 @@ const TabOneScreen = () => {
         <LegendList
           data={casts}
           renderItem={({ item }) => <Cast cast={item} />}
-          keyExtractor={(item) => item.hash}
+          keyExtractor={(item, index) => `${item.hash}-${index}`}
           onEndReached={onEndReached}
           onEndReachedThreshold={0.1}
           recycleItems
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefetching}
+              onRefresh={onRefresh}
+              tintColor="#000"
+              colors={['#000']}
+            />
+          }
           ListFooterComponent={() =>
             isFetchingNextPage ? (
-              <ActivityIndicator size="large" color="#000000" style={styles.loader} />
+              <ActivityIndicator size="large" color="#000" style={styles.loader} />
             ) : null
           }
           ListEmptyComponent={() =>
             !isLoading ? (
-              <Host style={styles.emptyContainer}>
-                <ContentUnavailableView
-                  title="No trending casts"
-                  systemImage="chart.line.downtrend.xyaxis"
-                  description="Check back later for trending content"
-                />
-              </Host>
+              <EmptyState 
+                icon="line-chart"
+                title="No trending casts"
+                subtitle="Check back later for trending content"
+              />
             ) : null
           }
         />
@@ -93,7 +103,6 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: '#fff',
     flex: 1,
-    justifyContent: 'space-between',
   },
   loader: {
     marginVertical: 20,
@@ -129,8 +138,22 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     lineHeight: 22,
   },
-  emptyContainer: {
-    flex: 1,
+  retryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 28,
+    paddingVertical: 14,
+    gap: 10,
+    borderRadius: 24,
+    overflow: 'hidden',
+    backgroundColor: 'rgba(139, 92, 246, 0.92)',
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  retryButtonText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#FFF',
   },
 })
 
