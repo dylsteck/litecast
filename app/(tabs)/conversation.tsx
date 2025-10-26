@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect, useMemo } from 'react';
+import { View, Text, Image, StyleSheet, TouchableOpacity, ActivityIndicator, SafeAreaView, Platform, StatusBar } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
-import { FlashList } from '@shopify/flash-list';
+import { LegendList } from '@legendapp/list';
 import { formatDistanceToNow } from 'date-fns';
 import _ from 'lodash';
 import { FontAwesome } from '@expo/vector-icons';
 import { Link } from 'expo-router';
 import ComposeCast from '../../components/ComposeCast';
-import { useLogin } from 'farcasterkit-react-native';
+import { useThread } from '../../hooks/queries/useThread';
+import { NeynarCast } from '../../lib/neynar/types';
 
 export type NeynarCastV1 = {
   hash: string;
@@ -80,30 +81,26 @@ export type NeynarCastV1 = {
 export default function ConversationScreen() {
   const route = useRoute();
   const hash = route.params?.hash as string;
-  const { farcasterUser } = useLogin();
-  const [parentHash, setParentHash] = useState<string | null>(null); // todo: rename, this is just for fetchThread
-  const [navigationParentHash, setNavigationParentHash] = useState<string | null>(hash);
-  const [thread, setThread] = useState<NeynarCastV1[]>([]);
   const navigation = useNavigation();
-  const neynarApiKey = process.env.EXPO_PUBLIC_NEYNAR_API_KEY;
+  
+  const { data: threadData, isLoading, error } = useThread(hash);
+  
+  // Transform thread data into flat array for rendering
+  const thread = useMemo(() => {
+    if (!threadData?.conversation) return [];
+    
+    const { cast, direct_replies } = threadData.conversation;
+    const replies = direct_replies || [];
+    return [cast, ...replies];
+  }, [threadData]);
 
   const handleBackPress = () => {
-    // if(navigationParentHash === null || navigationParentHash === hash){
-    //   console.log("back to index, here's last value ", navigationParentHash);
-    //   navigation.navigate('index');
-    // }
-    // else{
-    //   navigation.setParams({ hash: navigationParentHash })
-    //   setNavigationParentHash(null);
-    // }
     navigation.navigate('index');
-    setNavigationParentHash(null);
   };
 
   const handleCastPress = (childHash: string) => {
-    navigation.setParams({ hash: childHash })
-    setNavigationParentHash(childHash);
-  }
+    navigation.setParams({ hash: childHash });
+  };
 
   useEffect(() => {
     navigation.setOptions({
@@ -117,62 +114,9 @@ export default function ConversationScreen() {
         color: 'black'
       }
     });
-  }, [hash, navigation]);
+  }, [navigation]);
 
-  useEffect(() => {
-    // TOOD: move to farcasterkit-react-native
-    async function fetchThread() {
-      if (thread.some(cast => cast.hash === hash)) {
-        const itemIndex = thread.findIndex(cast => cast.hash === hash);
-        if (itemIndex > 0) {
-          const newThread = thread.slice(itemIndex);
-          if (newThread[0].hash !== parentHash) {
-            setParentHash(newThread[0].parentHash);
-          } else {
-            setParentHash(null);
-          }
-          setThread(newThread);
-        }
-      } else {
-        const url = `https://api.neynar.com/v1/farcaster/all-casts-in-thread?threadHash=${hash}&viewerFid=${farcasterUser?.fid}`;
-        try {
-          const response = await fetch(url, {
-            headers: {
-              'Accept': 'application/json',
-              'api_key': neynarApiKey as string,
-            },
-            method: 'GET',
-          });
-          const data = await response.json();
-          const newThread = organizeThread(data.result.casts);
-          setThread(newThread);
-          if (newThread[0].hash !== parentHash) {
-            setParentHash(newThread[0].parentHash);
-          } else {
-            setParentHash(null);
-          }
-        } catch (error) {
-          console.error('Error fetching thread:', error);
-        }
-      }
-    }
-    if (hash) {
-      fetchThread();
-    }
-  }, [hash]);
-
-  const organizeThread = (data: NeynarCastV1[]): NeynarCastV1[] => {
-    let thread: NeynarCastV1[] = [];
-    let map: { [key: string]: NeynarCastV1 } = {};
-    data.forEach((cast) => {
-      map[cast.hash] = cast;
-      cast.children = [];
-      thread.push(cast);
-    });
-    return thread;
-  };
-
-  const renderCast = ({ item: cast }) => {
+  const renderCast = ({ item: cast }: { item: NeynarCast }) => {
     const renderImages = () => {
       // Regex to match image URLs
       const regex = /https?:\/\/\S+\.(?:jpg|jpeg|png|gif)/g;
@@ -193,43 +137,106 @@ export default function ConversationScreen() {
         <Image key={url} source={{ uri: url }} style={styles.image} />
       ));
     };
+    
     return(
-    <TouchableOpacity onPress={() => handleCastPress(cast.hash)}>
-      <View style={styles.castContainer}>
-        <Image source={{ uri: cast.author.pfp.url }} style={styles.pfpImage} />
-        <View style={styles.contentContainer}>
-          <View style={styles.headerContainer}>
-            <Text style={styles.displayName}>{cast.author.displayName}</Text>
-            <Text style={styles.timestamp}>{_.replace(formatDistanceToNow(new Date(cast.timestamp)), 'about ', '')} ago</Text>
+      <TouchableOpacity onPress={() => handleCastPress(cast.hash)}>
+        <View style={styles.castContainer}>
+          <Image source={{ uri: cast.author.pfp_url }} style={styles.pfpImage} />
+          <View style={styles.contentContainer}>
+            <View style={styles.headerContainer}>
+              <Text style={styles.displayName}>{cast.author.display_name}</Text>
+              <Text style={styles.timestamp}>{_.replace(formatDistanceToNow(new Date(cast.timestamp)), 'about ', '')} ago</Text>
+            </View>
+            <Text style={styles.castText}>{cast.text}</Text>
+            {renderImages()}
           </View>
-          <Text style={styles.castText}>{cast.text}</Text>
-          {renderImages()}
         </View>
-      </View>
-    </TouchableOpacity>
-   )
+      </TouchableOpacity>
+    );
   };
 
+  if (error) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>Failed to load thread</Text>
+          <Text style={styles.errorSubtext}>{error.message}</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#000000" />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
-    <View style={styles.container}>
-      <FlashList
-        contentContainerStyle={styles.scrollView}
-        data={thread}
-        renderItem={renderCast}
-        keyExtractor={item => item.hash}
-      />
-      {thread.length > 0 && <ComposeCast hash={thread[0].hash} />}
-    </View>
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        <LegendList
+          data={thread}
+          renderItem={renderCast}
+          keyExtractor={item => item.hash}
+          recycleItems
+          ListEmptyComponent={() => (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>No conversation found</Text>
+            </View>
+          )}
+        />
+        {thread.length > 0 && <ComposeCast hash={thread[0].hash} />}
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#fff',
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+  },
   container: {
     flex: 1,
     backgroundColor: '#fff',
   },
-  scrollView: {
-    backgroundColor: '#ffffff',
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: '#fff',
+  },
+  errorText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#000',
+    marginBottom: 8,
+  },
+  errorSubtext: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+  },
+  emptyContainer: {
+    padding: 40,
+    alignItems: 'center',
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#666',
   },
   castContainer: {
     borderBottomWidth: 1,

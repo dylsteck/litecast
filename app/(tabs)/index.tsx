@@ -1,49 +1,164 @@
-import { FlashList } from '@shopify/flash-list'
-import _ from 'lodash'
-import React, { useCallback } from 'react'
-import { View, StyleSheet, ActivityIndicator } from 'react-native'
+import React, { useCallback, useMemo } from 'react'
+import { View, StyleSheet, ActivityIndicator, Text, SafeAreaView, Platform, StatusBar, TouchableOpacity } from 'react-native'
+import { LegendList } from '@legendapp/list'
+import { FontAwesome } from '@expo/vector-icons'
+import { BlurView } from 'expo-blur'
 import ComposeCast from '../../components/ComposeCast'
-import { useLatestCasts } from 'farcasterkit-react-native'
 import Cast from '../../components/Cast'
+import { useChannelFeed } from '../../hooks/queries/useChannelFeed'
 
 const TabOneScreen = () => {
-  // TODO: edit useLatestCasts logic so it adds dyanmic fid and not mine as static
-  const { casts, isLoading, loadMore, isReachingEnd } = useLatestCasts()
+  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage, error, refetch } = useChannelFeed('trending')
+
+  // Flatten pages into a single array of casts
+  const casts = useMemo(() => {
+    return data?.pages.flatMap(page => page.casts) ?? []
+  }, [data])
 
   const onEndReached = useCallback(() => {
-    if (!isReachingEnd) {
-      loadMore()
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage()
     }
-  }, [isReachingEnd, loadMore])
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage])
+
+  if (error) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.errorContainer}>
+          <BlurView intensity={20} tint="light" style={styles.errorCard}>
+            <View style={styles.errorIconContainer}>
+              <FontAwesome name="exclamation-triangle" size={48} color="#EF4444" />
+            </View>
+            <Text style={styles.errorText}>Unable to load trending feed</Text>
+            <Text style={styles.errorSubtext}>
+              {error.message === 'Neynar API key not configured' 
+                ? 'API key is not configured'
+                : 'Check your connection and try again'}
+            </Text>
+            <TouchableOpacity 
+              onPress={() => refetch()}
+              activeOpacity={0.8}
+            >
+              <BlurView intensity={80} tint="light" style={styles.retryButton}>
+                <FontAwesome name="refresh" size={16} color="#FFF" />
+                <Text style={styles.retryButtonText}>Try Again</Text>
+              </BlurView>
+            </TouchableOpacity>
+          </BlurView>
+        </View>
+      </SafeAreaView>
+    )
+  }
 
   return (
-    <View style={styles.container}>
-      <FlashList
-        contentContainerStyle={styles.flashList}
-        data={casts}
-        renderItem={({ item }) => <Cast key={item.hash} cast={item} />}
-        keyExtractor={(item) => item.hash}
-        onEndReached={onEndReached}
-        onEndReachedThreshold={0.1}
-        ListFooterComponent={() =>
-          isLoading && !isReachingEnd ? (
-            <ActivityIndicator size="large" color="#000000" />
-          ) : null
-        }
-      />
-      <ComposeCast />
-    </View>
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        <LegendList
+          data={casts}
+          renderItem={({ item }) => <Cast cast={item} />}
+          keyExtractor={(item) => item.hash}
+          onEndReached={onEndReached}
+          onEndReachedThreshold={0.1}
+          recycleItems
+          ListFooterComponent={() =>
+            isFetchingNextPage ? (
+              <ActivityIndicator size="large" color="#000000" style={styles.loader} />
+            ) : null
+          }
+          ListEmptyComponent={() =>
+            !isLoading ? (
+              <View style={styles.emptyContainer}>
+                <Text style={styles.emptyText}>No trending casts</Text>
+              </View>
+            ) : null
+          }
+        />
+        <ComposeCast />
+      </View>
+    </SafeAreaView>
   )
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#fff',
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+  },
   container: {
     backgroundColor: '#fff',
     flex: 1,
     justifyContent: 'space-between',
   },
-  flashList: {
+  loader: {
+    marginVertical: 20,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 32,
     backgroundColor: '#fff',
+  },
+  errorCard: {
+    borderRadius: 16,
+    padding: 32,
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    maxWidth: 400,
+  },
+  errorIconContainer: {
+    marginBottom: 20,
+  },
+  errorText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#000',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  errorSubtext: {
+    fontSize: 15,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 24,
+    lineHeight: 22,
+  },
+  retryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 28,
+    paddingVertical: 14,
+    gap: 10,
+    borderRadius: 24,
+    overflow: 'hidden',
+    backgroundColor: 'rgba(139, 92, 246, 0.92)',
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#8B5CF6',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 6,
+      },
+    }),
+  },
+  retryButtonText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#FFF',
+  },
+  emptyContainer: {
+    padding: 40,
+    alignItems: 'center',
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#666',
   },
 })
 

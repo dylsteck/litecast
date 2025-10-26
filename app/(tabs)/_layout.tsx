@@ -1,70 +1,65 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { Link, Tabs } from 'expo-router';
-import { Pressable, useColorScheme } from 'react-native';
-
-import Colors from '../../constants/Colors';
+import { Tabs } from 'expo-router';
+import { useColorScheme } from 'react-native';
 import HomeHeaderLeft from '../../components/HomeHeaderLeft';
 import HomeHeaderRight from '../../components/HomeHeaderRight';
-
-/**
- * You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
- */
-function TabBarIcon(props: {
-  name: React.ComponentProps<typeof FontAwesome>['name'];
-  color: string;
-}) {
-  return <FontAwesome size={28} style={{ marginBottom: -3 }} {...props} />;
-}
+import LiquidGlassTabBar from '../../components/LiquidGlassTabBar';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
 
   return (
-      <Tabs
-        screenOptions={{
-          tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-          tabBarStyle: {
-            backgroundColor: '#fff',
-            borderTopColor: '#fff',
-            display: 'none',
-            shadowOpacity: 0,
-          },
-          headerStyle: {
-            backgroundColor: 'white'
-          }
-        }}>
-        <Tabs.Screen
-          name="index"
-          options={{
-            title: '',
-            headerLeft: () => <HomeHeaderLeft />,
-            headerRight: () => <HomeHeaderRight />,
-            headerRightContainerStyle: {
-              position: 'relative', 
-              minWidth: '60%',
-              width: 'auto',
-            }
-          }}
-        />
-        <Tabs.Screen
-          name="channel"
-          options={{
-            title: '',
-            headerLeft: () => <HomeHeaderLeft />,
-            headerRight: () => <HomeHeaderRight />,
-            headerRightContainerStyle: {
-              position: 'relative', 
-              minWidth: '60%',
-              width: 'auto',
-            }
-          }}
-        />
-        <Tabs.Screen
-          name="conversation"
-          options={{
-            title: '',
-          }}
-        />
-      </Tabs>
+    <Tabs
+      tabBar={(props) => <LiquidGlassTabBar {...props} />}
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
+      <Tabs.Screen
+        name="index"
+        options={{
+          title: 'Home',
+        }}
+      />
+      <Tabs.Screen
+        name="explore"
+        options={{
+          title: 'Explore',
+        }}
+      />
+      <Tabs.Screen
+        name="notifications"
+        options={{
+          title: 'Notifications',
+        }}
+      />
+      <Tabs.Screen
+        name="user"
+        options={{
+          title: 'Profile',
+        }}
+      />
+      <Tabs.Screen
+        name="channel"
+        options={{
+          href: null, // Hide from tabs
+          title: '',
+        }}
+      />
+      <Tabs.Screen
+        name="conversation"
+        options={{
+          href: null, // Hide from tabs
+          title: '',
+        }}
+      />
+      <Tabs.Screen
+        name="search"
+        options={{
+          href: null, // Hide from tabs
+          title: 'Search',
+        }}
+      />
+    </Tabs>
   );
 }

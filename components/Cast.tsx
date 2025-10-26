@@ -1,43 +1,16 @@
 import _ from 'lodash'
 import { formatDistanceToNow } from 'date-fns'
-import React, { useEffect, useState } from 'react'
-import { View, StyleSheet, Text, Image, TouchableOpacity } from 'react-native'
+import React from 'react'
+import { View, StyleSheet, Text, Image, TouchableOpacity, Platform } from 'react-native'
 import { FontAwesome } from '@expo/vector-icons'
-import { useLogin, useReaction } from 'farcasterkit-react-native'
 import { Link } from 'expo-router'
+import { BlurView } from 'expo-blur'
+import { NeynarCast } from '../lib/neynar/types'
 
-const Cast = ({ cast }: { cast: NeynarCastV2 }) => {
-  const { farcasterUser } = useLogin()
-  const postReaction = useReaction()
-  const [reactions, setReactions] = useState<Reactions>({
-    likes: [],
-    recasts: [],
-  }) // track reactions in state to optimistically update when the user reacts
-
-  useEffect(() => {
-    setReactions(cast.reactions)
-  }, [cast])
-
+const Cast = ({ cast }: { cast: NeynarCast }) => {
   const handleReaction = async (type: 'like' | 'recast', hash: string) => {
-    try {
-      if (!farcasterUser) throw new Error('Not logged in')
-      await postReaction(type, hash)
-      // TODO: handle unlikes and un-recasts
-      if (type === 'like') {
-        setReactions({
-          ...reactions,
-          likes: [...reactions.likes, farcasterUser],
-        })
-      } else if (type === 'recast') {
-        setReactions({
-          ...reactions,
-          recasts: [...reactions.recasts, farcasterUser],
-        })
-      }
-      console.log(`${type}d cast with hash ${hash}`)
-    } catch (error) {
-      console.error('Error posting reaction:', error)
-    }
+    // TODO: Implement reaction posting with new auth system
+    console.log(`Reaction disabled: ${type} for ${hash}`)
   }
 
   const renderImages = () => {
@@ -66,12 +39,17 @@ const Cast = ({ cast }: { cast: NeynarCastV2 }) => {
   })
   return (
     <Link href={`/conversation?hash=${cast.hash}`}>
-      <View style={styles.castContainer}>
-        <Image
-          source={{ uri: cast.author.pfp_url ?? '' }}
-          style={styles.pfpImage}
-        />
-        <View style={styles.contentContainer}>
+      <BlurView
+        intensity={60}
+        tint="systemMaterial"
+        style={styles.glassContainer}
+      >
+        <View style={styles.castContainer}>
+          <Image
+            source={{ uri: cast.author.pfp_url ?? '' }}
+            style={styles.pfpImage}
+          />
+          <View style={styles.contentContainer}>
           <View style={styles.headerContainer}>
             <Text style={styles.displayName}>
               {cast.author.display_name} ·{' '}
@@ -89,65 +67,71 @@ const Cast = ({ cast }: { cast: NeynarCastV2 }) => {
               <Text style={styles.reactionText}> {cast.replies.count}</Text>
             </View>
             <TouchableOpacity
-              disabled={!farcasterUser}
+              disabled={true}
               onPress={() => handleReaction('recast', cast.hash)}
             >
               <View style={styles.reactionsGroupContainer}>
                 <FontAwesome
                   name="retweet"
                   size={11}
-                  color={
-                    reactions.recasts.some((r) => r.fid === farcasterUser?.fid)
-                      ? 'green'
-                      : 'black'
-                  }
-                  style={{ opacity: farcasterUser ? 100 : 50 }}
+                  color="black"
+                  style={{ opacity: 50 }}
                 />
                 <Text style={styles.reactionText}>
                   {' '}
-                  {reactions.recasts.length}
+                  {cast.reactions.recasts_count}
                 </Text>
               </View>
             </TouchableOpacity>
             <TouchableOpacity
-              disabled={!farcasterUser}
+              disabled={true}
               onPress={() => handleReaction('like', cast.hash)}
             >
               <View style={styles.reactionsGroupContainer}>
                 <FontAwesome
-                  name={
-                    reactions.likes.some((r) => r.fid === farcasterUser?.fid)
-                      ? 'heart'
-                      : 'heart-o'
-                  }
+                  name="heart-o"
                   size={11}
-                  color={
-                    reactions.likes.some((r) => r.fid === farcasterUser?.fid)
-                      ? 'red'
-                      : 'black'
-                  }
-                  style={{ opacity: farcasterUser ? 100 : 50 }}
+                  color="black"
+                  style={{ opacity: 50 }}
                 />
                 <Text style={styles.reactionTextFirst}>
                   {' '}
-                  {reactions.likes.length}
+                  {cast.reactions.likes_count}
                 </Text>
               </View>
             </TouchableOpacity>
           </View>
         </View>
-      </View>
+        </View>
+      </BlurView>
     </Link>
   )
 }
 
 const styles = StyleSheet.create({
+  glassContainer: {
+    marginHorizontal: 8,
+    marginVertical: 4,
+    borderRadius: 16,
+    overflow: 'hidden',
+    backgroundColor: 'rgba(255, 255, 255, 0.75)',
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.18)',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.06,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
+  },
   castContainer: {
-    borderBottomWidth: 1,
-    borderColor: '#eaeaea',
     flexDirection: 'row',
     padding: 10,
-    zIndex: -50,
     width: '100%',
   },
   castText: {

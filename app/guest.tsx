@@ -1,47 +1,102 @@
-import { FlashList } from '@shopify/flash-list'
-import _ from 'lodash'
-import React, { useCallback } from 'react'
-import { View, StyleSheet, ActivityIndicator } from 'react-native'
-import { useLatestCasts } from 'farcasterkit-react-native'
+import React, { useCallback, useMemo } from 'react'
+import { View, StyleSheet, ActivityIndicator, Text, SafeAreaView, Platform, StatusBar } from 'react-native'
+import { LegendList } from '@legendapp/list'
 import Cast from '../components/Cast'
+import { useFeed } from '../hooks/queries/useFeed'
+import { DEFAULT_FID } from '../lib/neynar/constants'
 
 const GuestScreen = () => {
-  // TODO: edit useLatestCasts logic so it adds dyanmic fid and not mine as static
-  const { casts, isLoading, loadMore, isReachingEnd } = useLatestCasts()
+  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage, error } = useFeed(DEFAULT_FID)
+
+  // Flatten pages into a single array of casts
+  const casts = useMemo(() => {
+    return data?.pages.flatMap(page => page.casts) ?? []
+  }, [data])
 
   const onEndReached = useCallback(() => {
-    if (!isReachingEnd) {
-      loadMore()
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage()
     }
-  }, [isReachingEnd, loadMore])
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage])
+
+  if (error) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>Failed to load feed</Text>
+          <Text style={styles.errorSubtext}>{error.message}</Text>
+        </View>
+      </SafeAreaView>
+    )
+  }
 
   return (
-    <View style={styles.container}>
-      <FlashList
-        contentContainerStyle={styles.flashList}
-        data={casts}
-        renderItem={({ item }) => <Cast key={item.hash} cast={item} />}
-        keyExtractor={(item) => item.hash}
-        onEndReached={onEndReached}
-        onEndReachedThreshold={0.1}
-        ListFooterComponent={() =>
-          isLoading && !isReachingEnd ? (
-            <ActivityIndicator size="large" color="#000000" />
-          ) : null
-        }
-      />
-    </View>
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        <LegendList
+          data={casts}
+          renderItem={({ item }) => <Cast cast={item} />}
+          keyExtractor={(item) => item.hash}
+          onEndReached={onEndReached}
+          onEndReachedThreshold={0.1}
+          recycleItems
+          ListFooterComponent={() =>
+            isFetchingNextPage ? (
+              <ActivityIndicator size="large" color="#000000" style={styles.loader} />
+            ) : null
+          }
+          ListEmptyComponent={() =>
+            !isLoading ? (
+              <View style={styles.emptyContainer}>
+                <Text style={styles.emptyText}>No casts to display</Text>
+              </View>
+            ) : null
+          }
+        />
+      </View>
+    </SafeAreaView>
   )
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#fff',
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+  },
   container: {
     backgroundColor: '#fff',
     flex: 1,
     justifyContent: 'space-between',
   },
-  flashList: {
+  loader: {
+    marginVertical: 20,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
     backgroundColor: '#fff',
+  },
+  errorText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#000',
+    marginBottom: 8,
+  },
+  errorSubtext: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+  },
+  emptyContainer: {
+    padding: 40,
+    alignItems: 'center',
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#666',
   },
 })
 

@@ -1,40 +1,57 @@
-import { FlashList } from '@shopify/flash-list'
-import _ from 'lodash'
-import React, { useCallback } from 'react'
-import { View, StyleSheet, ActivityIndicator } from 'react-native'
-import { FontAwesome } from '@expo/vector-icons'
+import React, { useCallback, useMemo } from 'react'
+import { View, StyleSheet, ActivityIndicator, Text } from 'react-native'
+import { LegendList } from '@legendapp/list'
 import ComposeCast from '../../components/ComposeCast'
 import Cast from '../../components/Cast'
 import { useRoute } from '@react-navigation/native'
-import { useLatestCasts } from 'farcasterkit-react-native'
+import { useChannelFeed } from '../../hooks/queries/useChannelFeed'
 
 const ChannelScreen = () => {
   const route = useRoute()
-  // todo: need to add types/interfaces all of this
-  const { type, parent_url } = route.params
-  const { casts, isLoading, loadMore, isReachingEnd } =
-    parent_url && parent_url.length > 0
-      ? useLatestCasts(type as string, parent_url as string)
-      : useLatestCasts(type as string)
+  const { type, parent_url } = route.params as { type: 'trending' | 'channel'; parent_url?: string }
+  
+  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage, error } = 
+    useChannelFeed(type, parent_url)
+
+  // Flatten pages into a single array of casts
+  const casts = useMemo(() => {
+    return data?.pages.flatMap(page => page.casts) ?? []
+  }, [data])
 
   const onEndReached = useCallback(() => {
-    if (!isReachingEnd) {
-      loadMore()
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage()
     }
-  }, [isReachingEnd, loadMore])
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage])
+
+  if (error) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>Failed to load channel feed</Text>
+        <Text style={styles.errorSubtext}>{error.message}</Text>
+      </View>
+    )
+  }
 
   return (
     <View style={styles.container}>
-      <FlashList
-        contentContainerStyle={styles.flashList}
+      <LegendList
         data={casts}
-        renderItem={({ item }) => <Cast key={item.hash} cast={item} />}
+        renderItem={({ item }) => <Cast cast={item} />}
         keyExtractor={(item) => item.hash}
         onEndReached={onEndReached}
         onEndReachedThreshold={0.1}
+        recycleItems
         ListFooterComponent={() =>
-          isLoading && !isReachingEnd ? (
-            <ActivityIndicator size="large" color="#000000" />
+          isFetchingNextPage ? (
+            <ActivityIndicator size="large" color="#000000" style={styles.loader} />
+          ) : null
+        }
+        ListEmptyComponent={() =>
+          !isLoading ? (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>No casts to display</Text>
+            </View>
           ) : null
         }
       />
@@ -49,8 +66,34 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'space-between',
   },
-  flashList: {
+  loader: {
+    marginVertical: 20,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
     backgroundColor: '#fff',
+  },
+  errorText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#000',
+    marginBottom: 8,
+  },
+  errorSubtext: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+  },
+  emptyContainer: {
+    padding: 40,
+    alignItems: 'center',
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#666',
   },
 })
 
