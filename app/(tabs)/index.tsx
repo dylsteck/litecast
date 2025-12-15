@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo } from 'react'
-import { View, StyleSheet, ActivityIndicator, Text, SafeAreaView, Platform, StatusBar, TouchableOpacity, RefreshControl } from 'react-native'
+import { View, StyleSheet, ActivityIndicator, Text, Platform, StatusBar, TouchableOpacity, RefreshControl } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { LegendList } from '@legendapp/list'
 import { FontAwesome } from '@expo/vector-icons'
 import { BlurView } from 'expo-blur'
@@ -7,6 +8,7 @@ import ComposeCast from '../../components/ComposeCast'
 import Cast from '../../components/Cast'
 import { useChannelFeed } from '../../hooks/queries/useChannelFeed'
 import { EmptyState } from '../../components/EmptyState'
+import { NeynarCast } from '../../lib/neynar/types'
 
 const TabOneScreen = () => {
   const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage, error, refetch, isRefetching } = useChannelFeed('trending')
@@ -28,7 +30,7 @@ const TabOneScreen = () => {
 
   if (error) {
     return (
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={styles.safeArea} edges={['top']}>
         <View style={styles.errorContainer}>
           <BlurView intensity={20} tint="light" style={styles.errorCard}>
             <View style={styles.errorIconContainer}>
@@ -56,12 +58,12 @@ const TabOneScreen = () => {
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
       <View style={styles.container}>
         <LegendList
           data={casts}
-          renderItem={({ item }) => <Cast cast={item} />}
-          keyExtractor={(item, index) => `${item.hash}-${index}`}
+          renderItem={({ item }: { item: NeynarCast }) => <Cast cast={item} />}
+          keyExtractor={(item: NeynarCast, index: number) => `${item.hash}-${index}`}
           onEndReached={onEndReached}
           onEndReachedThreshold={0.1}
           recycleItems

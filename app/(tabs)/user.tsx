@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { View, StyleSheet, Text, Image, SafeAreaView, Platform, StatusBar, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, Text, Image, Platform, StatusBar, ActivityIndicator } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesome } from '@expo/vector-icons';
 import { LegendList } from '@legendapp/list';
 import { useUser } from '../../hooks/queries/useUser';
@@ -71,7 +72,7 @@ const UserScreen = () => {
 
   if (userError || castsError || recastsError || likesError) {
     return (
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={styles.safeArea} edges={['top']}>
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>Failed to load profile</Text>
           <Text style={styles.errorSubtext}>{(userError || castsError || recastsError || likesError)?.message}</Text>
@@ -82,7 +83,7 @@ const UserScreen = () => {
 
   if (userLoading || !user) {
     return (
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={styles.safeArea} edges={['top']}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#000000" />
         </View>
@@ -91,7 +92,7 @@ const UserScreen = () => {
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
       <View style={styles.container}>
         {/* Profile Header - Ultra Compact */}
         <View style={styles.profileHeader}>

@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
-import { View, StyleSheet, Text, SafeAreaView, Platform, StatusBar, TextInput, ScrollView, Image, TouchableOpacity, ActivityIndicator } from 'react-native'
+import { View, StyleSheet, Text, Platform, StatusBar, TextInput, ScrollView, Image, TouchableOpacity, ActivityIndicator } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { BlurView } from 'expo-blur'
 import { FontAwesome } from '@expo/vector-icons'
 import { Link } from 'expo-router'
@@ -13,7 +14,7 @@ const ExploreScreen = () => {
   const hasResults = casts.length > 0 || users.length > 0 || frames.length > 0
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
       <View style={styles.container}>
         <View style={styles.searchContainer}>
           <BlurView

@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { View, StyleSheet, SafeAreaView, Platform, StatusBar, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, Platform, StatusBar, ActivityIndicator, Text } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { LegendList } from '@legendapp/list';
 import { useNotifications } from '../../hooks/queries/useNotifications';
 import { DEFAULT_FID } from '../../lib/neynar/constants';
@@ -38,7 +39,7 @@ const NotificationsScreen = () => {
 
   if (error) {
     return (
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={styles.safeArea} edges={['top']}>
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>Failed to load notifications</Text>
           <Text style={styles.errorSubtext}>{error.message}</Text>
@@ -48,7 +49,7 @@ const NotificationsScreen = () => {
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
       <View style={styles.container}>
         <TabPills 
           tabs={tabs} 

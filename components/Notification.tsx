@@ -209,9 +209,6 @@ const styles = StyleSheet.create({
     color: '#666',
     lineHeight: 18,
     marginTop: 6,
-    paddingTop: 6,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(0, 0, 0, 0.05)',
   },
 });
 
