@@ -1,14 +1,13 @@
 # Litecast ✍️
 
-A beautiful yet simple Farcaster client
-Built as an open source example for FarcasterKit x Neynar, as well as part of [dwr.eth's mobile client bounty](https://warpcast.com/dwr.eth/0x5727a985)
+A beautiful yet simple Farcaster client. Built by [dylsteck.eth](https://farcaster.xyz/dylsteck.eth)
+
+Originally started as part of [dwr.eth's mobile client bounty](https://farcaster.xyz/dwr.eth/0x5727a985)
 
 ### Built with
 
--   [Expo](https://expo.dev)
--   FarcasterKit's [farcasterkit-react-native](https://www.npmjs.com/package/farcasterkit-react-native)
-- Neynar's [react-native-signin](https://www.npmjs.com/package/@neynar/react-native-signin)
-
+- [Expo](https://expo.dev)
+- [Neynar](https://neynar.com)
 
 ### How to run
 
@@ -20,10 +19,8 @@ Built as an open source example for FarcasterKit x Neynar, as well as part of [d
 2. Set environment variables
 
 -   Copy `.env.example` to a new `.env` file and add your `NEYNAR_API_KEY`
--   In `constants.ts`, the `API_URL` value is for FarcasterKit's API, which has routes to get/receive the signer and post casts to Neynar. Don't change this value you're running the FarcasterKit API locally, but if not change the value to `http://api.farcasterkit.com`
-- Set the same values you have in your `.env` file in `eas.json` under the env sections for development and preview
 
-3. Create Expo project
+1. Create Expo project
 
 -   To run the app locally, you'll need to create an account at `https://expo.dev`, then create a new project
 -   Once you've created a project, run `npm install --global eas-cli && eas init --id [YOUR PROJECT ID]` to overwrite the existing project with your own
@@ -41,20 +38,12 @@ Press `i` to open iOS Simulator
 - `bun run clean` - Fresh install (removes node_modules and reinstalls)
 - `bun run start` - Start development server
 - `bun run ios` - Run on iOS Simulator
-
-### Todos
-Note: These are just a few todos on the top of my mind that would get the app to v1.0(full feature parity with the mockups below), but I'm sure smaller tasks and larger ideas will come to mind as well.
-
--   [] Further style the cast and thread components
--   [] Add search
--   [] Add following channels(via search)
--   [] Add user pages
--   [] Add more of the backend logic to [farcasterkit-react-native](https://www.npmjs.com/package/farcasterkit-react-native) (not much left to move over)
--   [] Add logout capabilities
+- `bun run android` - Run on Android Simulator
+- `bun run web` - Run on web
 
 ### Mockups
 
-Here are some mockups to further showcase where the app is headed -- huge shoutout again to [Sirsu](https://warpcast.com/sirsu) for the amazing designs 🙌
+Here are some mockups from the very original version from around when this was started -- huge shoutout to [Sirsu](https://farcaster.xyz/sirsu) for the amazing designs 🙌
 
 |                       Login                        |                       Home                        |
 | :------------------------------------------------: | :-----------------------------------------------: |
