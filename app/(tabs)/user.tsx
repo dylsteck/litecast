@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { View, StyleSheet, Text, Image, Platform, StatusBar, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, Text, Image, Platform, StatusBar, ActivityIndicator, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesome } from '@expo/vector-icons';
 import { LegendList } from '@legendapp/list';
@@ -10,6 +10,7 @@ import { DEFAULT_FID } from '../../lib/neynar/constants';
 import Cast from '../../components/Cast';
 import { TabPills } from '../../components/TabPills';
 import { EmptyState } from '../../components/EmptyState';
+import { NeynarCast } from '../../lib/neynar/types';
 
 type TabType = 'casts' | 'recasts' | 'likes';
 
@@ -30,6 +31,8 @@ const formatCount = (count: number): string => {
 };
 
 const UserScreen = () => {
+  const { width } = useWindowDimensions();
+  const showGuardrails = Platform.OS === 'web' && width > 768;
   const [activeTab, setActiveTab] = useState<TabType>('casts');
   
   const { data: userData, isLoading: userLoading, error: userError } = useUser(DEFAULT_FID);
@@ -93,8 +96,15 @@ const UserScreen = () => {
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
-      <View style={styles.container}>
-        {/* Profile Header - Ultra Compact */}
+      <View style={styles.wrapper}>
+        {showGuardrails && (
+          <>
+            <View style={styles.guardrailLeft} />
+            <View style={styles.guardrailRight} />
+          </>
+        )}
+        <View style={styles.container}>
+          {/* Profile Header - Ultra Compact */}
         <View style={styles.profileHeader}>
           <View style={styles.topSection}>
             <Image
@@ -138,8 +148,8 @@ const UserScreen = () => {
         {/* Content */}
         <LegendList
           data={casts}
-          renderItem={({ item }) => <Cast cast={item} />}
-          keyExtractor={(item, index) => `${item.hash}-${index}`}
+          renderItem={({ item }: { item: NeynarCast }) => <Cast cast={item} />}
+          keyExtractor={(item: NeynarCast, index: number) => `${item.hash}-${index}`}
           onEndReached={onEndReached}
           onEndReachedThreshold={0.1}
           recycleItems
@@ -164,6 +174,7 @@ const UserScreen = () => {
             ) : null
           }
         />
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -175,9 +186,44 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
+  wrapper: {
+    flex: 1,
+    position: 'relative',
+  },
+  guardrailLeft: Platform.select({
+    web: {
+      position: 'absolute' as const,
+      left: 'calc(50% - 300px)' as any,
+      top: 0,
+      bottom: 0,
+      width: 1,
+      backgroundColor: 'rgba(0, 0, 0, 0.08)',
+      zIndex: 1,
+    },
+    default: {},
+  }),
+  guardrailRight: Platform.select({
+    web: {
+      position: 'absolute' as const,
+      right: 'calc(50% - 300px)' as any,
+      top: 0,
+      bottom: 0,
+      width: 1,
+      backgroundColor: 'rgba(0, 0, 0, 0.08)',
+      zIndex: 1,
+    },
+    default: {},
+  }),
   container: {
     backgroundColor: '#fff',
     flex: 1,
+    ...Platform.select({
+      web: {
+        maxWidth: 600,
+        alignSelf: 'center',
+        width: '100%',
+      },
+    }),
   },
   loadingContainer: {
     flex: 1,

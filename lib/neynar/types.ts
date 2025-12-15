@@ -1,5 +1,3 @@
-// Neynar API Types based on Neynar V2 API
-
 export interface NeynarUser {
   fid: number;
   username: string;
@@ -14,6 +12,7 @@ export interface NeynarUser {
   following_count: number;
   verifications: string[];
   active_status: 'active' | 'inactive';
+  power_badge?: boolean;
 }
 
 export interface NeynarEmbed {

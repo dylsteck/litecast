@@ -1,11 +1,11 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Platform } from 'react-native';
 import ComposeCast from '../../components/ComposeCast';
 
 const SearchScreen = () => {
   return (
     <View style={styles.container}>
-      <ComposeCast />
+      {Platform.OS !== 'web' && <ComposeCast />}
     </View>
   );
 };

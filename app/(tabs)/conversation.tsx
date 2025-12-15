@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity, ActivityIndicator, SafeAreaView, Platform, StatusBar } from 'react-native';
-import { useRoute, useNavigation } from '@react-navigation/native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { LegendList } from '@legendapp/list';
 import { formatDistanceToNow } from 'date-fns';
 import _ from 'lodash';
@@ -79,9 +79,9 @@ export type NeynarCastV1 = {
 };
 
 export default function ConversationScreen() {
-  const route = useRoute();
-  const hash = route.params?.hash as string;
-  const navigation = useNavigation();
+  const params = useLocalSearchParams<{ hash?: string }>();
+  const hash = params.hash as string;
+  const router = useRouter();
   
   const { cast, replies, isLoading, error } = useCastWithReplies(hash);
   
@@ -97,11 +97,11 @@ export default function ConversationScreen() {
   }, [cast, replies]);
 
   const handleBackPress = () => {
-    navigation.navigate('index');
+    router.push('/(tabs)');
   };
 
   const handleCastPress = (childHash: string) => {
-    navigation.setParams({ hash: childHash });
+    router.push(`/(tabs)/conversation?hash=${childHash}`);
   };
 
   const isMainCast = (index: number) => index === 0;
@@ -199,7 +199,7 @@ export default function ConversationScreen() {
           keyExtractor={(item, index) => `${item.hash}-${index}`}
           recycleItems
         />
-        <ComposeCast hash={thread[0].hash} />
+        {Platform.OS !== 'web' && <ComposeCast hash={thread[0].hash} />}
       </View>
     </SafeAreaView>
   );

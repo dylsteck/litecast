@@ -25,9 +25,10 @@ export default function LiquidGlassTabBar({ state, descriptors, navigation }: Bo
   };
 
   return (
-    <View style={styles.container}>
-      <BlurView intensity={100} tint="systemMaterial" style={styles.tabBar}>
-        <View style={styles.tabBarInner}>
+    <View style={styles.wrapper}>
+      <View style={styles.container}>
+        <BlurView intensity={100} tint="systemMaterial" style={styles.tabBar}>
+          <View style={styles.tabBarInner}>
           {visibleRoutes.map((route) => {
             const routeIndex = state.routes.findIndex(r => r.key === route.key);
             const isFocused = state.index === routeIndex;
@@ -68,19 +69,31 @@ export default function LiquidGlassTabBar({ state, descriptors, navigation }: Bo
               </TouchableOpacity>
             );
           })}
-        </View>
-      </BlurView>
+          </View>
+        </BlurView>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  wrapper: {
     position: 'absolute',
     bottom: 20,
-    left: 20,
+    left: 0,
+    right: 0,
     zIndex: 100,
+    ...Platform.select({
+      web: {
+        alignItems: 'center',
+      },
+      default: {
+        alignItems: 'flex-start',
+        paddingLeft: 20,
+      },
+    }),
   },
+  container: {},
   tabBar: {
     borderRadius: 24,
     overflow: 'hidden',

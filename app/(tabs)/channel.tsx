@@ -1,10 +1,11 @@
 import React, { useCallback, useMemo } from 'react'
-import { View, StyleSheet, ActivityIndicator, Text } from 'react-native'
+import { View, StyleSheet, ActivityIndicator, Text, Platform } from 'react-native'
 import { LegendList } from '@legendapp/list'
 import ComposeCast from '../../components/ComposeCast'
 import Cast from '../../components/Cast'
 import { useRoute } from '@react-navigation/native'
 import { useChannelFeed } from '../../hooks/queries/useChannelFeed'
+import { NeynarCast } from '../../lib/neynar/types'
 
 const ChannelScreen = () => {
   const route = useRoute()
@@ -37,8 +38,8 @@ const ChannelScreen = () => {
     <View style={styles.container}>
       <LegendList
         data={casts}
-        renderItem={({ item }) => <Cast cast={item} />}
-        keyExtractor={(item) => item.hash}
+        renderItem={({ item }: { item: NeynarCast }) => <Cast cast={item} />}
+        keyExtractor={(item: NeynarCast) => item.hash}
         onEndReached={onEndReached}
         onEndReachedThreshold={0.1}
         recycleItems
@@ -55,7 +56,7 @@ const ChannelScreen = () => {
           ) : null
         }
       />
-      <ComposeCast />
+      {Platform.OS !== 'web' && <ComposeCast />}
     </View>
   )
 }

@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { View, StyleSheet, Text, Platform, StatusBar, TextInput, ScrollView, Image, TouchableOpacity, ActivityIndicator } from 'react-native'
+import { View, StyleSheet, Text, Platform, StatusBar, TextInput, ScrollView, Image, TouchableOpacity, ActivityIndicator, useWindowDimensions } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { BlurView } from 'expo-blur'
 import { FontAwesome } from '@expo/vector-icons'
@@ -8,6 +8,8 @@ import { useSearch } from '../../hooks/queries/useSearch'
 import Cast from '../../components/Cast'
 
 const ExploreScreen = () => {
+  const { width } = useWindowDimensions();
+  const showGuardrails = Platform.OS === 'web' && width > 768;
   const [searchQuery, setSearchQuery] = useState('')
   const { casts, users, frames, isLoading } = useSearch(searchQuery)
 
@@ -15,7 +17,14 @@ const ExploreScreen = () => {
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
-      <View style={styles.container}>
+      <View style={styles.wrapper}>
+        {showGuardrails && (
+          <>
+            <View style={styles.guardrailLeft} />
+            <View style={styles.guardrailRight} />
+          </>
+        )}
+        <View style={styles.container}>
         <View style={styles.searchContainer}>
           <BlurView
             intensity={60}
@@ -124,6 +133,7 @@ const ExploreScreen = () => {
             <Text style={styles.emptySubtext}>Find casts, users, and mini apps</Text>
           </View>
         )}
+        </View>
       </View>
     </SafeAreaView>
   )
@@ -135,9 +145,44 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
+  wrapper: {
+    flex: 1,
+    position: 'relative',
+  },
+  guardrailLeft: Platform.select({
+    web: {
+      position: 'absolute' as const,
+      left: 'calc(50% - 300px)' as any,
+      top: 0,
+      bottom: 0,
+      width: 1,
+      backgroundColor: 'rgba(0, 0, 0, 0.08)',
+      zIndex: 1,
+    },
+    default: {},
+  }),
+  guardrailRight: Platform.select({
+    web: {
+      position: 'absolute' as const,
+      right: 'calc(50% - 300px)' as any,
+      top: 0,
+      bottom: 0,
+      width: 1,
+      backgroundColor: 'rgba(0, 0, 0, 0.08)',
+      zIndex: 1,
+    },
+    default: {},
+  }),
   container: {
     backgroundColor: '#fff',
     flex: 1,
+    ...Platform.select({
+      web: {
+        maxWidth: 600,
+        alignSelf: 'center',
+        width: '100%',
+      },
+    }),
   },
   searchContainer: {
     padding: 12,
