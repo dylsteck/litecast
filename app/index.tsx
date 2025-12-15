@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Image, SafeAreaView, Platform, StatusBar, TouchableOpacity } from 'react-native';
 import { Text, View } from '../components/Themed';
-import homepageHeader from '../assets/images/homepage-header.png';
 import { useRouter } from 'expo-router';
 import { generateJWT, storeJWT, getJWT } from '../utils/auth';
 import { BlurView } from 'expo-blur';
@@ -15,6 +14,20 @@ export default function IndexScreen() {
   }, []);
 
   const checkAuth = async () => {
+    // On web, automatically login and skip the landing screen
+    if (Platform.OS === 'web') {
+      try {
+        const token = generateJWT();
+        await storeJWT(token);
+        router.push('/(tabs)');
+      } catch (error) {
+        console.error('Auto-login error:', error);
+        setIsLoading(false);
+      }
+      return;
+    }
+
+    // On mobile, check for existing token
     const token = await getJWT();
     if (token) {
       router.push('/(tabs)');
@@ -39,7 +52,6 @@ export default function IndexScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Image style={styles.homepageHeader} source={homepageHeader} resizeMode="contain" />
       <View style={styles.textContainer}>
         <Text style={styles.title}>Litecast</Text>
         <Text style={styles.subtitle}>A beautiful yet simple Farcaster client</Text>

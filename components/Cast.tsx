@@ -53,9 +53,10 @@ const Cast = ({ cast }: { cast: NeynarCast }) => {
         <UserAvatar 
           fid={cast.author.fid} 
           pfpUrl={cast.author.pfp_url ?? ''} 
+          username={cast.author.username}
           size={30}
         />
-        <Link href={`/conversation?hash=${cast.hash}`} style={{ flex: 1 }}>
+        <Link href={`/casts/${cast.hash}`} style={{ flex: 1 }}>
           <View style={styles.contentContainer}>
           <View style={styles.headerContainer}>
             <Text style={styles.displayName}>

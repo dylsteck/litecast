@@ -64,15 +64,6 @@ function RootLayoutNav() {
         <Stack>
           <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen 
-            name="profile" 
-            options={{ 
-              headerShown: true,
-              title: 'Profile',
-              headerTitleStyle: { color: '#000', fontSize: 18, fontWeight: '600' },
-              headerStyle: { backgroundColor: '#fff' },
-            }}
-          />
           <Stack.Screen name="guest" options={{ headerShown: true, title: 'Feed', headerTitleStyle: { color: 'black' }, headerLeft: GuestHeaderLeft, headerStyle: { backgroundColor: 'white'} }}/>
         </Stack>
       </ThemeProvider>

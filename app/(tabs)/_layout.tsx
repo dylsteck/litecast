@@ -43,27 +43,6 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="conversation"
-        options={({ navigation }) => ({
-          href: null,
-          title: 'Thread',
-          headerShown: true,
-          headerTitleStyle: {
-            color: '#000',
-            fontSize: 18,
-            fontWeight: '600',
-          },
-          headerStyle: {
-            backgroundColor: '#fff',
-          },
-          headerLeft: () => (
-            <TouchableOpacity onPress={() => navigation.navigate('index')} style={{ paddingLeft: 16 }}>
-              <FontAwesome name="chevron-left" size={20} color="#000" />
-            </TouchableOpacity>
-          ),
-        })}
-      />
-      <Tabs.Screen
         name="search"
         options={{
           href: null,

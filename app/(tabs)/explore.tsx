@@ -60,7 +60,7 @@ const ExploreScreen = () => {
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Users</Text>
                 {users.map((user) => (
-                  <Link key={user.fid} href={`/profile?fid=${user.fid}`} asChild>
+                  <Link key={user.fid} href={user.username ? `/${user.username}` : `/fids/${user.fid}`} asChild>
                     <TouchableOpacity>
                       <BlurView intensity={60} tint="systemMaterial" style={styles.userItem}>
                         <Image source={{ uri: user.pfp_url }} style={styles.userAvatar} />

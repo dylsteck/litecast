@@ -146,7 +146,7 @@ const Notification = ({ notification }: NotificationProps) => {
 
   if (notification.cast) {
     return (
-      <Link href={`/conversation?hash=${notification.cast.hash}`}>
+      <Link href={`/casts/${notification.cast.hash}`}>
         {content}
       </Link>
     );

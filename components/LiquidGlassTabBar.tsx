@@ -10,9 +10,9 @@ export default function LiquidGlassTabBar({ state, descriptors, navigation }: Bo
     ['index', 'explore', 'notifications', 'user'].includes(route.name)
   );
 
-  // Hide tab bar on conversation page
+  // Hide tab bar on casts page
   const currentRoute = state.routes[state.index].name;
-  if (currentRoute === 'conversation' || currentRoute === 'channel') {
+  if (currentRoute === 'casts' || currentRoute === 'channel') {
     return null;
   }
 
@@ -47,10 +47,22 @@ export default function LiquidGlassTabBar({ state, descriptors, navigation }: Bo
 
             // Icon mapping
             let iconName: React.ComponentProps<typeof FontAwesome>['name'] = 'home';
-            if (route.name === 'index') iconName = 'home';
-            else if (route.name === 'explore') iconName = 'compass';
-            else if (route.name === 'notifications') iconName = 'bell';
-            else if (route.name === 'user') iconName = 'user';
+            switch (route.name) {
+              case 'index':
+                iconName = 'home';
+                break;
+              case 'explore':
+                iconName = 'search';
+                break;
+              case 'notifications':
+                iconName = 'bell';
+                break;
+              case 'user':
+                iconName = 'user';
+                break;
+              default:
+                iconName = 'home';
+            }
 
             return (
               <TouchableOpacity
@@ -115,14 +127,14 @@ const styles = StyleSheet.create({
   tabBarInner: {
     flexDirection: 'row',
     paddingHorizontal: 8,
-    paddingVertical: 8,
+    paddingVertical: 6,
     gap: 4,
   },
   tabItem: {
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 8,
-    paddingVertical: 6,
+    paddingVertical: 4,
   },
   icon: {
     width: 28,

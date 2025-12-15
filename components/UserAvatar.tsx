@@ -5,12 +5,15 @@ import { Link } from 'expo-router';
 interface UserAvatarProps {
   fid: number;
   pfpUrl: string;
+  username?: string;
   size?: number;
 }
 
-export function UserAvatar({ fid, pfpUrl, size = 40 }: UserAvatarProps) {
+export function UserAvatar({ fid, pfpUrl, username, size = 40 }: UserAvatarProps) {
+  const href = (username ? `/${username}` : `/fids/${fid}`) as any;
+  
   return (
-    <Link href={`/profile?fid=${fid}`} asChild>
+    <Link href={href} asChild>
       <TouchableOpacity style={{ marginRight: 12 }}>
         <Image 
           source={{ uri: pfpUrl }} 

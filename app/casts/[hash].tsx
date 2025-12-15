@@ -1,14 +1,14 @@
-import React, { useMemo } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, ActivityIndicator, SafeAreaView, Platform, StatusBar } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useMemo, useLayoutEffect } from 'react';
+import { View, Text, Image, StyleSheet, TouchableOpacity, ActivityIndicator, SafeAreaView, Platform, StatusBar, useWindowDimensions } from 'react-native';
+import { useLocalSearchParams, useRouter, useNavigation, Link } from 'expo-router';
 import { LegendList } from '@legendapp/list';
 import { formatDistanceToNow } from 'date-fns';
 import _ from 'lodash';
 import { FontAwesome } from '@expo/vector-icons';
-import { Link } from 'expo-router';
 import ComposeCast from '../../components/ComposeCast';
 import { useCastWithReplies } from '../../hooks/queries/useCastWithReplies';
 import { NeynarCast } from '../../lib/neynar/types';
+import { PageHeader } from '../../components/PageHeader';
 
 export type NeynarCastV1 = {
   hash: string;
@@ -78,14 +78,21 @@ export type NeynarCastV1 = {
   };
 };
 
-export default function ConversationScreen() {
-  const params = useLocalSearchParams<{ hash?: string }>();
-  const hash = params.hash as string;
+export default function CastScreen() {
+  const { width } = useWindowDimensions();
+  const showGuardrails = Platform.OS === 'web' && width > 768;
+  const { hash } = useLocalSearchParams<{ hash: string }>();
   const router = useRouter();
+  const navigation = useNavigation();
+  
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerShown: false,
+    });
+  }, [navigation]);
   
   const { cast, replies, isLoading, error } = useCastWithReplies(hash);
   
-  // Transform into flat array for rendering
   const thread = useMemo(() => {
     if (!cast) return [];
     console.log('📊 Thread assembled:', { 
@@ -96,12 +103,8 @@ export default function ConversationScreen() {
     return [cast, ...replies];
   }, [cast, replies]);
 
-  const handleBackPress = () => {
-    router.push('/(tabs)');
-  };
-
   const handleCastPress = (childHash: string) => {
-    router.push(`/(tabs)/conversation?hash=${childHash}`);
+    router.push(`/casts/${childHash}`);
   };
 
   const isMainCast = (index: number) => index === 0;
@@ -124,7 +127,7 @@ export default function ConversationScreen() {
     
     return(
       <View style={[styles.castContainer, isMainCast(index) && styles.mainCastContainer]}>
-        <Link href={`/profile?fid=${cast.author.fid}`} asChild>
+        <Link href={cast.author.username ? `/${cast.author.username}` : `/fids/${cast.author.fid}`} asChild>
           <TouchableOpacity>
             <Image source={{ uri: cast.author.pfp_url }} style={styles.pfpImage} />
           </TouchableOpacity>
@@ -192,14 +195,23 @@ export default function ConversationScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        <LegendList
-          data={thread}
-          renderItem={renderCast}
-          keyExtractor={(item, index) => `${item.hash}-${index}`}
-          recycleItems
-        />
-        {Platform.OS !== 'web' && <ComposeCast hash={thread[0].hash} />}
+      <View style={styles.wrapper}>
+        {showGuardrails && (
+          <>
+            <View style={styles.guardrailLeft} />
+            <View style={styles.guardrailRight} />
+          </>
+        )}
+        <PageHeader />
+        <View style={styles.container}>
+          <LegendList
+            data={thread}
+            renderItem={renderCast}
+            keyExtractor={(item, index) => `${item.hash}-${index}`}
+            recycleItems
+          />
+          {Platform.OS !== 'web' && <ComposeCast hash={thread[0].hash} />}
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -211,9 +223,44 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
+  wrapper: {
+    flex: 1,
+    position: 'relative',
+  },
+  guardrailLeft: Platform.select({
+    web: {
+      position: 'absolute' as const,
+      left: 'calc(50% - 300px)' as any,
+      top: 0,
+      bottom: 0,
+      width: 1,
+      backgroundColor: 'rgba(0, 0, 0, 0.08)',
+      zIndex: 1,
+    },
+    default: {},
+  }),
+  guardrailRight: Platform.select({
+    web: {
+      position: 'absolute' as const,
+      right: 'calc(50% - 300px)' as any,
+      top: 0,
+      bottom: 0,
+      width: 1,
+      backgroundColor: 'rgba(0, 0, 0, 0.08)',
+      zIndex: 1,
+    },
+    default: {},
+  }),
   container: {
     flex: 1,
     backgroundColor: '#fff',
+    ...Platform.select({
+      web: {
+        maxWidth: 600,
+        alignSelf: 'center',
+        width: '100%',
+      },
+    }),
   },
   loadingContainer: {
     flex: 1,
@@ -327,3 +374,4 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
 });
+
