@@ -1,67 +1,53 @@
 import React, { useState, useCallback } from 'react';
 import { View, TextInput, StyleSheet, TouchableOpacity, Image, KeyboardAvoidingView, Platform } from 'react-native';
-// todo: fix cannot find module error for images
-import CastIcon from '../assets/images/castIcon.png';
-import { API_URL } from '../constants/Farcaster';
-import { useLogin } from 'farcasterkit-react-native';
-// import { useLogin } from '../providers/NeynarProvider';
+import { BlurView } from 'expo-blur';
+import { FontAwesome } from '@expo/vector-icons';
 
 const ComposeCast = ({ hash }: { hash?: string }) => {
   const DEFAULT_PLACEHOLDER = 'cast something...';
   const [text, setText] = useState<string>('');
   const [placeholder, setPlaceholder] = useState<string>(DEFAULT_PLACEHOLDER);
-  const { farcasterUser } = useLogin();
 
   const handleCast = useCallback(async () => {
-    if (farcasterUser) {
-      try {
-        const respBody = {
-          parent: hash ? hash : '',
-          signer_uuid: farcasterUser.signer_uuid,
-          text: text,
-        };
-        const response = await fetch(`${API_URL}/neynar/cast`, {
-          body: JSON.stringify(respBody),
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          method: 'POST',
-        });
-
-        const result = await response.json();
-        if (response.ok) {
-          setText('');
-          setPlaceholder('cast posted!');
-          setTimeout(() => setPlaceholder(DEFAULT_PLACEHOLDER), 1500);
-        } else {
-          throw new Error(result.message);
-        }
-      } catch (error) {
-        console.error('Could not send the cast', error);
-      }
-    }
-  }, [text, farcasterUser]);
+    // TODO: Implement cast posting with new auth system
+    console.log('Cast posting disabled:', text);
+    setText('');
+    setPlaceholder('posting disabled');
+    setTimeout(() => setPlaceholder(DEFAULT_PLACEHOLDER), 1500);
+  }, [text]);
 
   return (
     <KeyboardAvoidingView
-    style={{ marginTop: 0 }}
-    behavior={Platform.OS === "ios" ? "padding" : "height"}
-    keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 0}
+      style={{ marginTop: 0 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 0}
     >
       <View style={{ flex: 1 }}>
         <View style={{ flex: 1, justifyContent: 'flex-end' }}>
-          <View style={styles.composeInputContainer}>
-            <TextInput
-              value={text}
-              onChangeText={setText}
-              placeholder={placeholder}
-              placeholderTextColor={"#000"}
-              style={styles.composeInput}
-            />
-            <TouchableOpacity onPress={handleCast} style={styles.composeButton}>
-              <Image source={CastIcon} style={styles.icon} />
-            </TouchableOpacity>
-          </View>
+          <BlurView
+            intensity={80}
+            tint="systemMaterial"
+            style={styles.glassInputWrapper}
+          >
+            <View style={styles.composeInputContainer}>
+              <TextInput
+                value={text}
+                onChangeText={setText}
+                placeholder={placeholder}
+                placeholderTextColor={"#666"}
+                style={styles.composeInput}
+              />
+              <TouchableOpacity onPress={handleCast} style={styles.composeButton}>
+                <BlurView
+                  intensity={100}
+                  tint="light"
+                  style={styles.sendButton}
+                >
+                  <FontAwesome name="send" size={16} color="#000" />
+                </BlurView>
+              </TouchableOpacity>
+            </View>
+          </BlurView>
         </View>
       </View>
     </KeyboardAvoidingView>
@@ -69,29 +55,39 @@ const ComposeCast = ({ hash }: { hash?: string }) => {
 };
 
 const styles = StyleSheet.create({
-  composeButton: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 2,
-    paddingRight: 0,
+  glassInputWrapper: {
+    margin: 12,
+    marginBottom: 100,
+    borderRadius: 24,
+    overflow: 'hidden',
+    backgroundColor: 'rgba(255, 255, 255, 0.75)',
   },
   composeInputContainer: {
-    backgroundColor: '#F2F2F2',
-    borderRadius: 20,
     flexDirection: 'row',
-    margin: 10,
-    minHeight: 40,
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-    marginBottom: 25,
+    alignItems: 'center',
+    minHeight: 44,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    gap: 8,
   },
   composeInput: {
     flex: 1,
+    fontSize: 16,
+    color: '#000',
   },
-  icon: {
-    height: 24,
-    resizeMode: 'contain',
-    width: 24,
+  composeButton: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  sendButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.08)',
+    borderWidth: 0.5,
+    borderColor: 'rgba(0, 0, 0, 0.1)',
   },
 });
 

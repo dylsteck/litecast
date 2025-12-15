@@ -1,20 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { View, Image, StyleSheet } from 'react-native';
-
-import { API_URL } from '../constants/Farcaster';
 import { Link } from 'expo-router';
-import { useLogin } from 'farcasterkit-react-native';
 
 const HomeHeaderLeft = () => {
-  const { farcasterUser } = useLogin();
+  // TODO: Implement user profile picture display with new auth system
+  // Hardcoded for now
+  const defaultPfp = 'https://i.imgur.com/placeholder.png';
 
   return (
     <View style={styles.container}>
-      {farcasterUser && farcasterUser.pfp && 
-      <Link href={`/user?fname=${farcasterUser?.fname}`}>
-        <Image source={{ uri: farcasterUser.pfp }} style={styles.image} />
-      </Link>
-      }
+      {/* <Link href={`/user?fname=guest`}>
+        <Image source={{ uri: defaultPfp }} style={styles.image} />
+      </Link> */}
     </View>
   );
 };

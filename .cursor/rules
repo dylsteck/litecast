@@ -1,0 +1,191 @@
+# Litecast Development Rules
+
+## React Best Practices
+
+### 1. No Unnecessary useEffect
+- **DON'T** use useEffect for calculations - calculate during render
+- **DON'T** use useEffect for event handlers - use callbacks
+- **DON'T** use useEffect for navigation options - configure in _layout.tsx
+- **DO** use for: external system sync, subscriptions, cleanup
+
+### 2. Data Fetching
+- **ALWAYS** use React Query (useQuery, useInfiniteQuery)
+- **NEVER** manually fetch with useState/useEffect
+- **Pattern:** hooks/queries/*.ts with async fetch functions
+- Use proper error handling and loading states
+
+### 3. Component Composition
+- **Extract reusable components:** TabPills, EmptyState, UserAvatar, ReactionBar
+- **Use children prop** for flexible layouts
+- **Keep components focused** - single responsibility
+- **No prop drilling** - use composition or context
+
+### 4. Performance
+- **ONLY use useMemo** for expensive calculations (not simple array operations)
+- **ONLY use useCallback** for dependencies in other hooks or child components
+- **DON'T over-optimize** - measure first, optimize second
+- React Query handles most caching automatically
+
+### 5. Navigation
+- **DON'T** use useEffect for navigation.setOptions()
+- **DO** configure in _layout.tsx or route options
+- **Use Stack** for modals/detail pages (profile, conversation)
+- **Use Tabs** for main navigation (home, explore, inbox, profile)
+- **Hide tab bar** on stack screens by returning null from tabBar component
+
+## Styling Patterns
+
+### Colors
+1. **Black** (#000) - Active states, primary actions
+2. **iOS Gray** (#8E8E93) - Inactive states, secondary text
+3. **Light Gray** (#DDD) - Icons in empty states
+4. **Medium Gray** (#999) - Inactive pill text
+5. **Dark Gray** (#666) - Secondary text, reaction counts
+
+### Layout
+1. **systemMaterial tint** for BlurView when using blur
+2. **Transparent backgrounds** for cards in feed
+3. **Full-width dividers** - rgba(0, 0, 0, 0.08)
+4. **Rounded pills** - borderRadius: 100 for tab pills
+5. **Aspect ratio images** - aspectRatio: 16/9 with borderRadius: 12
+
+### Typography
+- Feed text: 16px, line height 22px
+- Conversation main: 18px, line height 24px
+- Headers: 18px bold
+- Secondary: 13-14px
+
+## File Organization
+
+```
+hooks/queries/*     - React Query data fetching hooks
+components/*        - Reusable UI components
+  TabPills.tsx      - Reusable tab navigation
+  EmptyState.tsx    - Empty state displays
+  UserAvatar.tsx    - Clickable user avatars
+  ReactionBar.tsx   - Cast reaction display
+  Cast.tsx          - Cast card component
+  Notification.tsx  - Notification items
+app/(tabs)/*        - Tab-based screens
+app/*.tsx           - Stack screens (profile, etc.)
+lib/neynar/*        - Neynar API client and types
+```
+
+## Code Style
+
+### General
+- Use **bun/bunx** for package management
+- **TypeScript strict mode** enabled
+- **Functional components only** - no class components
+- **Hooks at top** of component (before any logic)
+
+### React Patterns
+- Calculations via useMemo (sparingly)
+- Event handlers via useCallback (sparingly) 
+- Prefer inline functions unless performance issues
+- Use destructuring for cleaner code
+
+### Component Structure
+```tsx
+// 1. Imports
+import React from 'react';
+import { View } from 'react-native';
+
+// 2. Types/Interfaces
+interface Props {
+  // ...
+}
+
+// 3. Helper functions (outside component if pure)
+const formatCount = (count: number) => { /* ... */ };
+
+// 4. Component
+export function MyComponent({ prop }: Props) {
+  // Hooks first
+  const [state, setState] = useState();
+  const query = useQuery();
+  
+  // Derived state
+  const computed = useMemo(() => {}, [deps]);
+  
+  // Event handlers
+  const handleClick = useCallback(() => {}, [deps]);
+  
+  // Render
+  return <View>...</View>;
+}
+
+// 5. Styles at bottom
+const styles = StyleSheet.create({});
+```
+
+## Neynar API Patterns
+
+### Query Hooks
+- Always handle loading, error, and success states
+- Use DEFAULT_FID (616) for testing
+- Log API calls in development for debugging
+- Add proper TypeScript types from lib/neynar/types
+
+### API Calls
+- All in hooks/queries/*.ts
+- Use NEYNAR_ENDPOINTS constants
+- Handle errors with try/catch
+- Add console.log for debugging
+
+## Common Patterns
+
+### Tab Management
+```tsx
+<TabPills 
+  tabs={tabs} 
+  activeTab={activeTab} 
+  onTabChange={setActiveTab}
+/>
+```
+
+### Empty States
+```tsx
+<EmptyState 
+  icon="bell-slash-o"
+  title="All caught up!"
+  subtitle="No notifications"
+/>
+```
+
+### User Avatars
+```tsx
+<UserAvatar 
+  fid={user.fid} 
+  pfpUrl={user.pfp_url} 
+  size={40}
+/>
+```
+
+### Reactions
+```tsx
+<ReactionBar 
+  reactions={[
+    { icon: 'comment', count: replies },
+    { icon: 'heart', count: likes, onPress: handleLike },
+  ]}
+/>
+```
+
+## Testing & Debugging
+
+- Use console.log with emojis (🔍, 📡, ✅, ❌) for API debugging
+- Test with FID 616 (dylsteck)
+- Check hot reload works after changes
+- Verify navigation works across all screens
+
+## Don'ts
+
+- ❌ Don't use useEffect for navigation options
+- ❌ Don't manually implement data fetching
+- ❌ Don't use purple colors (removed from design)
+- ❌ Don't add backgrounds to feed cards
+- ❌ Don't use inline styles for reusable patterns
+- ❌ Don't fetch data without React Query
+- ❌ Don't over-optimize with useMemo/useCallback
+

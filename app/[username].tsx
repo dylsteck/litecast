@@ -1,17 +1,17 @@
-import React, { useCallback, useMemo, useState, useEffect } from 'react';
-import { View, StyleSheet, Text, Image, Platform, StatusBar, ActivityIndicator, useWindowDimensions } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import React, { useCallback, useMemo, useState, useLayoutEffect } from 'react';
+import { View, StyleSheet, Text, Image, SafeAreaView, Platform, StatusBar, ActivityIndicator, useWindowDimensions } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { LegendList } from '@legendapp/list';
-import { useRouter } from 'expo-router';
-import { useUser } from '../../hooks/queries/useUser';
-import { useUserCasts } from '../../hooks/queries/useUserCasts';
-import { useUserReactions } from '../../hooks/queries/useUserReactions';
-import { DEFAULT_FID } from '../../lib/neynar/constants';
-import Cast from '../../components/Cast';
-import { TabPills } from '../../components/TabPills';
-import { EmptyState } from '../../components/EmptyState';
-import { NeynarCast } from '../../lib/neynar/types';
+import { useLocalSearchParams, useNavigation } from 'expo-router';
+import { useUser } from '../hooks/queries/useUser';
+import { useUserCasts } from '../hooks/queries/useUserCasts';
+import { useUserReactions } from '../hooks/queries/useUserReactions';
+import { DEFAULT_FID } from '../lib/neynar/constants';
+import { NeynarCast } from '../lib/neynar/types';
+import Cast from '../components/Cast';
+import { TabPills } from '../components/TabPills';
+import { EmptyState } from '../components/EmptyState';
+import { PageHeader } from '../components/PageHeader';
 
 type TabType = 'casts' | 'recasts' | 'likes';
 
@@ -31,30 +31,30 @@ const formatCount = (count: number): string => {
   return count.toString();
 };
 
-const UserScreen = () => {
+export default function UsernameProfileScreen() {
   const { width } = useWindowDimensions();
   const showGuardrails = Platform.OS === 'web' && width > 768;
+  const { username } = useLocalSearchParams<{ username: string }>();
   const [activeTab, setActiveTab] = useState<TabType>('casts');
-  const router = useRouter();
+  const navigation = useNavigation();
   
-  const { data: userData, isLoading: userLoading, error: userError } = useUser(DEFAULT_FID);
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerShown: false,
+    });
+  }, [navigation]);
   
-  useEffect(() => {
-    // Don't redirect - keep user profile in tabs so navbar shows
-    // The user.tsx tab IS the user's own profile page
-  }, []);
+  const { data: userData, isLoading: userLoading, error: userError } = useUser(username || '');
   
-  // Casts tab
+  const userFid = userData?.user?.fid;
   const { data: castsData, isLoading: castsLoading, fetchNextPage: fetchCastsNextPage, hasNextPage: hasCastsNextPage, isFetchingNextPage: isFetchingCastsNextPage, error: castsError } = 
-    useUserCasts(DEFAULT_FID, false);
+    useUserCasts(userFid || 0, false);
   
-  // Recasts tab
   const { data: recastsData, isLoading: recastsLoading, fetchNextPage: fetchRecastsNextPage, hasNextPage: hasRecastsNextPage, isFetchingNextPage: isFetchingRecastsNextPage, error: recastsError } = 
-    useUserReactions(DEFAULT_FID, 'recasts');
+    useUserReactions(userFid || 0, 'recasts');
   
-  // Likes tab
   const { data: likesData, isLoading: likesLoading, fetchNextPage: fetchLikesNextPage, hasNextPage: hasLikesNextPage, isFetchingNextPage: isFetchingLikesNextPage, error: likesError } = 
-    useUserReactions(DEFAULT_FID, 'likes');
+    useUserReactions(userFid || 0, 'likes');
 
   const casts = useMemo(() => {
     if (activeTab === 'casts') {
@@ -79,10 +79,11 @@ const UserScreen = () => {
   const isLoading = castsLoading || recastsLoading || likesLoading;
   const isFetchingMore = isFetchingCastsNextPage || isFetchingRecastsNextPage || isFetchingLikesNextPage;
   const user = userData?.user;
+  const isOwnProfile = user?.fid === DEFAULT_FID;
 
   if (userError || castsError || recastsError || likesError) {
     return (
-      <SafeAreaView style={styles.safeArea} edges={['top']}>
+      <SafeAreaView style={styles.safeArea}>
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>Failed to load profile</Text>
           <Text style={styles.errorSubtext}>{(userError || castsError || recastsError || likesError)?.message}</Text>
@@ -93,7 +94,7 @@ const UserScreen = () => {
 
   if (userLoading || !user) {
     return (
-      <SafeAreaView style={styles.safeArea} edges={['top']}>
+      <SafeAreaView style={styles.safeArea}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#000000" />
         </View>
@@ -102,7 +103,7 @@ const UserScreen = () => {
   }
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
+    <SafeAreaView style={styles.safeArea}>
       <View style={styles.wrapper}>
         {showGuardrails && (
           <>
@@ -110,82 +111,80 @@ const UserScreen = () => {
             <View style={styles.guardrailRight} />
           </>
         )}
+        {!isOwnProfile && <PageHeader />}
         <View style={styles.container}>
-          {/* Profile Header - Ultra Compact */}
-        <View style={styles.profileHeader}>
-          <View style={styles.topSection}>
-            <Image
-              source={{ uri: user.pfp_url }}
-              style={styles.avatar}
-            />
-            <View style={styles.infoSection}>
-              <View style={styles.nameRow}>
-                <Text style={styles.displayName}>{user.display_name}</Text>
-            {user.power_badge && (
-                <FontAwesome name="bolt" size={14} color="#000" />
-              )}
+          <View style={styles.profileHeader}>
+            <View style={styles.topSection}>
+              <Image
+                source={{ uri: user.pfp_url }}
+                style={styles.avatar}
+              />
+              <View style={styles.infoSection}>
+                <View style={styles.nameRow}>
+                  <Text style={styles.displayName}>{user.display_name}</Text>
+                  {user.power_badge && (
+                    <FontAwesome name="bolt" size={14} color="#000" />
+                  )}
+                </View>
+                <Text style={styles.username}>@{user.username}</Text>
               </View>
-              <Text style={styles.username}>@{user.username}</Text>
+            </View>
+            
+            {user.profile?.bio?.text && (
+              <Text style={styles.bio} numberOfLines={2}>{user.profile.bio.text}</Text>
+            )}
+            
+            <View style={styles.statsRow}>
+              <Text style={styles.statText}>
+                <Text style={styles.statBold}>{formatCount(user.following_count)}</Text>
+                <Text style={styles.statGray}> Following</Text>
+              </Text>
+              <Text style={styles.statText}>
+                <Text style={styles.statBold}>{formatCount(user.follower_count)}</Text>
+                <Text style={styles.statGray}> Followers</Text>
+              </Text>
             </View>
           </View>
-          
-          {user.profile?.bio?.text && (
-            <Text style={styles.bio} numberOfLines={2}>{user.profile.bio.text}</Text>
-          )}
-          
-          <View style={styles.statsRow}>
-            <Text style={styles.statText}>
-              <Text style={styles.statBold}>{formatCount(user.following_count)}</Text>
-              <Text style={styles.statGray}> Following</Text>
-            </Text>
-            <Text style={styles.statText}>
-              <Text style={styles.statBold}>{formatCount(user.follower_count)}</Text>
-              <Text style={styles.statGray}> Followers</Text>
-            </Text>
-          </View>
-        </View>
 
-        {/* Tabs */}
-        <TabPills 
-          tabs={tabs} 
-          activeTab={activeTab} 
-          onTabChange={setActiveTab}
-        />
+          <TabPills 
+            tabs={tabs} 
+            activeTab={activeTab} 
+            onTabChange={setActiveTab}
+          />
 
-        {/* Content */}
-        <LegendList
-          data={casts}
-          renderItem={({ item }: { item: NeynarCast }) => <Cast cast={item} />}
-          keyExtractor={(item: NeynarCast, index: number) => `${item.hash}-${index}`}
-          onEndReached={onEndReached}
-          onEndReachedThreshold={0.1}
-          recycleItems
-          ListFooterComponent={() =>
-            isFetchingMore ? (
-              <ActivityIndicator size="large" color="#000" style={styles.loader} />
-            ) : null
-          }
-          ListEmptyComponent={() =>
-            !isLoading ? (
-              <EmptyState 
-                icon={activeTab === 'likes' ? 'heart-o' : activeTab === 'recasts' ? 'retweet' : 'comment-o'}
-                title={`No ${activeTab} yet`}
-                subtitle={
-                  activeTab === 'likes' 
-                    ? "Casts you like will appear here" 
-                    : activeTab === 'recasts' 
-                    ? "Recasted content will appear here" 
-                    : "Casts will appear here"
-                }
-              />
-            ) : null
-          }
-        />
+          <LegendList
+            data={casts}
+            renderItem={({ item }: { item: NeynarCast }) => <Cast cast={item} />}
+            keyExtractor={(item: NeynarCast, index: number) => `${item.hash}-${index}`}
+            onEndReached={onEndReached}
+            onEndReachedThreshold={0.1}
+            recycleItems
+            ListFooterComponent={() =>
+              isFetchingMore ? (
+                <ActivityIndicator size="large" color="#000" style={styles.loader} />
+              ) : null
+            }
+            ListEmptyComponent={() =>
+              !isLoading ? (
+                <EmptyState 
+                  icon={activeTab === 'likes' ? 'heart-o' : activeTab === 'recasts' ? 'retweet' : 'comment-o'}
+                  title={`No ${activeTab} yet`}
+                  subtitle={
+                    activeTab === 'likes' 
+                      ? "Casts you like will appear here" 
+                      : activeTab === 'recasts' 
+                      ? "Recasted content will appear here" 
+                      : "Casts will appear here"
+                  }
+                />
+              ) : null
+            }
+          />
         </View>
       </View>
     </SafeAreaView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   safeArea: {
@@ -315,4 +314,3 @@ const styles = StyleSheet.create({
   },
 });
 
-export default UserScreen;

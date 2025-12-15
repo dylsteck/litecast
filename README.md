@@ -15,7 +15,7 @@ Built as an open source example for FarcasterKit x Neynar, as well as part of [d
 1. Set up the app locally
 
 -   `git clone https://github.com/dylsteck/litecast`
--   `cd litecast && yarn install`
+-   `cd litecast && bun install`
 
 2. Set environment variables
 
@@ -28,7 +28,19 @@ Built as an open source example for FarcasterKit x Neynar, as well as part of [d
 -   To run the app locally, you'll need to create an account at `https://expo.dev`, then create a new project
 -   Once you've created a project, run `npm install --global eas-cli && eas init --id [YOUR PROJECT ID]` to overwrite the existing project with your own
 
-4. Run by calling `yarn start`
+4. Run the app
+
+```bash
+bun install      # Install dependencies
+bun run start    # Start development server with Expo Go
+```
+
+Press `i` to open iOS Simulator
+
+**Useful commands:**
+- `bun run clean` - Fresh install (removes node_modules and reinstalls)
+- `bun run start` - Start development server
+- `bun run ios` - Run on iOS Simulator
 
 ### Todos
 Note: These are just a few todos on the top of my mind that would get the app to v1.0(full feature parity with the mockups below), but I'm sure smaller tasks and larger ideas will come to mind as well.

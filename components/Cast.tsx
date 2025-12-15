@@ -1,43 +1,17 @@
 import _ from 'lodash'
 import { formatDistanceToNow } from 'date-fns'
-import React, { useEffect, useState } from 'react'
-import { View, StyleSheet, Text, Image, TouchableOpacity } from 'react-native'
-import { FontAwesome } from '@expo/vector-icons'
-import { useLogin, useReaction } from 'farcasterkit-react-native'
+import React from 'react'
+import { View, StyleSheet, Text, Image, TouchableOpacity, Platform } from 'react-native'
 import { Link } from 'expo-router'
+import { BlurView } from 'expo-blur'
+import { NeynarCast } from '../lib/neynar/types'
+import { UserAvatar } from './UserAvatar'
+import { ReactionBar } from './ReactionBar'
 
-const Cast = ({ cast }: { cast: NeynarCastV2 }) => {
-  const { farcasterUser } = useLogin()
-  const postReaction = useReaction()
-  const [reactions, setReactions] = useState<Reactions>({
-    likes: [],
-    recasts: [],
-  }) // track reactions in state to optimistically update when the user reacts
-
-  useEffect(() => {
-    setReactions(cast.reactions)
-  }, [cast])
-
+const Cast = ({ cast }: { cast: NeynarCast }) => {
   const handleReaction = async (type: 'like' | 'recast', hash: string) => {
-    try {
-      if (!farcasterUser) throw new Error('Not logged in')
-      await postReaction(type, hash)
-      // TODO: handle unlikes and un-recasts
-      if (type === 'like') {
-        setReactions({
-          ...reactions,
-          likes: [...reactions.likes, farcasterUser],
-        })
-      } else if (type === 'recast') {
-        setReactions({
-          ...reactions,
-          recasts: [...reactions.recasts, farcasterUser],
-        })
-      }
-      console.log(`${type}d cast with hash ${hash}`)
-    } catch (error) {
-      console.error('Error posting reaction:', error)
-    }
+    // TODO: Implement reaction posting with new auth system
+    console.log(`Reaction disabled: ${type} for ${hash}`)
   }
 
   const renderImages = () => {
@@ -57,7 +31,12 @@ const Cast = ({ cast }: { cast: NeynarCastV2 }) => {
 
     // Render images
     return allMatches.map((url) => (
-      <Image key={url} source={{ uri: url }} style={styles.image} />
+      <Image 
+        key={url} 
+        source={{ uri: url }} 
+        style={styles.image}
+        resizeMode="cover"
+      />
     ))
   }
 
@@ -65,13 +44,20 @@ const Cast = ({ cast }: { cast: NeynarCastV2 }) => {
     addSuffix: true,
   })
   return (
-    <Link href={`/conversation?hash=${cast.hash}`}>
+    <BlurView
+      intensity={0}
+      tint="default"
+      style={styles.glassContainer}
+    >
       <View style={styles.castContainer}>
-        <Image
-          source={{ uri: cast.author.pfp_url ?? '' }}
-          style={styles.pfpImage}
+        <UserAvatar 
+          fid={cast.author.fid} 
+          pfpUrl={cast.author.pfp_url ?? ''} 
+          username={cast.author.username}
+          size={30}
         />
-        <View style={styles.contentContainer}>
+        <Link href={`/casts/${cast.hash}`} style={{ flex: 1 }}>
+          <View style={styles.contentContainer}>
           <View style={styles.headerContainer}>
             <Text style={styles.displayName}>
               {cast.author.display_name} ·{' '}
@@ -81,81 +67,44 @@ const Cast = ({ cast }: { cast: NeynarCastV2 }) => {
             </Text>
             {/* <Text style={styles.timestamp}>{_.replace(relativeTime, 'about ', '')}</Text> */}
           </View>
-          <Text style={styles.castText}>{cast.text}</Text>
+          <Text style={styles.castText} numberOfLines={6}>
+            {cast.text}
+          </Text>
           {renderImages()}
-          <View style={styles.reactionsContainer}>
-            <View style={styles.reactionsGroupContainer}>
-              <FontAwesome name="comment-o" size={11} color="black" />
-              <Text style={styles.reactionText}> {cast.replies.count}</Text>
-            </View>
-            <TouchableOpacity
-              disabled={!farcasterUser}
-              onPress={() => handleReaction('recast', cast.hash)}
-            >
-              <View style={styles.reactionsGroupContainer}>
-                <FontAwesome
-                  name="retweet"
-                  size={11}
-                  color={
-                    reactions.recasts.some((r) => r.fid === farcasterUser?.fid)
-                      ? 'green'
-                      : 'black'
-                  }
-                  style={{ opacity: farcasterUser ? 100 : 50 }}
-                />
-                <Text style={styles.reactionText}>
-                  {' '}
-                  {reactions.recasts.length}
-                </Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-              disabled={!farcasterUser}
-              onPress={() => handleReaction('like', cast.hash)}
-            >
-              <View style={styles.reactionsGroupContainer}>
-                <FontAwesome
-                  name={
-                    reactions.likes.some((r) => r.fid === farcasterUser?.fid)
-                      ? 'heart'
-                      : 'heart-o'
-                  }
-                  size={11}
-                  color={
-                    reactions.likes.some((r) => r.fid === farcasterUser?.fid)
-                      ? 'red'
-                      : 'black'
-                  }
-                  style={{ opacity: farcasterUser ? 100 : 50 }}
-                />
-                <Text style={styles.reactionTextFirst}>
-                  {' '}
-                  {reactions.likes.length}
-                </Text>
-              </View>
-            </TouchableOpacity>
+          <ReactionBar 
+            reactions={[
+              { icon: 'comment', count: cast.replies.count },
+              { icon: 'retweet', count: cast.reactions.recasts_count, onPress: () => handleReaction('recast', cast.hash) },
+              { icon: 'heart', count: cast.reactions.likes_count, onPress: () => handleReaction('like', cast.hash) },
+            ]}
+          />
           </View>
-        </View>
+        </Link>
       </View>
-    </Link>
+    </BlurView>
   )
 }
 
 const styles = StyleSheet.create({
-  castContainer: {
+  glassContainer: {
+    backgroundColor: 'transparent',
     borderBottomWidth: 1,
-    borderColor: '#eaeaea',
+    borderBottomColor: 'rgba(0, 0, 0, 0.08)',
+  },
+  castContainer: {
     flexDirection: 'row',
-    padding: 10,
-    zIndex: -50,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
     width: '100%',
+    backgroundColor: 'transparent',
   },
   castText: {
-    color: '#333',
-    fontSize: 14,
-    lineHeight: 18,
+    color: '#000',
+    fontSize: 16,
+    lineHeight: 22,
     paddingRight: 8,
-    paddingBottom: 3,
+    paddingBottom: 4,
+    fontWeight: '400',
   },
   container: {
     backgroundColor: '#fff',
@@ -182,34 +131,6 @@ const styles = StyleSheet.create({
   icon: {
     resizeMode: 'contain',
   },
-  pfpImage: {
-    borderRadius: 25,
-    height: 30,
-    marginLeft: 10,
-    marginRight: 15,
-    width: 30,
-  },
-  reactionText: {
-    color: '#000',
-    fontSize: 11,
-  },
-  reactionTextFirst: {
-    color: '#000',
-    fontSize: 11,
-  },
-  reactionsContainer: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-    gap: 24,
-    marginTop: 4,
-    paddingBottom: 1,
-  },
-  reactionsGroupContainer: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    marginRight: 4,
-  },
   timestamp: {
     color: '#666',
     fontSize: 12,
@@ -222,10 +143,14 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   image: {
-    width: 100, // Set your desired image width
-    height: 100, // Set your desired image height
-    marginRight: 4,
-    paddingBottom: 4,
+    width: '100%',
+    aspectRatio: 16 / 9,
+    borderRadius: 12,
+    marginTop: 8,
+    marginBottom: 4,
+    backgroundColor: '#f5f5f5',
+    borderWidth: 1,
+    borderColor: 'rgba(0, 0, 0, 0.08)',
   },
 })
 

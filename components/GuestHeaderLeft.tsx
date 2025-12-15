@@ -1,10 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { View, Image, StyleSheet, Pressable, Text } from 'react-native';
-
-// import { API_URL } from '../constants/Farcaster';
-
-import { Link, useNavigation } from 'expo-router';
-import { useLogin } from 'farcasterkit-react-native';
+import React from 'react';
+import { View, StyleSheet, Pressable, Text } from 'react-native';
+import { useNavigation } from 'expo-router';
 
 const GuestHeaderLeft = () => {
   const navigation = useNavigation();

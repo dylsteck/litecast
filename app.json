@@ -29,6 +29,7 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": ["expo-router"],
+    "newArchEnabled": true,
     "experiments": {
       "typedRoutes": true
     },
