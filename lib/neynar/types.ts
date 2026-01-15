@@ -15,6 +15,56 @@ export interface NeynarUser {
   power_badge?: boolean;
 }
 
+export interface NeynarOEmbed {
+  url?: string;
+  html?: string;
+  type?: string;
+  author_name?: string;
+  author_url?: string;
+  provider_name?: string;
+  provider_url?: string;
+  width?: number;
+  height?: number;
+  version?: string;
+  cache_age?: string;
+  method?: string;
+}
+
+export interface NeynarFcFrameButton {
+  title: string;
+  action?: {
+    url?: string;
+    name?: string;
+    type?: string;
+    splashImageUrl?: string;
+    splashBackgroundColor?: string;
+  };
+}
+
+export interface NeynarFcFrame {
+  version?: string;
+  imageUrl?: string;
+  button?: NeynarFcFrameButton;
+}
+
+export interface NeynarHtmlMetadata {
+  oembed?: NeynarOEmbed;
+  favicon?: string;
+  ogImage?: Array<{ url: string; type?: string }>;
+  ogLocale?: string;
+  ogSiteName?: string;
+  ogTitle?: string;
+  ogDescription?: string;
+  fcFrame?: NeynarFcFrame;
+}
+
+export interface NeynarMetadataFrame {
+  version?: string;
+  title?: string;
+  image?: string;
+  frames_url?: string;
+}
+
 export interface NeynarEmbedMetadata {
   url: string;
   title?: string;
@@ -29,6 +79,8 @@ export interface NeynarEmbedMetadata {
     height_px?: number;
     width_px?: number;
   };
+  html?: NeynarHtmlMetadata;
+  frame?: NeynarMetadataFrame;
 }
 
 export interface NeynarOpenGraph {
@@ -48,6 +100,30 @@ export interface NeynarFrameEmbed {
     title: string;
     action_type: string;
   }>;
+  // Enhanced fields from NeynarFrame when available
+  description?: string;
+  manifest?: {
+    frame?: {
+      name?: string;
+      description?: string;
+    };
+    miniapp?: {
+      name?: string;
+      description?: string;
+    };
+  };
+  developer?: {
+    display_name: string;
+    username: string;
+    pfp_url: string;
+    fid: number;
+  };
+  author?: {
+    display_name: string;
+    username: string;
+    pfp_url: string;
+    fid: number;
+  };
 }
 
 export interface NeynarEmbed {
@@ -98,6 +174,10 @@ export interface NeynarCast {
     count: number;
   };
   mentioned_profiles: NeynarUser[];
+  mentioned_profiles_ranges?: Array<{
+    start: number;
+    end: number;
+  }>;
   viewer_context?: {
     liked: boolean;
     recasted: boolean;

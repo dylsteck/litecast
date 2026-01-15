@@ -1,12 +1,11 @@
 import React, { useState } from 'react'
 import { View, StyleSheet, Text, Image, Platform, Pressable, TouchableOpacity } from 'react-native'
-import { Link } from 'expo-router'
+import { Link, router } from 'expo-router'
 import { NeynarCast, NeynarEmbed } from '../lib/neynar/types'
 import { UserAvatar } from './UserAvatar'
 import { ReactionBar } from './ReactionBar'
 import { SystemColors } from '../constants/Colors'
-import EmbedPreview from './EmbedPreview'
-import FrameEmbed from './FrameEmbed'
+import { EmbedRouter } from './embeds'
 import QuoteCast from './QuoteCast'
 import ImageViewer from './ImageViewer'
 
@@ -70,19 +69,21 @@ const Cast = ({ cast, truncate = false }: { cast: NeynarCast; truncate?: boolean
     const embedsToRender = cast.embeds.slice(0, 3);
 
     return embedsToRender.map((embed: NeynarEmbed, index: number) => {
-      // Quote cast embed
+      // Skip Farcaster token links for now (farcaster.xyz/~/ca/[anything])
+      if (embed.url && /farcaster\.xyz\/~\/ca\//i.test(embed.url)) {
+        return null;
+      }
+
+      // Quote cast embed - handled separately
       if (embed.cast) {
         return <QuoteCast key={`quote-${embed.cast.hash}-${index}`} cast={embed.cast} />;
       }
 
-      // Frame/miniapp embed
-      if (embed.frame) {
-        return <FrameEmbed key={`frame-${embed.frame.url}-${index}`} frame={embed.frame} />;
-      }
-
-      // Check if embed has metadata indicating it's an image (via content_type, mime_type, or image dimensions)
+      // Skip video embeds - they're handled by EmbedRouter
       const mimeType = embed.metadata?.content_type || embed.metadata?.mime_type;
-      if (embed.url && (mimeType?.startsWith('image/') || embed.metadata?.image)) {
+      if (embed.url && (mimeType?.startsWith('video/') || mimeType === 'application/vnd.apple.mpegurl' || embed.metadata?.video)) {
+        // Let EmbedRouter handle video embeds
+      } else if (embed.url && (mimeType?.startsWith('image/') || embed.metadata?.image)) {
         return (
           <TouchableOpacity 
             key={`image-mime-${embed.url}-${index}`}
@@ -98,55 +99,25 @@ const Cast = ({ cast, truncate = false }: { cast: NeynarCast; truncate?: boolean
         );
       }
 
-      // URL embed with open_graph metadata (Neynar API format)
-      if (embed.open_graph) {
-        const metadata = {
-          url: embed.open_graph.url || embed.url || '',
-          title: embed.open_graph.title,
-          description: embed.open_graph.description,
-          image_url: embed.open_graph.image_url,
-        };
-        if (metadata.url) {
-          return <EmbedPreview key={`embed-og-${metadata.url}-${index}`} metadata={metadata} />;
-        }
-      }
-
-      // URL embed with metadata (alternative format) - but not if it's just an image
-      if (embed.metadata && embed.metadata.url) {
-        // If metadata has title/description, show as link preview
-        if (embed.metadata.title || embed.metadata.description) {
-          return <EmbedPreview key={`embed-meta-${embed.metadata.url}-${index}`} metadata={embed.metadata} />;
-        }
-      }
-
       // Plain URL embed - check if it's an image
-      if (embed.url) {
-        if (isImageUrl(embed.url, embed.metadata)) {
-          return (
-            <TouchableOpacity 
-              key={`image-${embed.url}-${index}`}
-              activeOpacity={0.9}
-              onPress={() => setSelectedImage(embed.url!)}
-            >
-              <Image 
-                source={{ uri: embed.url }} 
-                style={styles.image}
-                resizeMode="cover"
-              />
-            </TouchableOpacity>
-          );
-        }
-        
-        // Non-image URL - create basic metadata object to show URL preview
+      if (embed.url && isImageUrl(embed.url, embed.metadata)) {
         return (
-          <EmbedPreview 
-            key={`url-${embed.url}-${index}`}
-            metadata={{ url: embed.url }}
-          />
+          <TouchableOpacity 
+            key={`image-${embed.url}-${index}`}
+            activeOpacity={0.9}
+            onPress={() => setSelectedImage(embed.url!)}
+          >
+            <Image 
+              source={{ uri: embed.url }} 
+              style={styles.image}
+              resizeMode="cover"
+            />
+          </TouchableOpacity>
         );
       }
 
-      return null;
+      // Use EmbedRouter for all other embeds (frames, URLs, etc.)
+      return <EmbedRouter key={`embed-${index}`} embed={embed} index={index} />;
     });
   }
 
@@ -172,6 +143,62 @@ const Cast = ({ cast, truncate = false }: { cast: NeynarCast; truncate?: boolean
     ? cast.text.substring(0, 200) + '...'
     : cast.text;
   const isTruncated = truncate && cast.text.length > 200;
+
+  // Render text with linkified mentions
+  const renderTextWithMentions = () => {
+    if (!cast.mentioned_profiles_ranges || cast.mentioned_profiles_ranges.length === 0) {
+      return <Text style={styles.castText}>{displayText}</Text>;
+    }
+
+    const text = displayText;
+    const ranges = cast.mentioned_profiles_ranges;
+    const mentionedProfiles = cast.mentioned_profiles || [];
+    
+    // Sort ranges by start position and match with profiles
+    const sortedRanges = ranges.map((range, index) => ({
+      ...range,
+      index,
+      profile: mentionedProfiles[index],
+    })).sort((a, b) => a.start - b.start);
+
+    const elements: React.ReactNode[] = [];
+    let lastIndex = 0;
+
+    sortedRanges.forEach((range) => {
+      // Add text before the mention
+      if (range.start > lastIndex) {
+        elements.push(text.substring(lastIndex, range.start));
+      }
+
+      // Add the mention as a link (using nested Text to stay inline)
+      const mentionText = text.substring(range.start, range.end);
+      const profile = range.profile;
+      if (profile) {
+        const username = profile.username;
+        elements.push(
+          <Text 
+            key={`mention-${range.start}`} 
+            style={styles.mention}
+            onPress={() => router.push(`/${username}`)}
+          >
+            {mentionText}
+          </Text>
+        );
+      } else {
+        // Fallback if profile not found
+        elements.push(mentionText);
+      }
+
+      lastIndex = range.end;
+    });
+
+    // Add remaining text after last mention
+    if (lastIndex < text.length) {
+      elements.push(text.substring(lastIndex));
+    }
+
+    return <Text style={styles.castText}>{elements}</Text>;
+  };
   
   return (
     <>
@@ -194,12 +221,10 @@ const Cast = ({ cast, truncate = false }: { cast: NeynarCast; truncate?: boolean
                       <Text style={styles.separator}> · </Text>
                       <Text style={styles.timestamp}>{relativeTime}</Text>
                     </Text>
-                    <Text style={styles.castText}>
-                      {displayText}
-                      {isTruncated && (
-                        <Text style={styles.readMore}> Read more</Text>
-                      )}
-                    </Text>
+                    {renderTextWithMentions()}
+                    {isTruncated && (
+                      <Text style={styles.readMore}> Read more</Text>
+                    )}
                   </View>
                 </Pressable>
               </Link>
@@ -250,6 +275,10 @@ const styles = StyleSheet.create({
     paddingRight: 8,
     fontWeight: '400',
     letterSpacing: -0.1,
+  },
+  mention: {
+    color: SystemColors.label,
+    fontWeight: '500',
   },
   readMore: {
     color: SystemColors.secondaryLabel,
