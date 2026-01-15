@@ -114,7 +114,7 @@ export function useSearch(query: string) {
   return {
     casts: castsQuery.data?.result?.casts ?? [],
     users: usersQuery.data?.result?.users ?? [],
-    frames: framesQuery.data?.result?.frames ?? [],
+    frames: framesQuery.data?.frames ?? [],
     isLoading: castsQuery.isLoading || usersQuery.isLoading || framesQuery.isLoading,
     error: castsQuery.error || usersQuery.error || framesQuery.error,
   };

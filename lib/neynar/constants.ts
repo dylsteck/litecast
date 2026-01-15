@@ -6,6 +6,7 @@ export const NEYNAR_ENDPOINTS = {
   FEED: '/farcaster/feed',
   FEED_FOLLOWING: '/farcaster/feed/following',
   FEED_TRENDING: '/farcaster/feed/trending',
+  FEED_FOR_YOU: '/farcaster/feed/for_you',
   FEED_CHANNELS: '/farcaster/feed/channels',
   FEED_USER_CASTS: '/farcaster/feed/user/casts',
   FEED_PARENT_URLS: '/farcaster/feed/parent_urls',

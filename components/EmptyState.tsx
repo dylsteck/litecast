@@ -1,9 +1,10 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { FontAwesome } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
+import { SystemColors } from '../constants/Colors';
 
 interface EmptyStateProps {
-  icon: string;
+  icon: React.ComponentProps<typeof Ionicons>['name'];
   title: string;
   subtitle?: string;
 }
@@ -11,7 +12,7 @@ interface EmptyStateProps {
 export function EmptyState({ icon, title, subtitle }: EmptyStateProps) {
   return (
     <View style={styles.container}>
-      <FontAwesome name={icon} size={48} color="#DDD" />
+      <Ionicons name={icon} size={48} color={SystemColors.tertiaryLabel} />
       <Text style={styles.title}>{title}</Text>
       {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
     </View>
@@ -28,12 +29,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#666',
+    color: SystemColors.secondaryLabel,
     marginTop: 16,
   },
   subtitle: {
     fontSize: 14,
-    color: '#999',
+    color: SystemColors.tertiaryLabel,
     marginTop: 8,
     textAlign: 'center',
   },

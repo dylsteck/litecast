@@ -1,33 +1,46 @@
 import React from 'react';
-import { View, StyleSheet, Text, Image, TouchableOpacity } from 'react-native';
-import { FontAwesome } from '@expo/vector-icons';
+import { View, StyleSheet, Text, Image, TouchableOpacity, Platform } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { Link } from 'expo-router';
-import { formatDistanceToNow } from 'date-fns';
 import { NeynarNotification } from '../lib/neynar/types';
-import _ from 'lodash';
+import { SystemColors } from '../constants/Colors';
 
 interface NotificationProps {
   notification: NeynarNotification;
 }
 
 const Notification = ({ notification }: NotificationProps) => {
-  const relativeTime = formatDistanceToNow(new Date(notification.most_recent_timestamp), {
-    addSuffix: true,
-  });
+  // Format relative time nicely (e.g., "22m", "3h", "2d")
+  const formatTime = (timestamp: string) => {
+    const now = new Date()
+    const then = new Date(timestamp)
+    const diffMs = now.getTime() - then.getTime()
+    const diffMins = Math.floor(diffMs / 60000)
+    const diffHours = Math.floor(diffMs / 3600000)
+    const diffDays = Math.floor(diffMs / 86400000)
+    
+    if (diffMins < 60) return `${diffMins}m`
+    if (diffHours < 24) return `${diffHours}h`
+    if (diffDays < 7) return `${diffDays}d`
+    return `${Math.floor(diffDays / 7)}w`
+  }
+
+  const relativeTime = formatTime(notification.most_recent_timestamp)
 
   const getNotificationIcon = () => {
+    const iconSize = 20;
     switch (notification.type) {
       case 'mentions':
       case 'replies':
-        return <FontAwesome name="comment" size={16} color="#000" />;
+        return { name: 'chatbubble' as const, color: '#1D9BF0' };
       case 'recasts':
-        return <FontAwesome name="retweet" size={16} color="#000" />;
+        return { name: 'repeat' as const, color: '#00BA7C' };
       case 'likes':
-        return <FontAwesome name="heart" size={16} color="#000" />;
+        return { name: 'heart' as const, color: '#F91880' };
       case 'follows':
-        return <FontAwesome name="user-plus" size={16} color="#000" />;
+        return { name: 'person-add' as const, color: '#794BC4' };
       default:
-        return <FontAwesome name="bell" size={16} color="#666" />;
+        return { name: 'notifications' as const, color: SystemColors.secondaryLabel };
     }
   };
 
@@ -102,43 +115,44 @@ const Notification = ({ notification }: NotificationProps) => {
 
   const avatars = getAvatars();
   const notificationText = getNotificationText();
+  const iconConfig = getNotificationIcon();
+  
+  // Priority notifications: mentions, replies, or unseen
+  const isPriority = (notification.type === 'mentions' || notification.type === 'replies') || 
+                     (notification.seen === false || notification.seen === undefined);
   
   const content = (
-    <View style={styles.glassContainer}>
+    <View style={[styles.notificationCard, isPriority && styles.priorityCard]}>
       <View style={styles.notificationContainer}>
-        {/* Activity Icon on Left */}
-        <View style={styles.iconContainer}>
-          {getNotificationIcon()}
+        {/* Colored Icon on Left */}
+        <View style={[styles.iconContainer, { backgroundColor: `${iconConfig.color}15` }]}>
+          <Ionicons name={iconConfig.name} size={20} color={iconConfig.color} />
         </View>
         
-        {/* Content on Right */}
+        {/* Content */}
         <View style={styles.contentContainer}>
-          {/* Avatars above text */}
-          <View style={styles.avatarsContainer}>
-            {avatars.slice(0, 3).map((url, index) => (
-              <Image
-                key={index}
-                source={{ uri: url }}
-                style={[
-                  styles.avatar,
-                  index > 0 && { marginLeft: -10 },
-                ]}
-              />
-            ))}
-          </View>
-          
-          <View style={styles.textContainer}>
-            <Text style={styles.notificationText}>{notificationText}</Text>
-            <Text style={styles.timestamp}>
-              {_.replace(relativeTime, 'about ', '')}
-            </Text>
-          </View>
-          
-          {notification.cast && notification.cast.text && (
-            <Text style={styles.castPreview} numberOfLines={2}>
-              {notification.cast.text}
-            </Text>
+          {/* Avatars - simplified single or first avatar */}
+          {avatars.length > 0 && (
+            <Image
+              source={{ uri: avatars[0] }}
+              style={styles.avatar}
+            />
           )}
+          
+          {/* Text content */}
+          <View style={styles.textContainer}>
+            <Text style={styles.notificationText} numberOfLines={2}>
+              {notificationText}
+            </Text>
+            <Text style={styles.timestamp}>{relativeTime}</Text>
+            
+            {/* Cast preview */}
+            {notification.cast && notification.cast.text && (
+              <Text style={styles.castPreview} numberOfLines={2}>
+                {notification.cast.text}
+              </Text>
+            )}
+          </View>
         </View>
       </View>
     </View>
@@ -146,8 +160,10 @@ const Notification = ({ notification }: NotificationProps) => {
 
   if (notification.cast) {
     return (
-      <Link href={`/casts/${notification.cast.hash}`}>
-        {content}
+      <Link href={`/casts/${notification.cast.hash}`} asChild>
+        <TouchableOpacity activeOpacity={0.7}>
+          {content}
+        </TouchableOpacity>
       </Link>
     );
   }
@@ -156,59 +172,81 @@ const Notification = ({ notification }: NotificationProps) => {
 };
 
 const styles = StyleSheet.create({
-  glassContainer: {
-    marginHorizontal: 8,
-    marginVertical: 4,
+  notificationCard: {
+    backgroundColor: SystemColors.background,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: SystemColors.separator,
   },
   notificationContainer: {
     flexDirection: 'row',
-    padding: 12,
-    width: '100%',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
   },
   iconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(0, 0, 0, 0.08)',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
   },
   contentContainer: {
     flex: 1,
-  },
-  avatarsContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
+    alignItems: 'flex-start',
   },
   avatar: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    borderWidth: 2,
-    borderColor: '#fff',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    marginRight: 10,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: SystemColors.separator,
   },
   textContainer: {
-    marginBottom: 4,
-  },
-  timestamp: {
-    color: '#999',
-    fontSize: 12,
-    fontWeight: '300',
-    marginTop: 2,
+    flex: 1,
+    minWidth: 0,
+    flexShrink: 1,
   },
   notificationText: {
+    fontFamily: Platform.select({ 
+      ios: 'System', 
+      android: 'sans-serif', 
+      default: '-apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui' 
+    }),
+    fontSize: 15,
+    fontWeight: '400',
+    color: SystemColors.label,
+    lineHeight: 20,
+    letterSpacing: -0.1,
+    marginBottom: 2,
+  },
+  timestamp: {
+    fontFamily: Platform.select({ 
+      ios: 'System', 
+      android: 'sans-serif', 
+      default: '-apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui' 
+    }),
     fontSize: 14,
-    fontWeight: '600',
-    color: '#000',
-    lineHeight: 18,
+    fontWeight: '400',
+    color: SystemColors.secondaryLabel,
+    marginTop: 2,
+    letterSpacing: -0.1,
   },
   castPreview: {
-    fontSize: 13,
-    color: '#666',
-    lineHeight: 18,
+    fontFamily: Platform.select({ 
+      ios: 'System', 
+      android: 'sans-serif', 
+      default: '-apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui' 
+    }),
+    fontSize: 14,
+    color: SystemColors.secondaryLabel,
+    lineHeight: 19,
     marginTop: 6,
+    letterSpacing: -0.1,
+  },
+  priorityCard: {
+    backgroundColor: SystemColors.secondaryBackground,
   },
 });
 

@@ -38,7 +38,7 @@ const ChannelScreen = () => {
     <View style={styles.container}>
       <LegendList
         data={casts}
-        renderItem={({ item }: { item: NeynarCast }) => <Cast cast={item} />}
+        renderItem={({ item }: { item: NeynarCast }) => <Cast cast={item} truncate={true} />}
         keyExtractor={(item: NeynarCast) => item.hash}
         onEndReached={onEndReached}
         onEndReachedThreshold={0.1}

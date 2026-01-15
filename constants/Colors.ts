@@ -1,6 +1,15 @@
 const tintColorLight = '#2f95dc';
 const tintColorDark = '#fff';
 
+export const SystemColors = {
+  label: '#000000',
+  secondaryLabel: '#8E8E93',
+  tertiaryLabel: '#C7C7CC',
+  separator: 'rgba(60, 60, 67, 0.12)',
+  background: '#FFFFFF',
+  secondaryBackground: '#F2F2F7',
+};
+
 export default {
   light: {
     text: '#000',

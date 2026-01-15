@@ -1,14 +1,13 @@
-import React, { useMemo, useLayoutEffect } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, ActivityIndicator, SafeAreaView, Platform, StatusBar, useWindowDimensions } from 'react-native';
-import { useLocalSearchParams, useRouter, useNavigation, Link } from 'expo-router';
+import React, { useLayoutEffect } from 'react';
+import { View, Text, StyleSheet, ActivityIndicator, SafeAreaView, Platform, StatusBar, useWindowDimensions } from 'react-native';
+import { useLocalSearchParams, useNavigation } from 'expo-router';
 import { LegendList } from '@legendapp/list';
-import { formatDistanceToNow } from 'date-fns';
-import _ from 'lodash';
-import { FontAwesome } from '@expo/vector-icons';
 import ComposeCast from '../../components/ComposeCast';
 import { useCastWithReplies } from '../../hooks/queries/useCastWithReplies';
 import { NeynarCast } from '../../lib/neynar/types';
 import { PageHeader } from '../../components/PageHeader';
+import Cast from '../../components/Cast';
+import { SystemColors } from '../../constants/Colors';
 
 export type NeynarCastV1 = {
   hash: string;
@@ -82,7 +81,6 @@ export default function CastScreen() {
   const { width } = useWindowDimensions();
   const showGuardrails = Platform.OS === 'web' && width > 768;
   const { hash } = useLocalSearchParams<{ hash: string }>();
-  const router = useRouter();
   const navigation = useNavigation();
   
   useLayoutEffect(() => {
@@ -92,75 +90,6 @@ export default function CastScreen() {
   }, [navigation]);
   
   const { cast, replies, isLoading, error } = useCastWithReplies(hash);
-  
-  const thread = useMemo(() => {
-    if (!cast) return [];
-    console.log('📊 Thread assembled:', { 
-      mainCast: 1,
-      replies: replies.length,
-      total: 1 + replies.length,
-    });
-    return [cast, ...replies];
-  }, [cast, replies]);
-
-  const handleCastPress = (childHash: string) => {
-    router.push(`/casts/${childHash}`);
-  };
-
-  const isMainCast = (index: number) => index === 0;
-
-  const renderCast = ({ item: cast, index }: { item: NeynarCast; index: number }) => {
-    const renderImages = () => {
-      const regex = /https?:\/\/\S+\.(?:jpg|jpeg|png|gif)/g;
-      const textMatches = cast.text.match(regex) || [];
-      const embedMatches = cast.embeds
-        .filter(embed => embed.url && embed.url.match(regex))
-        .map(embed => embed.url);
-      const allMatches = Array.from(new Set([...textMatches, ...embedMatches]));
-      
-      return allMatches.map((url) => (
-        <Image key={url} source={{ uri: url }} style={isMainCast(index) ? styles.mainImage : styles.image} />
-      ));
-    };
-    
-    const relativeTime = _.replace(formatDistanceToNow(new Date(cast.timestamp)), 'about ', '');
-    
-    return(
-      <View style={[styles.castContainer, isMainCast(index) && styles.mainCastContainer]}>
-        <Link href={cast.author.username ? `/${cast.author.username}` : `/fids/${cast.author.fid}`} asChild>
-          <TouchableOpacity>
-            <Image source={{ uri: cast.author.pfp_url }} style={styles.pfpImage} />
-          </TouchableOpacity>
-        </Link>
-        <View style={styles.contentContainer}>
-          <View style={styles.headerContainer}>
-            <Text style={styles.displayName}>{cast.author.display_name}</Text>
-            <Text style={styles.username}>@{cast.author.username}</Text>
-          </View>
-          <Text style={[styles.castText, isMainCast(index) && styles.mainCastText]}>{cast.text}</Text>
-          {renderImages()}
-          <Text style={styles.timestamp}>{relativeTime} ago</Text>
-          
-          {isMainCast(index) && (
-            <View style={styles.reactionsContainer}>
-              <View style={styles.reactionItem}>
-                <FontAwesome name="comment-o" size={14} color="#666" />
-                <Text style={styles.reactionText}>{cast.replies.count}</Text>
-              </View>
-              <View style={styles.reactionItem}>
-                <FontAwesome name="retweet" size={14} color="#666" />
-                <Text style={styles.reactionText}>{cast.reactions.recasts_count}</Text>
-              </View>
-              <View style={styles.reactionItem}>
-                <FontAwesome name="heart-o" size={14} color="#666" />
-                <Text style={styles.reactionText}>{cast.reactions.likes_count}</Text>
-              </View>
-            </View>
-          )}
-        </View>
-      </View>
-    );
-  };
 
   if (error) {
     return (
@@ -183,11 +112,11 @@ export default function CastScreen() {
     );
   }
 
-  if (thread.length === 0) {
+  if (!cast && !isLoading) {
     return (
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>No conversation found</Text>
+          <Text style={styles.emptyText}>Cast not found</Text>
         </View>
       </SafeAreaView>
     );
@@ -204,13 +133,31 @@ export default function CastScreen() {
         )}
         <PageHeader />
         <View style={styles.container}>
-          <LegendList
-            data={thread}
-            renderItem={renderCast}
-            keyExtractor={(item, index) => `${item.hash}-${index}`}
-            recycleItems
-          />
-          {Platform.OS !== 'web' && <ComposeCast hash={thread[0].hash} />}
+          {cast && (
+            <>
+              <Cast cast={cast} truncate={false} />
+              {replies.length > 0 && (
+                <>
+                  <View style={styles.repliesHeader}>
+                    <View style={styles.repliesDivider} />
+                    <Text style={styles.repliesHeaderText}>
+                      {replies.length} {replies.length === 1 ? 'reply' : 'replies'}
+                    </Text>
+                    <View style={styles.repliesDivider} />
+                  </View>
+                  <LegendList
+                    data={replies}
+                    renderItem={({ item }: { item: NeynarCast }) => (
+                      <Cast cast={item} truncate={false} />
+                    )}
+                    keyExtractor={(item) => item.hash}
+                    recycleItems
+                  />
+                </>
+              )}
+            </>
+          )}
+          {Platform.OS !== 'web' && cast && <ComposeCast hash={cast.hash} />}
         </View>
       </View>
     </SafeAreaView>
@@ -220,7 +167,7 @@ export default function CastScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: SystemColors.background,
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   wrapper: {
@@ -253,7 +200,7 @@ const styles = StyleSheet.create({
   }),
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: SystemColors.background,
     ...Platform.select({
       web: {
         maxWidth: 600,
@@ -266,24 +213,24 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: SystemColors.background,
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
-    backgroundColor: '#fff',
+    backgroundColor: SystemColors.background,
   },
   errorText: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#000',
+    fontWeight: '600',
+    color: SystemColors.label,
     marginBottom: 8,
   },
   errorSubtext: {
     fontSize: 14,
-    color: '#666',
+    color: SystemColors.secondaryLabel,
     textAlign: 'center',
   },
   emptyContainer: {
@@ -292,86 +239,31 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: '#666',
+    color: SystemColors.secondaryLabel,
   },
-  castContainer: {
+  repliesHeader: {
     flexDirection: 'row',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0, 0, 0, 0.05)',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
   },
-  mainCastContainer: {
-    paddingBottom: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0, 0, 0, 0.1)',
-  },
-  contentContainer: {
+  repliesDivider: {
     flex: 1,
-    gap: 8,
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: SystemColors.separator,
   },
-  headerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  displayName: {
-    fontWeight: 'bold',
-    fontSize: 15,
-    color: '#000',
-  },
-  username: {
-    fontSize: 14,
-    color: '#666',
-  },
-  timestamp: {
-    color: '#999',
+  repliesHeaderText: {
+    fontFamily: Platform.select({ 
+      ios: 'System', 
+      android: 'sans-serif-medium', 
+      default: '-apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui' 
+    }),
     fontSize: 13,
-    marginTop: 4,
-  },
-  castText: {
-    color: '#000',
-    fontSize: 16,
-    lineHeight: 22,
-  },
-  mainCastText: {
-    fontSize: 18,
-    lineHeight: 24,
-    fontWeight: '400',
-  },
-  pfpImage: {
-    borderRadius: 20,
-    height: 40,
-    width: 40,
-    marginRight: 12,
-  },
-  image: {
-    width: '100%',
-    height: 160,
-    borderRadius: 12,
-    marginTop: 8,
-    backgroundColor: '#f0f0f0',
-  },
-  mainImage: {
-    width: '100%',
-    height: 240,
-    borderRadius: 12,
-    marginTop: 8,
-    backgroundColor: '#f0f0f0',
-  },
-  reactionsContainer: {
-    flexDirection: 'row',
-    gap: 24,
-    marginTop: 12,
-  },
-  reactionItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  reactionText: {
-    fontSize: 14,
-    color: '#666',
-    fontWeight: '500',
+    fontWeight: '600',
+    color: SystemColors.secondaryLabel,
+    marginHorizontal: 12,
+    letterSpacing: -0.1,
+    textTransform: 'uppercase',
   },
 });
 

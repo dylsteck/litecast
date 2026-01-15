@@ -15,12 +15,51 @@ export interface NeynarUser {
   power_badge?: boolean;
 }
 
+export interface NeynarEmbedMetadata {
+  url: string;
+  title?: string;
+  description?: string;
+  image_url?: string;
+  publisher?: string;
+  logo_url?: string;
+  mime_type?: string;
+  content_type?: string; // Neynar API uses content_type for MIME type
+  content_length?: number;
+  image?: {
+    height_px?: number;
+    width_px?: number;
+  };
+}
+
+export interface NeynarOpenGraph {
+  title?: string;
+  description?: string;
+  image_url?: string;
+  url?: string;
+}
+
+export interface NeynarFrameEmbed {
+  url: string;
+  title?: string;
+  frames_url?: string;
+  image?: string;
+  buttons?: Array<{
+    index: number;
+    title: string;
+    action_type: string;
+  }>;
+}
+
 export interface NeynarEmbed {
   url?: string;
   cast_id?: {
     fid: number;
     hash: string;
   };
+  cast?: NeynarCast; // For quote casts
+  metadata?: NeynarEmbedMetadata;
+  open_graph?: NeynarOpenGraph; // Neynar API uses open_graph
+  frame?: NeynarFrameEmbed;
 }
 
 export interface NeynarReactions {
@@ -59,6 +98,10 @@ export interface NeynarCast {
     count: number;
   };
   mentioned_profiles: NeynarUser[];
+  viewer_context?: {
+    liked: boolean;
+    recasted: boolean;
+  };
 }
 
 export interface NeynarChannel {
@@ -207,12 +250,31 @@ export interface SearchUsersResponse {
 }
 
 export interface NeynarFrame {
-  uuid: string;
-  name: string;
-  description: string;
+  uuid?: string;
+  version?: string;
   image: string;
-  frame_url: string;
-  developer: {
+  frames_url?: string;
+  frame_url?: string;
+  title?: string;
+  name?: string;
+  description?: string;
+  manifest?: {
+    frame?: {
+      name?: string;
+      description?: string;
+    };
+    miniapp?: {
+      name?: string;
+      description?: string;
+    };
+  };
+  author?: {
+    display_name: string;
+    username: string;
+    pfp_url: string;
+    fid: number;
+  };
+  developer?: {
     display_name: string;
     username: string;
     pfp_url: string;
@@ -227,11 +289,9 @@ export interface SearchFramesParams {
 }
 
 export interface SearchFramesResponse {
-  result: {
-    frames: NeynarFrame[];
-    next: {
-      cursor: string | null;
-    };
+  frames: NeynarFrame[];
+  next: {
+    cursor: string | null;
   };
 }
 

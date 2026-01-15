@@ -1,8 +1,9 @@
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity, Platform, Text } from 'react-native';
 import { BlurView } from 'expo-blur';
-import { FontAwesome } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
+import { SystemColors } from '../constants/Colors';
 
 export default function LiquidGlassTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   // Filter to only show the main tabs
@@ -45,23 +46,23 @@ export default function LiquidGlassTabBar({ state, descriptors, navigation }: Bo
               }
             };
 
-            // Icon mapping
-            let iconName: React.ComponentProps<typeof FontAwesome>['name'] = 'home';
+            // Icon mapping with filled/outline variants
+            let iconName: React.ComponentProps<typeof Ionicons>['name'] = 'home';
             switch (route.name) {
               case 'index':
-                iconName = 'home';
+                iconName = isFocused ? 'home' : 'home-outline';
                 break;
               case 'explore':
-                iconName = 'search';
+                iconName = isFocused ? 'search' : 'search-outline';
                 break;
               case 'notifications':
-                iconName = 'bell';
+                iconName = isFocused ? 'notifications' : 'notifications-outline';
                 break;
               case 'user':
-                iconName = 'user';
+                iconName = isFocused ? 'person' : 'person-outline';
                 break;
               default:
-                iconName = 'home';
+                iconName = isFocused ? 'home' : 'home-outline';
             }
 
             return (
@@ -72,10 +73,10 @@ export default function LiquidGlassTabBar({ state, descriptors, navigation }: Bo
                 onPress={onPress}
                 style={styles.tabItem}
               >
-                <FontAwesome
+                <Ionicons
                   name={iconName}
                   size={24}
-                  color={isFocused ? '#000' : '#8E8E93'}
+                  color={isFocused ? SystemColors.label : SystemColors.secondaryLabel}
                   style={styles.icon}
                 />
               </TouchableOpacity>

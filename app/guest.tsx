@@ -35,7 +35,7 @@ const GuestScreen = () => {
       <View style={styles.container}>
         <LegendList
           data={casts}
-          renderItem={({ item }) => <Cast cast={item} />}
+          renderItem={({ item }) => <Cast cast={item} truncate={true} />}
           keyExtractor={(item) => item.hash}
           onEndReached={onEndReached}
           onEndReachedThreshold={0.1}

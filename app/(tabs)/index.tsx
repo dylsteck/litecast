@@ -1,19 +1,37 @@
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { View, StyleSheet, ActivityIndicator, Text, Platform, StatusBar, TouchableOpacity, RefreshControl, useWindowDimensions } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { LegendList } from '@legendapp/list'
-import { FontAwesome } from '@expo/vector-icons'
-import { BlurView } from 'expo-blur'
+import { Ionicons } from '@expo/vector-icons'
 import ComposeCast from '../../components/ComposeCast'
 import Cast from '../../components/Cast'
 import { useChannelFeed } from '../../hooks/queries/useChannelFeed'
+import { useForYouFeed } from '../../hooks/queries/useForYouFeed'
 import { EmptyState } from '../../components/EmptyState'
 import { NeynarCast } from '../../lib/neynar/types'
+import { SystemColors } from '../../constants/Colors'
+import { TabPills } from '../../components/TabPills'
+
+type FeedTab = 'foryou' | 'trending'
+
+const FEED_TABS: { id: FeedTab; label: string }[] = [
+  { id: 'foryou', label: 'For You' },
+  { id: 'trending', label: 'Trending' },
+]
 
 const TabOneScreen = () => {
   const { width } = useWindowDimensions()
-  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage, error, refetch, isRefetching } = useChannelFeed('trending')
+  const [activeTab, setActiveTab] = useState<FeedTab>('foryou')
   const showGuardrails = Platform.OS === 'web' && width > 768
+  
+  // For You feed - uses /farcaster/feed/for_you endpoint
+  const forYouQuery = useForYouFeed()
+  // Trending feed - uses /farcaster/feed/trending endpoint
+  const trendingQuery = useChannelFeed('trending')
+  
+  // Select the active query based on tab
+  const activeQuery = activeTab === 'foryou' ? forYouQuery : trendingQuery
+  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage, error, refetch, isRefetching } = activeQuery
 
   // Flatten pages into a single array of casts
   const casts = useMemo(() => {
@@ -34,11 +52,11 @@ const TabOneScreen = () => {
     return (
       <SafeAreaView style={styles.safeArea} edges={['top']}>
         <View style={styles.errorContainer}>
-          <BlurView intensity={20} tint="light" style={styles.errorCard}>
+          <View style={styles.errorCard}>
             <View style={styles.errorIconContainer}>
-              <FontAwesome name="exclamation-triangle" size={48} color="#EF4444" />
+              <Ionicons name="wifi-outline" size={44} color={SystemColors.tertiaryLabel} />
             </View>
-            <Text style={styles.errorText}>Unable to load trending feed</Text>
+            <Text style={styles.errorText}>Unable to load feed</Text>
             <Text style={styles.errorSubtext}>
               {error.message === 'Neynar API key not configured' 
                 ? 'API key is not configured'
@@ -46,14 +64,12 @@ const TabOneScreen = () => {
             </Text>
             <TouchableOpacity 
               onPress={() => refetch()}
-              activeOpacity={0.8}
+              activeOpacity={0.7}
+              style={styles.retryButton}
             >
-              <BlurView intensity={80} tint="light" style={styles.retryButton}>
-                <FontAwesome name="refresh" size={16} color="#FFF" />
-                <Text style={styles.retryButtonText}>Try Again</Text>
-              </BlurView>
+              <Text style={styles.retryButtonText}>Try Again</Text>
             </TouchableOpacity>
-          </BlurView>
+          </View>
         </View>
       </SafeAreaView>
     )
@@ -69,9 +85,18 @@ const TabOneScreen = () => {
           </>
         )}
         <View style={styles.container}>
+          {/* Sticky header tabs */}
+          <TabPills
+            tabs={FEED_TABS}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            variant="static"
+            align="left"
+          />
+          
           <LegendList
             data={casts}
-            renderItem={({ item }: { item: NeynarCast }) => <Cast cast={item} />}
+            renderItem={({ item }: { item: NeynarCast }) => <Cast cast={item} truncate={true} />}
             keyExtractor={(item: NeynarCast, index: number) => `${item.hash}-${index}`}
             onEndReached={onEndReached}
             onEndReachedThreshold={0.1}
@@ -80,21 +105,21 @@ const TabOneScreen = () => {
               <RefreshControl
                 refreshing={isRefetching}
                 onRefresh={onRefresh}
-                tintColor="#000"
-                colors={['#000']}
+                tintColor={SystemColors.secondaryLabel}
+                colors={[SystemColors.label]}
               />
             }
             ListFooterComponent={() =>
               isFetchingNextPage ? (
-                <ActivityIndicator size="large" color="#000" style={styles.loader} />
+                <ActivityIndicator size="small" color={SystemColors.secondaryLabel} style={styles.loader} />
               ) : null
             }
             ListEmptyComponent={() =>
               !isLoading ? (
                 <EmptyState 
-                  icon="line-chart"
-                  title="No trending casts"
-                  subtitle="Check back later for trending content"
+                  icon="sparkles-outline"
+                  title={activeTab === 'foryou' ? 'No posts yet' : 'No trending posts'}
+                  subtitle="Check back later for new content"
                 />
               ) : null
             }
@@ -122,8 +147,8 @@ const styles = StyleSheet.create({
       left: 'calc(50% - 300px)' as any,
       top: 0,
       bottom: 0,
-      width: 1,
-      backgroundColor: 'rgba(0, 0, 0, 0.08)',
+      width: StyleSheet.hairlineWidth,
+      backgroundColor: SystemColors.separator,
       zIndex: 1,
     },
     default: {},
@@ -134,8 +159,8 @@ const styles = StyleSheet.create({
       right: 'calc(50% - 300px)' as any,
       top: 0,
       bottom: 0,
-      width: 1,
-      backgroundColor: 'rgba(0, 0, 0, 0.08)',
+      width: StyleSheet.hairlineWidth,
+      backgroundColor: SystemColors.separator,
       zIndex: 1,
     },
     default: {},
@@ -159,48 +184,57 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 32,
-    backgroundColor: '#fff',
+    backgroundColor: SystemColors.background,
   },
   errorCard: {
-    borderRadius: 16,
-    padding: 32,
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    maxWidth: 400,
+    maxWidth: 280,
   },
   errorIconContainer: {
-    marginBottom: 20,
+    marginBottom: 16,
   },
   errorText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#000',
-    marginBottom: 12,
+    fontFamily: Platform.select({ 
+      ios: 'System', 
+      android: 'sans-serif-medium', 
+      default: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui' 
+    }),
+    fontSize: 17,
+    fontWeight: '600',
+    color: SystemColors.label,
+    marginBottom: 8,
     textAlign: 'center',
+    letterSpacing: -0.2,
   },
   errorSubtext: {
+    fontFamily: Platform.select({ 
+      ios: 'System', 
+      android: 'sans-serif', 
+      default: '-apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui' 
+    }),
     fontSize: 15,
-    color: '#666',
+    color: SystemColors.secondaryLabel,
     textAlign: 'center',
     marginBottom: 24,
-    lineHeight: 22,
+    lineHeight: 21,
+    letterSpacing: -0.1,
   },
   retryButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 28,
-    paddingVertical: 14,
-    gap: 10,
-    borderRadius: 24,
-    overflow: 'hidden',
-    backgroundColor: 'rgba(139, 92, 246, 0.92)',
-    borderWidth: 0.5,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+    backgroundColor: SystemColors.label,
   },
   retryButtonText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#FFF',
+    fontFamily: Platform.select({ 
+      ios: 'System', 
+      android: 'sans-serif-medium', 
+      default: '-apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui' 
+    }),
+    fontSize: 15,
+    fontWeight: '600',
+    color: SystemColors.background,
+    letterSpacing: -0.1,
   },
 })
 

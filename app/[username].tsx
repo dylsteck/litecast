@@ -154,7 +154,7 @@ export default function UsernameProfileScreen() {
 
           <LegendList
             data={casts}
-            renderItem={({ item }: { item: NeynarCast }) => <Cast cast={item} />}
+            renderItem={({ item }: { item: NeynarCast }) => <Cast cast={item} truncate={true} />}
             keyExtractor={(item: NeynarCast, index: number) => `${item.hash}-${index}`}
             onEndReached={onEndReached}
             onEndReachedThreshold={0.1}

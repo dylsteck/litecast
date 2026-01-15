@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useState, useEffect } from 'react';
 import { View, StyleSheet, Text, Image, Platform, StatusBar, ActivityIndicator, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { FontAwesome } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { LegendList } from '@legendapp/list';
 import { useRouter } from 'expo-router';
 import { useUser } from '../../hooks/queries/useUser';
@@ -12,6 +12,7 @@ import Cast from '../../components/Cast';
 import { TabPills } from '../../components/TabPills';
 import { EmptyState } from '../../components/EmptyState';
 import { NeynarCast } from '../../lib/neynar/types';
+import { SystemColors } from '../../constants/Colors';
 
 type TabType = 'casts' | 'recasts' | 'likes';
 
@@ -111,64 +112,67 @@ const UserScreen = () => {
           </>
         )}
         <View style={styles.container}>
-          {/* Profile Header - Ultra Compact */}
-        <View style={styles.profileHeader}>
-          <View style={styles.topSection}>
-            <Image
-              source={{ uri: user.pfp_url }}
-              style={styles.avatar}
-            />
-            <View style={styles.infoSection}>
-              <View style={styles.nameRow}>
-                <Text style={styles.displayName}>{user.display_name}</Text>
-            {user.power_badge && (
-                <FontAwesome name="bolt" size={14} color="#000" />
-              )}
+          {/* Profile Header - Posts style */}
+          <View style={styles.profileHeader}>
+            <View style={styles.topSection}>
+              <Image
+                source={{ uri: user.pfp_url }}
+                style={styles.avatar}
+              />
+              <View style={styles.infoSection}>
+                <View style={styles.nameRow}>
+                  <Text style={styles.displayName}>{user.display_name}</Text>
+                  {user.power_badge && (
+                    <Ionicons name="flash" size={14} color={SystemColors.label} />
+                  )}
+                </View>
+                {user.profile?.bio?.text && (
+                  <Text style={styles.bio} numberOfLines={2}>
+                    {user.profile.bio.text}
+                  </Text>
+                )}
               </View>
-              <Text style={styles.username}>@{user.username}</Text>
+            </View>
+            
+            {/* Stats - inline, smaller */}
+            <View style={styles.statsRow}>
+              <Text style={styles.statText}>
+                <Text style={styles.statBold}>{formatCount(user.following_count)}</Text>
+                <Text style={styles.statLabel}> Following</Text>
+              </Text>
+              <Text style={styles.statText}>
+                <Text style={styles.statBold}>{formatCount(user.follower_count)}</Text>
+                <Text style={styles.statLabel}> Followers</Text>
+              </Text>
             </View>
           </View>
-          
-          {user.profile?.bio?.text && (
-            <Text style={styles.bio} numberOfLines={2}>{user.profile.bio.text}</Text>
-          )}
-          
-          <View style={styles.statsRow}>
-            <Text style={styles.statText}>
-              <Text style={styles.statBold}>{formatCount(user.following_count)}</Text>
-              <Text style={styles.statGray}> Following</Text>
-            </Text>
-            <Text style={styles.statText}>
-              <Text style={styles.statBold}>{formatCount(user.follower_count)}</Text>
-              <Text style={styles.statGray}> Followers</Text>
-            </Text>
-          </View>
-        </View>
 
-        {/* Tabs */}
+        {/* Tabs - left aligned, no animation */}
         <TabPills 
           tabs={tabs} 
           activeTab={activeTab} 
           onTabChange={setActiveTab}
+          variant="static"
+          align="left"
         />
 
         {/* Content */}
         <LegendList
           data={casts}
-          renderItem={({ item }: { item: NeynarCast }) => <Cast cast={item} />}
+          renderItem={({ item }: { item: NeynarCast }) => <Cast cast={item} truncate={true} />}
           keyExtractor={(item: NeynarCast, index: number) => `${item.hash}-${index}`}
           onEndReached={onEndReached}
           onEndReachedThreshold={0.1}
           recycleItems
           ListFooterComponent={() =>
             isFetchingMore ? (
-              <ActivityIndicator size="large" color="#000" style={styles.loader} />
+              <ActivityIndicator size="small" color={SystemColors.secondaryLabel} style={styles.loader} />
             ) : null
           }
           ListEmptyComponent={() =>
             !isLoading ? (
               <EmptyState 
-                icon={activeTab === 'likes' ? 'heart-o' : activeTab === 'recasts' ? 'retweet' : 'comment-o'}
+                icon={activeTab === 'likes' ? 'heart-outline' : activeTab === 'recasts' ? 'repeat-outline' : 'chatbubble-outline'}
                 title={`No ${activeTab} yet`}
                 subtitle={
                   activeTab === 'likes' 
@@ -190,7 +194,7 @@ const UserScreen = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: SystemColors.background,
     paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   wrapper: {
@@ -203,8 +207,8 @@ const styles = StyleSheet.create({
       left: 'calc(50% - 300px)' as any,
       top: 0,
       bottom: 0,
-      width: 1,
-      backgroundColor: 'rgba(0, 0, 0, 0.08)',
+      width: StyleSheet.hairlineWidth,
+      backgroundColor: SystemColors.separator,
       zIndex: 1,
     },
     default: {},
@@ -215,14 +219,14 @@ const styles = StyleSheet.create({
       right: 'calc(50% - 300px)' as any,
       top: 0,
       bottom: 0,
-      width: 1,
-      backgroundColor: 'rgba(0, 0, 0, 0.08)',
+      width: StyleSheet.hairlineWidth,
+      backgroundColor: SystemColors.separator,
       zIndex: 1,
     },
     default: {},
   }),
   container: {
-    backgroundColor: '#fff',
+    backgroundColor: SystemColors.background,
     flex: 1,
     ...Platform.select({
       web: {
@@ -238,59 +242,77 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   profileHeader: {
-    padding: 12,
-    paddingTop: 8,
-    backgroundColor: '#fff',
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 12,
+    backgroundColor: SystemColors.background,
   },
   topSection: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: 8,
+    marginBottom: 12,
   },
   avatar: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    marginRight: 12,
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    marginRight: 16,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: SystemColors.separator,
   },
   infoSection: {
     flex: 1,
-    justifyContent: 'center',
+    paddingTop: 2,
   },
   nameRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 6,
+    marginBottom: 4,
   },
   displayName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#000',
-  },
-  username: {
-    fontSize: 13,
-    color: '#666',
-    marginTop: 1,
+    fontFamily: Platform.select({ 
+      ios: 'System', 
+      android: 'sans-serif-medium', 
+      default: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui' 
+    }),
+    fontSize: 20,
+    fontWeight: '600',
+    color: SystemColors.label,
+    letterSpacing: -0.3,
   },
   bio: {
-    fontSize: 14,
-    color: '#333',
-    lineHeight: 19,
-    marginBottom: 8,
+    fontFamily: Platform.select({ 
+      ios: 'System', 
+      android: 'sans-serif', 
+      default: '-apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui' 
+    }),
+    fontSize: 15,
+    color: SystemColors.secondaryLabel,
+    lineHeight: 20,
+    letterSpacing: -0.1,
   },
   statsRow: {
     flexDirection: 'row',
-    gap: 16,
+    gap: 20,
+    marginTop: 4,
   },
   statText: {
-    fontSize: 13,
+    fontFamily: Platform.select({ 
+      ios: 'System', 
+      android: 'sans-serif', 
+      default: '-apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui' 
+    }),
+    fontSize: 15,
+    letterSpacing: -0.1,
   },
   statBold: {
-    fontWeight: '700',
-    color: '#000',
+    fontWeight: '600',
+    color: SystemColors.label,
   },
-  statGray: {
-    color: '#666',
+  statLabel: {
+    fontWeight: '400',
+    color: SystemColors.secondaryLabel,
   },
   loader: {
     marginVertical: 20,
@@ -299,19 +321,32 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
-    backgroundColor: '#fff',
+    padding: 32,
+    backgroundColor: SystemColors.background,
   },
   errorText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#000',
+    fontFamily: Platform.select({ 
+      ios: 'System', 
+      android: 'sans-serif-medium', 
+      default: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui' 
+    }),
+    fontSize: 17,
+    fontWeight: '600',
+    color: SystemColors.label,
     marginBottom: 8,
+    textAlign: 'center',
+    letterSpacing: -0.2,
   },
   errorSubtext: {
-    fontSize: 14,
-    color: '#666',
+    fontFamily: Platform.select({ 
+      ios: 'System', 
+      android: 'sans-serif', 
+      default: '-apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui' 
+    }),
+    fontSize: 15,
+    color: SystemColors.secondaryLabel,
     textAlign: 'center',
+    letterSpacing: -0.1,
   },
 });
 
