@@ -1,9 +1,13 @@
 import React, { useCallback, useMemo } from 'react'
-import { View, StyleSheet, ActivityIndicator, Text, SafeAreaView, Platform, StatusBar } from 'react-native'
+import { View, ActivityIndicator, Text, Platform, StatusBar } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { LegendList } from '@legendapp/list'
+import { withUniwind } from 'uniwind'
 import Cast from '../components/Cast'
 import { useFeed } from '../hooks/queries/useFeed'
 import { DEFAULT_FID } from '../lib/neynar/constants'
+
+const StyledSafeAreaView = withUniwind(SafeAreaView)
 
 const GuestScreen = () => {
   const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage, error } = useFeed(DEFAULT_FID)
@@ -21,18 +25,24 @@ const GuestScreen = () => {
 
   if (error) {
     return (
-      <SafeAreaView style={styles.safeArea}>
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>Failed to load feed</Text>
-          <Text style={styles.errorSubtext}>{error.message}</Text>
+      <StyledSafeAreaView 
+        className="flex-1 bg-white"
+        style={{ paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 }}
+      >
+        <View className="flex-1 justify-center items-center p-5 bg-white">
+          <Text className="text-lg font-bold text-black mb-2">Failed to load feed</Text>
+          <Text className="text-sm text-gray-500 text-center">{error.message}</Text>
         </View>
-      </SafeAreaView>
+      </StyledSafeAreaView>
     )
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
+    <StyledSafeAreaView 
+      className="flex-1 bg-white"
+      style={{ paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 }}
+    >
+      <View className="flex-1 bg-white justify-between">
         <LegendList
           data={casts}
           renderItem={({ item }) => <Cast cast={item} truncate={true} />}
@@ -42,62 +52,20 @@ const GuestScreen = () => {
           recycleItems
           ListFooterComponent={() =>
             isFetchingNextPage ? (
-              <ActivityIndicator size="large" color="#000000" style={styles.loader} />
+              <ActivityIndicator size="large" color="#000000" className="my-5" />
             ) : null
           }
           ListEmptyComponent={() =>
             !isLoading ? (
-              <View style={styles.emptyContainer}>
-                <Text style={styles.emptyText}>No casts to display</Text>
+              <View className="p-10 items-center">
+                <Text className="text-base text-gray-500">No casts to display</Text>
               </View>
             ) : null
           }
         />
       </View>
-    </SafeAreaView>
+    </StyledSafeAreaView>
   )
 }
-
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#fff',
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
-  },
-  container: {
-    backgroundColor: '#fff',
-    flex: 1,
-    justifyContent: 'space-between',
-  },
-  loader: {
-    marginVertical: 20,
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-    backgroundColor: '#fff',
-  },
-  errorText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#000',
-    marginBottom: 8,
-  },
-  errorSubtext: {
-    fontSize: 14,
-    color: '#666',
-    textAlign: 'center',
-  },
-  emptyContainer: {
-    padding: 40,
-    alignItems: 'center',
-  },
-  emptyText: {
-    fontSize: 16,
-    color: '#666',
-  },
-})
 
 export default GuestScreen

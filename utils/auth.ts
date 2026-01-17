@@ -1,4 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { 
+  hasActiveSigner, 
+  hasSeenOnboarding, 
+  getStoredSigner,
+  StoredSigner 
+} from '../lib/farcaster/signer';
 
 const JWT_KEY = 'USER_JWT';
 
@@ -62,10 +68,30 @@ export const removeJWT = async (): Promise<void> => {
 };
 
 /**
- * Check if user is authenticated
+ * Check if user is authenticated (legacy JWT check)
  */
 export const isAuthenticated = async (): Promise<boolean> => {
   const token = await getJWT();
   return token !== null;
 };
 
+/**
+ * Check if user has completed Farcaster onboarding
+ */
+export const hasCompletedOnboarding = async (): Promise<boolean> => {
+  return await hasSeenOnboarding();
+};
+
+/**
+ * Check if user has an active Farcaster signer
+ */
+export const hasFarcasterSigner = async (): Promise<boolean> => {
+  return await hasActiveSigner();
+};
+
+/**
+ * Get stored Farcaster signer
+ */
+export const getFarcasterSigner = async (): Promise<StoredSigner | null> => {
+  return await getStoredSigner();
+};

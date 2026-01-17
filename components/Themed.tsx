@@ -4,12 +4,14 @@
  */
 
 import { Text as DefaultText, useColorScheme, View as DefaultView } from 'react-native';
+import { withUniwind } from 'uniwind';
 
 import Colors from '../constants/Colors';
 
 type ThemeProps = {
   lightColor?: string;
   darkColor?: string;
+  className?: string;
 };
 
 export type TextProps = ThemeProps & DefaultText['props'];
@@ -29,16 +31,20 @@ export function useThemeColor(
   }
 }
 
+// Wrap with UniWind for className support
+const UniwindText = withUniwind(DefaultText);
+const UniwindView = withUniwind(DefaultView);
+
 export function Text(props: TextProps) {
-  const { style, lightColor, darkColor, ...otherProps } = props;
+  const { style, lightColor, darkColor, className, ...otherProps } = props;
   const color = useThemeColor({ light: lightColor, dark: darkColor }, 'text');
 
-  return <DefaultText style={[{ color }, style]} {...otherProps} />;
+  return <UniwindText className={className} style={[{ color }, style]} {...otherProps} />;
 }
 
 export function View(props: ViewProps) {
-  const { style, lightColor, darkColor, ...otherProps } = props;
+  const { style, lightColor, darkColor, className, ...otherProps } = props;
   const backgroundColor = useThemeColor({ light: lightColor, dark: darkColor }, 'background');
 
-  return <DefaultView style={[{ backgroundColor }, style]} {...otherProps} />;
+  return <UniwindView className={className} style={[{ backgroundColor }, style]} {...otherProps} />;
 }

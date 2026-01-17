@@ -27,11 +27,16 @@
     },
     "web": {
       "bundler": "metro",
-      "output": "static",
+      "output": "server",
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      "expo-router",
+      [
+        "expo-router",
+        {
+          "origin": "https://litecast.xyz"
+        }
+      ],
       "expo-font",
       "expo-web-browser"
     ],
@@ -41,7 +46,7 @@
     },
     "extra": {
       "router": {
-        "origin": false
+        "origin": "https://litecast.xyz"
       },
       "eas": {
         "projectId": "781a9530-5012-4c22-9f60-16f69a490c31"

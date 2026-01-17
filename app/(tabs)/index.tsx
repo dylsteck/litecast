@@ -1,8 +1,9 @@
 import React, { useCallback, useMemo, useState } from 'react'
-import { View, StyleSheet, ActivityIndicator, Text, Platform, StatusBar, TouchableOpacity, RefreshControl, useWindowDimensions } from 'react-native'
+import { View, ActivityIndicator, Text, Platform, StatusBar, TouchableOpacity, RefreshControl, useWindowDimensions } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { LegendList } from '@legendapp/list'
 import { Ionicons } from '@expo/vector-icons'
+import { withUniwind } from 'uniwind'
 import ComposeCast from '../../components/ComposeCast'
 import Cast from '../../components/Cast'
 import { useChannelFeed } from '../../hooks/queries/useChannelFeed'
@@ -11,6 +12,8 @@ import { EmptyState } from '../../components/EmptyState'
 import { NeynarCast } from '../../lib/neynar/types'
 import { SystemColors } from '../../constants/Colors'
 import { TabPills } from '../../components/TabPills'
+
+const StyledSafeAreaView = withUniwind(SafeAreaView)
 
 type FeedTab = 'foryou' | 'trending'
 
@@ -48,16 +51,61 @@ const TabOneScreen = () => {
     refetch()
   }, [refetch])
 
+  // Show loading state
+  if (isLoading && casts.length === 0) {
+    return (
+      <View style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
+        <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+        <StyledSafeAreaView className="flex-1 bg-white" edges={['top', 'bottom']} style={{ paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 }}>
+          <TabPills
+            tabs={FEED_TABS}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            variant="static"
+            align="left"
+          />
+          <View className="flex-1 justify-center items-center">
+            <ActivityIndicator size="large" color={SystemColors.secondaryLabel} />
+          </View>
+        </StyledSafeAreaView>
+      </View>
+    )
+  }
+
   if (error) {
     return (
-      <SafeAreaView style={styles.safeArea} edges={['top']}>
-        <View style={styles.errorContainer}>
-          <View style={styles.errorCard}>
-            <View style={styles.errorIconContainer}>
+      <View style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
+        <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+        <StyledSafeAreaView className="flex-1 bg-white" edges={['top', 'bottom']} style={{ paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 }}>
+          <View className="flex-1 justify-center items-center p-8 bg-white">
+          <View className="items-center max-w-[280px]">
+            <View className="mb-4">
               <Ionicons name="wifi-outline" size={44} color={SystemColors.tertiaryLabel} />
             </View>
-            <Text style={styles.errorText}>Unable to load feed</Text>
-            <Text style={styles.errorSubtext}>
+            <Text 
+              className="text-base font-semibold text-black mb-2 text-center"
+              style={{
+                fontFamily: Platform.select({
+                  ios: 'System',
+                  android: 'sans-serif-medium',
+                  default: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui'
+                }),
+                letterSpacing: -0.2,
+              }}
+            >
+              Unable to load feed
+            </Text>
+            <Text 
+              className="text-sm text-gray-500 text-center mb-6 leading-[21px]"
+              style={{
+                fontFamily: Platform.select({
+                  ios: 'System',
+                  android: 'sans-serif',
+                  default: '-apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui'
+                }),
+                letterSpacing: -0.1,
+              }}
+            >
               {error.message === 'Neynar API key not configured' 
                 ? 'API key is not configured'
                 : 'Check your connection and try again'}
@@ -65,26 +113,62 @@ const TabOneScreen = () => {
             <TouchableOpacity 
               onPress={() => refetch()}
               activeOpacity={0.7}
-              style={styles.retryButton}
+              className="px-5 py-2.5 rounded-[20px] bg-black"
             >
-              <Text style={styles.retryButtonText}>Try Again</Text>
+              <Text 
+                className="text-sm font-semibold text-white"
+                style={{
+                  fontFamily: Platform.select({
+                    ios: 'System',
+                    android: 'sans-serif-medium',
+                    default: '-apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui'
+                  }),
+                  letterSpacing: -0.1,
+                }}
+              >
+                Try Again
+              </Text>
             </TouchableOpacity>
           </View>
-        </View>
-      </SafeAreaView>
+          </View>
+        </StyledSafeAreaView>
+      </View>
     )
   }
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
-      <View style={styles.wrapper}>
+    <View style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+      <StyledSafeAreaView className="flex-1 bg-white" edges={['top', 'bottom']} style={{ paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 }}>
+        <View className="flex-1 relative">
         {showGuardrails && (
           <>
-            <View style={styles.guardrailLeft} />
-            <View style={styles.guardrailRight} />
+            <View 
+              className="absolute left-[calc(50%-300px)] top-0 bottom-0 w-[0.5px] bg-gray-200 z-[1]"
+              style={Platform.select({
+                web: {},
+                default: { display: 'none' },
+              })}
+            />
+            <View 
+              className="absolute right-[calc(50%-300px)] top-0 bottom-0 w-[0.5px] bg-gray-200 z-[1]"
+              style={Platform.select({
+                web: {},
+                default: { display: 'none' },
+              })}
+            />
           </>
         )}
-        <View style={styles.container}>
+        <View 
+          className="flex-1 bg-white"
+          style={Platform.select({
+            web: {
+              maxWidth: 600,
+              alignSelf: 'center',
+              width: '100%',
+            },
+          })}
+        >
           {/* Sticky header tabs */}
           <TabPills
             tabs={FEED_TABS}
@@ -99,8 +183,11 @@ const TabOneScreen = () => {
             renderItem={({ item }: { item: NeynarCast }) => <Cast cast={item} truncate={true} />}
             keyExtractor={(item: NeynarCast, index: number) => `${item.hash}-${index}`}
             onEndReached={onEndReached}
-            onEndReachedThreshold={0.1}
+            onEndReachedThreshold={0.5}
+            estimatedItemSize={200}
             recycleItems
+            style={{ flex: 1 }}
+            contentContainerStyle={{ flexGrow: 1 }}
             refreshControl={
               <RefreshControl
                 refreshing={isRefetching}
@@ -111,131 +198,24 @@ const TabOneScreen = () => {
             }
             ListFooterComponent={() =>
               isFetchingNextPage ? (
-                <ActivityIndicator size="small" color={SystemColors.secondaryLabel} style={styles.loader} />
+                <ActivityIndicator size="small" color={SystemColors.secondaryLabel} style={{ marginVertical: 20 }} />
               ) : null
             }
             ListEmptyComponent={() =>
-              !isLoading ? (
-                <EmptyState 
-                  icon="sparkles-outline"
-                  title={activeTab === 'foryou' ? 'No posts yet' : 'No trending posts'}
-                  subtitle="Check back later for new content"
-                />
-              ) : null
+              <EmptyState 
+                icon="sparkles-outline"
+                title={activeTab === 'foryou' ? 'No posts yet' : 'No trending posts'}
+                subtitle="Check back later for new content"
+              />
             }
           />
           {Platform.OS !== 'web' && <ComposeCast />}
         </View>
-      </View>
-    </SafeAreaView>
+        </View>
+      </StyledSafeAreaView>
+    </View>
   )
 }
 
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#fff',
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
-  },
-  wrapper: {
-    flex: 1,
-    position: 'relative',
-  },
-  guardrailLeft: Platform.select({
-    web: {
-      position: 'absolute' as const,
-      left: 'calc(50% - 300px)' as any,
-      top: 0,
-      bottom: 0,
-      width: StyleSheet.hairlineWidth,
-      backgroundColor: SystemColors.separator,
-      zIndex: 1,
-    },
-    default: {},
-  }),
-  guardrailRight: Platform.select({
-    web: {
-      position: 'absolute' as const,
-      right: 'calc(50% - 300px)' as any,
-      top: 0,
-      bottom: 0,
-      width: StyleSheet.hairlineWidth,
-      backgroundColor: SystemColors.separator,
-      zIndex: 1,
-    },
-    default: {},
-  }),
-  container: {
-    backgroundColor: '#fff',
-    flex: 1,
-    ...Platform.select({
-      web: {
-        maxWidth: 600,
-        alignSelf: 'center',
-        width: '100%',
-      },
-    }),
-  },
-  loader: {
-    marginVertical: 20,
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 32,
-    backgroundColor: SystemColors.background,
-  },
-  errorCard: {
-    alignItems: 'center',
-    maxWidth: 280,
-  },
-  errorIconContainer: {
-    marginBottom: 16,
-  },
-  errorText: {
-    fontFamily: Platform.select({ 
-      ios: 'System', 
-      android: 'sans-serif-medium', 
-      default: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui' 
-    }),
-    fontSize: 17,
-    fontWeight: '600',
-    color: SystemColors.label,
-    marginBottom: 8,
-    textAlign: 'center',
-    letterSpacing: -0.2,
-  },
-  errorSubtext: {
-    fontFamily: Platform.select({ 
-      ios: 'System', 
-      android: 'sans-serif', 
-      default: '-apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui' 
-    }),
-    fontSize: 15,
-    color: SystemColors.secondaryLabel,
-    textAlign: 'center',
-    marginBottom: 24,
-    lineHeight: 21,
-    letterSpacing: -0.1,
-  },
-  retryButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 20,
-    backgroundColor: SystemColors.label,
-  },
-  retryButtonText: {
-    fontFamily: Platform.select({ 
-      ios: 'System', 
-      android: 'sans-serif-medium', 
-      default: '-apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui' 
-    }),
-    fontSize: 15,
-    fontWeight: '600',
-    color: SystemColors.background,
-    letterSpacing: -0.1,
-  },
-})
 
 export default TabOneScreen

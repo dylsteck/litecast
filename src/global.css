@@ -1,0 +1,87 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom theme variables for refined minimal aesthetic */
+:root {
+  --farcaster-purple: #8B5CF6;
+  --farcaster-purple-light: #A78BFA;
+  --farcaster-purple-dark: #7C3AED;
+  
+  --text-primary: #000000;
+  --text-secondary: #8E8E93;
+  --text-tertiary: #C7C7CC;
+  
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #F8F8F8;
+  --bg-tertiary: #F2F2F7;
+  
+  --border-color: rgba(60, 60, 67, 0.12);
+  --border-color-dark: rgba(60, 60, 67, 0.29);
+}
+
+/* Base styles */
+* {
+  box-sizing: border-box;
+}
+
+/* Hide scrollbars on web while keeping scroll functionality */
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* Hide scrollbars globally */
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+*::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* Ensure flex containers scroll properly */
+[data-testid="legend-list"],
+[role="list"] {
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Custom utility classes */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  .glass-effect {
+    background-color: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+  
+  .fade-in {
+    animation: fadeIn 0.6s ease-out;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .press-scale {
+    transition: transform 0.1s ease-out;
+  }
+  
+  .press-scale:active {
+    transform: scale(0.98);
+  }
+}
