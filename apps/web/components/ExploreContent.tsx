@@ -61,11 +61,43 @@ export default function ExploreContent() {
   const castsQuery = useSearchCasts(debouncedQuery, activeTab === 'casts' && debouncedQuery.length > 0);
 
   const users = useMemo(() => {
-    return usersQuery.data?.pages.flatMap((page) => page.result.users) || [];
-  }, [usersQuery.data]);
+    const allUsers = usersQuery.data?.pages.flatMap((page) => page.result.users) || [];
+    const queryLower = debouncedQuery.toLowerCase().trim();
+    
+    // Sort: exact username matches first, then by Neynar score, then by follower_count
+    return allUsers.sort((a, b) => {
+      const aUsernameLower = a.username.toLowerCase();
+      const bUsernameLower = b.username.toLowerCase();
+      const aIsExactMatch = aUsernameLower === queryLower;
+      const bIsExactMatch = bUsernameLower === queryLower;
+      
+      // Exact username matches come first
+      if (aIsExactMatch && !bIsExactMatch) return -1;
+      if (!aIsExactMatch && bIsExactMatch) return 1;
+      
+      // If both or neither are exact matches, sort by score
+      const scoreA = a.score ?? 0;
+      const scoreB = b.score ?? 0;
+      if (scoreA !== scoreB) {
+        return scoreB - scoreA; // Higher score first
+      }
+      
+      // Fallback to follower count
+      return (b.follower_count || 0) - (a.follower_count || 0);
+    });
+  }, [usersQuery.data, debouncedQuery]);
 
   const casts = useMemo(() => {
-    return castsQuery.data?.pages.flatMap((page) => page.result.casts) || [];
+    const allCasts = castsQuery.data?.pages.flatMap((page) => page.result.casts) || [];
+    // Sort by score if available (descending)
+    return allCasts.sort((a: any, b: any) => {
+      const scoreA = a.score ?? 0;
+      const scoreB = b.score ?? 0;
+      if (scoreA !== scoreB) {
+        return scoreB - scoreA; // Higher score first
+      }
+      return 0;
+    });
   }, [castsQuery.data]);
 
   const handleSearch = (e: React.FormEvent) => {
@@ -172,10 +204,13 @@ export default function ExploreContent() {
                 {recentSearches.map((search, index) => (
                   <div
                     key={search}
-                    className="flex items-center justify-between py-2.5 border-b border-system-separator/50 last:border-0"
+                    className="flex items-center justify-between py-2.5"
                     style={{ 
+                      animationName: 'fadeSlideIn',
+                      animationDuration: '0.3s',
+                      animationTimingFunction: 'ease-out',
+                      animationFillMode: 'forwards',
                       animationDelay: `${index * 30}ms`,
-                      animation: 'fadeSlideIn 0.3s ease-out forwards',
                       opacity: 0,
                     }}
                   >
@@ -249,8 +284,11 @@ function UsersList({ users, isLoading, hasNextPage, fetchNextPage, isFetchingNex
             key={i} 
             className="flex items-center gap-3 px-4 py-3"
             style={{
+              animationName: 'pulse',
+              animationDuration: '1.5s',
+              animationTimingFunction: 'ease-in-out',
+              animationIterationCount: 'infinite',
               animationDelay: `${i * 50}ms`,
-              animation: 'pulse 1.5s ease-in-out infinite',
             }}
           >
             <div className="w-11 h-11 bg-system-secondary-background rounded-full" />
@@ -288,8 +326,11 @@ function UsersList({ users, isLoading, hasNextPage, fetchNextPage, isFetchingNex
           href={`/${user.username}`}
           className="flex items-center gap-3 px-4 py-3 hover:bg-system-secondary-background/30 transition-colors"
           style={{
+            animationName: 'fadeSlideIn',
+            animationDuration: '0.25s',
+            animationTimingFunction: 'ease-out',
+            animationFillMode: 'forwards',
             animationDelay: `${index * 30}ms`,
-            animation: 'fadeSlideIn 0.25s ease-out forwards',
             opacity: 0,
           }}
         >

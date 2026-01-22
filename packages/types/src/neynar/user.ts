@@ -13,6 +13,7 @@ export interface NeynarUser {
   verifications: string[];
   active_status: 'active' | 'inactive';
   power_badge?: boolean;
+  score?: number; // Neynar relevance score for search results
 }
 
 export interface NeynarUserResponse {
