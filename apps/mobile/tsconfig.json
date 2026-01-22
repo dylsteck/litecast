@@ -1,0 +1,12 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "paths": {
+      "@litecast/types": ["../../packages/types/src"],
+      "@litecast/config": ["../../packages/config/src"],
+      "@litecast/hooks": ["../../packages/hooks/src"]
+    }
+  },
+  "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"]
+}
