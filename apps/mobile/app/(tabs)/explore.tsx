@@ -20,15 +20,44 @@ const ExploreScreen = () => {
   const usersQuery = useSearchUsers(searchQuery, searchQuery.length > 0)
   const framesQuery = useSearchFrames(searchQuery, searchQuery.length > 0)
   
-  // Extract data from queries
-  const casts = useMemo(() => 
-    castsQuery.data?.pages.flatMap(page => page.result.casts) ?? [], 
-    [castsQuery.data]
-  )
-  const users = useMemo(() => 
-    usersQuery.data?.pages.flatMap(page => page.result.users) ?? [], 
-    [usersQuery.data]
-  )
+  // Extract and sort data from queries
+  const casts = useMemo(() => {
+    const allCasts = castsQuery.data?.pages.flatMap(page => page.result.casts) ?? [];
+    // Sort by Neynar score (descending/highest first)
+    return allCasts.sort((a: any, b: any) => {
+      const scoreA = a.score ?? 0;
+      const scoreB = b.score ?? 0;
+      return scoreB - scoreA; // Higher score first
+    });
+  }, [castsQuery.data]);
+
+  const users = useMemo(() => {
+    const allUsers = usersQuery.data?.pages.flatMap(page => page.result.users) ?? [];
+    const queryLower = searchQuery.toLowerCase().trim();
+    
+    // Sort: exact username matches first, then by Neynar score, then by follower_count
+    return allUsers.sort((a: any, b: any) => {
+      const aUsernameLower = a.username?.toLowerCase() || '';
+      const bUsernameLower = b.username?.toLowerCase() || '';
+      const aIsExactMatch = aUsernameLower === queryLower;
+      const bIsExactMatch = bUsernameLower === queryLower;
+      
+      // Exact username matches come first
+      if (aIsExactMatch && !bIsExactMatch) return -1;
+      if (!aIsExactMatch && bIsExactMatch) return 1;
+      
+      // If both or neither are exact matches, sort by score
+      const scoreA = a.score ?? 0;
+      const scoreB = b.score ?? 0;
+      if (scoreA !== scoreB) {
+        return scoreB - scoreA; // Higher score first
+      }
+      
+      // Fallback to follower count
+      return (b.follower_count || 0) - (a.follower_count || 0);
+    });
+  }, [usersQuery.data, searchQuery]);
+
   const frames = useMemo(() => 
     framesQuery.data?.pages.flatMap(page => page.frames ?? []) ?? [], 
     [framesQuery.data]
@@ -42,9 +71,7 @@ const ExploreScreen = () => {
 
   const hasResults = casts.length > 0 || users.length > 0 || frames.length > 0
 
-  // Sort users by follower count (proxy for relevance/score)
-  const sortedUsers = [...users].sort((a, b) => (b.follower_count || 0) - (a.follower_count || 0))
-  const displayedUsers = showAllUsers ? sortedUsers : sortedUsers.slice(0, 3)
+  const displayedUsers = showAllUsers ? users : users.slice(0, 3)
   
   // Frames don't have a score, but we can show top results
   const displayedFrames = showAllFrames ? frames : frames.slice(0, 2)

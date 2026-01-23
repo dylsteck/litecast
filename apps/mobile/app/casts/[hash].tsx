@@ -1,15 +1,17 @@
-import React, { useLayoutEffect, useMemo } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, Platform, StatusBar, useWindowDimensions, ScrollView } from 'react-native';
+import React, { useLayoutEffect, useMemo, useState } from 'react';
+import { View, Text, StyleSheet, ActivityIndicator, Platform, StatusBar, useWindowDimensions, ScrollView, Image, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useNavigation } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import ComposeCast from '../../components/ComposeCast';
 import { useThread } from '@litecast/hooks';
-import type { NeynarCast } from '@litecast/types';
+import type { NeynarCast, NeynarEmbed } from '@litecast/types';
 import { PageHeader } from '../../components/PageHeader';
 import Cast from '../../components/Cast';
 import { UserAvatar } from '../../components/UserAvatar';
-import { EmbedRouter } from '../../components/embeds';
+import { EmbedRouter, isQuoteCastEmbed } from '../../components/embeds';
+import QuoteCast from '../../components/QuoteCast';
+import ImageViewer from '../../components/ImageViewer';
 import { SystemColors } from '../../constants/Colors';
 
 // Format full date time for detail view
@@ -40,6 +42,7 @@ export default function CastScreen() {
   const showGuardrails = Platform.OS === 'web' && width > 768;
   const { hash } = useLocalSearchParams<{ hash: string }>();
   const navigation = useNavigation();
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -53,9 +56,89 @@ export default function CastScreen() {
   const cast = useMemo(() => data?.conversation?.cast, [data]);
   const replies = useMemo(() => {
     const directReplies = data?.conversation?.direct_replies;
-    // Ensure we return an array even if it's undefined
-    return Array.isArray(directReplies) ? directReplies : [];
+    
+    if (Array.isArray(directReplies)) {
+      return directReplies;
+    }
+    
+    // Fallback: check if replies are nested differently
+    if (data?.conversation && 'replies' in data.conversation) {
+      const repliesData = (data.conversation as any).replies;
+      if (Array.isArray(repliesData)) {
+        return repliesData;
+      }
+    }
+    
+    return [];
   }, [data]);
+
+  // Helper to check if URL is an image (same logic as Cast.tsx)
+  const isImageUrl = (url: string, metadata?: { mime_type?: string; content_type?: string; image?: { height_px?: number; width_px?: number } }): boolean => {
+    const mimeType = metadata?.content_type || metadata?.mime_type;
+    if (mimeType && mimeType.startsWith('image/')) {
+      return true;
+    }
+    
+    if (metadata?.image && (metadata.image.height_px || metadata.image.width_px)) {
+      return true;
+    }
+    
+    const extensionRegex = /\.(?:jpg|jpeg|png|gif|webp|avif|svg)(?:\?.*)?$/i;
+    if (extensionRegex.test(url)) {
+      return true;
+    }
+    
+    const imageCdnHosts = [
+      'imagedelivery.net',
+      'i.imgur.com',
+      'imgur.com',
+      'i.ibb.co',
+      'pbs.twimg.com',
+      'media.giphy.com',
+      'res.cloudinary.com',
+      'images.unsplash.com',
+      'img.farcaster.xyz',
+    ];
+    
+    try {
+      const urlObj = new URL(url);
+      if (imageCdnHosts.some(host => urlObj.hostname.includes(host))) {
+        return true;
+      }
+    } catch {
+      // Invalid URL
+    }
+    
+    return false;
+  };
+
+  // Categorize embeds for rendering (same logic as Cast.tsx)
+  const { imageEmbeds, nonImageEmbeds } = useMemo(() => {
+    if (!cast?.embeds || cast.embeds.length === 0) {
+      return { imageEmbeds: [], nonImageEmbeds: [] };
+    }
+
+    const images: Array<{ embed: NeynarEmbed; index: number }> = [];
+    const others: Array<{ embed: NeynarEmbed; index: number }> = [];
+
+    cast.embeds.forEach((embed, index) => {
+      // Skip Farcaster token links
+      if (embed.url && /farcaster\.xyz\/~\/ca\//i.test(embed.url)) {
+        return;
+      }
+
+      const mimeType = embed.metadata?.content_type || embed.metadata?.mime_type;
+      
+      // Check if it's an image
+      if (embed.url && (mimeType?.startsWith('image/') || embed.metadata?.image || isImageUrl(embed.url, embed.metadata))) {
+        images.push({ embed, index });
+      } else {
+        others.push({ embed, index });
+      }
+    });
+
+    return { imageEmbeds: images, nonImageEmbeds: others };
+  }, [cast?.embeds]);
 
   if (error) {
     return (
@@ -129,9 +212,29 @@ export default function CastScreen() {
                 {/* Embeds */}
                 {cast.embeds && cast.embeds.length > 0 && (
                   <View style={styles.embedsContainer}>
-                    {cast.embeds.map((embed, index) => (
-                      <EmbedRouter key={`embed-${index}`} embed={embed} index={index} />
+                    {/* Render image embeds */}
+                    {imageEmbeds.map(({ embed, index }) => (
+                      <TouchableOpacity 
+                        key={`image-${embed.url}-${index}`}
+                        activeOpacity={0.9}
+                        onPress={() => setSelectedImage(embed.url!)}
+                      >
+                        <Image 
+                          source={{ uri: embed.url }} 
+                          style={styles.imageEmbed}
+                          resizeMode="cover"
+                        />
+                      </TouchableOpacity>
                     ))}
+                    
+                    {/* Render non-image embeds */}
+                    {nonImageEmbeds.map(({ embed, index }) => {
+                      // Handle quote casts separately
+                      if (isQuoteCastEmbed(embed) && embed.cast) {
+                        return <QuoteCast key={`quote-${embed.cast.hash}-${index}`} cast={embed.cast} />;
+                      }
+                      return <EmbedRouter key={`embed-${index}`} embed={embed} index={index} />;
+                    })}
                   </View>
                 )}
 
@@ -357,6 +460,14 @@ const styles = StyleSheet.create({
   },
   embedsContainer: {
     marginBottom: 12,
+    gap: 8,
+  },
+  imageEmbed: {
+    width: '100%',
+    aspectRatio: 16 / 9,
+    borderRadius: 12,
+    backgroundColor: SystemColors.secondaryBackground,
+    marginBottom: 8,
   },
   timestamp: {
     fontFamily: Platform.select({ 

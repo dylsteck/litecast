@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState, useLayoutEffect } from 'react';
-import { View, StyleSheet, Text, Image, Platform, StatusBar, ActivityIndicator, useWindowDimensions } from 'react-native';
+import { View, StyleSheet, Text, Image, Platform, StatusBar, ActivityIndicator, useWindowDimensions, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesome } from '@expo/vector-icons';
 import { LegendList } from '@legendapp/list';
@@ -11,6 +11,7 @@ import Cast from '../../components/Cast';
 import { TabPills } from '../../components/TabPills';
 import { EmptyState } from '../../components/EmptyState';
 import { PageHeader } from '../../components/PageHeader';
+import ImageViewer from '../../components/ImageViewer';
 
 type TabType = 'casts' | 'recasts' | 'likes';
 
@@ -35,6 +36,7 @@ export default function FidProfileScreen() {
   const showGuardrails = Platform.OS === 'web' && width > 768;
   const { fid } = useLocalSearchParams<{ fid: string }>();
   const [activeTab, setActiveTab] = useState<TabType>('casts');
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const navigation = useNavigation();
   
   useLayoutEffect(() => {
@@ -115,10 +117,15 @@ export default function FidProfileScreen() {
         <View style={styles.container}>
           <View style={styles.profileHeader}>
             <View style={styles.topSection}>
-              <Image
-                source={{ uri: user.pfp_url }}
-                style={styles.avatar}
-              />
+              <TouchableOpacity
+                onPress={() => user.pfp_url && setSelectedImage(user.pfp_url)}
+                activeOpacity={0.9}
+              >
+                <Image
+                  source={{ uri: user.pfp_url }}
+                  style={styles.avatar}
+                />
+              </TouchableOpacity>
               <View style={styles.infoSection}>
                 <View style={styles.nameRow}>
                   <Text style={styles.displayName}>{user.display_name}</Text>
@@ -184,6 +191,13 @@ export default function FidProfileScreen() {
           />
         </View>
       </View>
+      
+      {/* Full-screen image viewer */}
+      <ImageViewer
+        visible={selectedImage !== null}
+        imageUrl={selectedImage || ''}
+        onClose={() => setSelectedImage(null)}
+      />
     </SafeAreaView>
   );
 }

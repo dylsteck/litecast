@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   View,
   Platform,
+  PanResponder,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
@@ -52,6 +53,8 @@ export const MiniAppModal: React.FC<MiniAppModalProps> = ({
   const [showSplash, setShowSplash] = useState(true);
   const [isMinimized, setIsMinimized] = useState(false);
   const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
+  const dragOffset = useRef(new Animated.Value(0)).current;
+  const DRAG_THRESHOLD = 100; // Minimum drag distance to trigger minimize
 
   const displayTitle = appTitle || pageTitle || getDomainDisplay(domain);
 
@@ -71,17 +74,19 @@ export const MiniAppModal: React.FC<MiniAppModalProps> = ({
     if (!visible) {
       setIsMinimized(false);
       slideAnim.setValue(SCREEN_HEIGHT);
+      dragOffset.setValue(0);
     } else if (visible && !isMinimized) {
       // Slide up when opening
       slideAnim.setValue(SCREEN_HEIGHT);
+      dragOffset.setValue(0);
       Animated.spring(slideAnim, {
         toValue: 0,
-        damping: 20,
-        stiffness: 200,
+        damping: 28,
+        stiffness: 220,
         useNativeDriver: true,
       }).start();
     }
-  }, [visible, isMinimized, slideAnim]);
+  }, [visible, isMinimized, slideAnim, dragOffset]);
 
   // Update URL when prop changes
   useLayoutEffect(() => {
@@ -91,39 +96,93 @@ export const MiniAppModal: React.FC<MiniAppModalProps> = ({
     }
   }, [visible, url]);
 
-  // Auto-hide splash after 500ms
+  // Auto-hide splash after 1200ms (increased from 500ms for better visibility)
   useEffect(() => {
     if (!showSplash || !visible) return;
-    const timeout = setTimeout(() => setShowSplash(false), 500);
+    const timeout = setTimeout(() => setShowSplash(false), 1200);
     return () => clearTimeout(timeout);
   }, [showSplash, visible]);
 
   // Minimize function
   const minimize = useCallback(() => {
+    // Show minimized bubble immediately
+    setIsMinimized(true);
+    // Reset drag offset
+    dragOffset.setValue(0);
     // Slide down to bottom
     Animated.spring(slideAnim, {
       toValue: SCREEN_HEIGHT,
-      damping: 20,
-      stiffness: 200,
+      damping: 28,
+      stiffness: 220,
       useNativeDriver: true,
     }).start(() => {
-      setIsMinimized(true);
       onMinimize?.();
     });
-  }, [slideAnim, onMinimize]);
+  }, [slideAnim, dragOffset, onMinimize]);
 
   // Restore function with slide-up animation
   const restore = useCallback(() => {
     setIsMinimized(false);
     // Slide up from bottom
     slideAnim.setValue(SCREEN_HEIGHT);
+    dragOffset.setValue(0);
     Animated.spring(slideAnim, {
       toValue: 0,
-      damping: 20,
-      stiffness: 200,
+      damping: 28,
+      stiffness: 220,
       useNativeDriver: true,
     }).start();
-  }, [slideAnim]);
+  }, [slideAnim, dragOffset]);
+
+  // PanResponder for drag-to-minimize
+  const panResponder = React.useMemo(
+    () =>
+      PanResponder.create({
+        onStartShouldSetPanResponder: () => !isMinimized,
+        onMoveShouldSetPanResponder: (_, gestureState) => {
+          // Only respond to downward drags
+          return Math.abs(gestureState.dy) > 10 && gestureState.dy > 0;
+        },
+        onPanResponderGrant: () => {
+          dragOffset.setOffset(dragOffset._value);
+          dragOffset.setValue(0);
+        },
+        onPanResponderMove: (_, gestureState) => {
+          // Only allow downward drag
+          if (gestureState.dy > 0) {
+            dragOffset.setValue(gestureState.dy);
+          }
+        },
+        onPanResponderRelease: (_, gestureState) => {
+          dragOffset.flattenOffset();
+          const dragDistance = gestureState.dy;
+          
+          if (dragDistance > DRAG_THRESHOLD) {
+            // Drag exceeded threshold - minimize
+            // Show minimized bubble immediately
+            setIsMinimized(true);
+            Animated.spring(slideAnim, {
+              toValue: SCREEN_HEIGHT,
+              damping: 28,
+              stiffness: 220,
+              useNativeDriver: true,
+            }).start(() => {
+              onMinimize?.();
+              dragOffset.setValue(0);
+            });
+          } else {
+            // Drag didn't exceed threshold - spring back
+            Animated.spring(dragOffset, {
+              toValue: 0,
+              damping: 28,
+              stiffness: 220,
+              useNativeDriver: true,
+            }).start();
+          }
+        },
+      }),
+    [isMinimized, slideAnim, dragOffset, onMinimize]
+  );
 
   // MiniApp bridge
   const {
@@ -167,7 +226,10 @@ export const MiniAppModal: React.FC<MiniAppModalProps> = ({
   if (!visible) return null;
 
   return (
-    <View style={[styles.overlay, isMinimized && styles.overlayTransparent]} pointerEvents="box-none">
+    <View 
+      style={[styles.overlay, isMinimized && styles.overlayTransparent]} 
+      pointerEvents={isMinimized ? 'box-none' : 'auto'}
+    >
       <StatusBar barStyle="dark-content" />
       
       {/* Full modal - hidden but mounted when minimized to preserve WebView session */}
@@ -176,13 +238,16 @@ export const MiniAppModal: React.FC<MiniAppModalProps> = ({
           styles.container, 
           isMinimized && styles.containerHidden,
           {
-            transform: [{ translateY: slideAnim }],
+            transform: [{ translateY: Animated.add(slideAnim, dragOffset) }],
           }
         ]}
         pointerEvents={isMinimized ? 'none' : 'auto'}
       >
         {/* Header */}
-        <View style={[styles.header, { paddingTop: insets.top + 4 }]}>
+        <View 
+          style={[styles.header, { paddingTop: insets.top + 4 }]}
+          {...panResponder.panHandlers}
+        >
           <View style={styles.headerContent}>
             <View style={styles.leftButtons}>
               <TouchableOpacity
@@ -338,7 +403,7 @@ const styles = StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFillObject,
     zIndex: 1000,
-    backgroundColor: '#000',
+    backgroundColor: 'transparent', // Always transparent - container provides the background
   },
   overlayTransparent: {
     backgroundColor: 'transparent',
@@ -348,7 +413,8 @@ const styles = StyleSheet.create({
     backgroundColor: SystemColors.background,
   },
   containerHidden: {
-    opacity: 0,
+    // Don't change opacity - just position off-screen via translateY
+    // This keeps the WebView rendered and visible, preventing black screen
   },
   // Header
   header: {

@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { useSearchUsers, useSearchCasts } from '@litecast/hooks';
+import { useSearchUsers, useSearchCasts, useSearchFrames } from '@litecast/hooks';
 import { TabPills } from './TabPills';
 import { FeedList } from './FeedList';
 import { UserAvatar } from './UserAvatar';
@@ -11,6 +11,7 @@ import { EmptyState } from './EmptyState';
 const TABS = [
   { id: 'users', label: 'People' },
   { id: 'casts', label: 'Casts' },
+  { id: 'miniapps', label: 'Mini Apps' },
 ];
 
 export default function ExploreContent() {
@@ -59,6 +60,7 @@ export default function ExploreContent() {
 
   const usersQuery = useSearchUsers(debouncedQuery, activeTab === 'users' && debouncedQuery.length > 0);
   const castsQuery = useSearchCasts(debouncedQuery, activeTab === 'casts' && debouncedQuery.length > 0);
+  const framesQuery = useSearchFrames(debouncedQuery, activeTab === 'miniapps' && debouncedQuery.length > 0);
 
   const users = useMemo(() => {
     const allUsers = usersQuery.data?.pages.flatMap((page) => page.result.users) || [];
@@ -136,7 +138,7 @@ export default function ExploreContent() {
                 onChange={(e) => setQuery(e.target.value)}
                 onFocus={() => setIsFocused(true)}
                 onBlur={() => setIsFocused(false)}
-                placeholder="Search people or casts"
+                placeholder="Search people, casts, or mini apps"
                 className="w-full pl-9 pr-9 py-2 bg-transparent text-[15px] text-system-label placeholder:text-system-tertiary-label focus:outline-none"
               />
               {query && (
@@ -182,6 +184,16 @@ export default function ExploreContent() {
               isFetchingNextPage={castsQuery.isFetchingNextPage}
               emptyTitle="No casts found"
               emptyDescription={`No casts matching "${debouncedQuery}"`}
+            />
+          )}
+          {activeTab === 'miniapps' && (
+            <MiniAppsList
+              frames={frames}
+              isLoading={framesQuery.isLoading}
+              hasNextPage={framesQuery.hasNextPage}
+              fetchNextPage={framesQuery.fetchNextPage}
+              isFetchingNextPage={framesQuery.isFetchingNextPage}
+              query={debouncedQuery}
             />
           )}
         </div>
@@ -243,7 +255,7 @@ export default function ExploreContent() {
                 Search Farcaster
               </h3>
               <p className="text-[15px] text-system-secondary-label max-w-[240px]">
-                Find people, casts, and conversations across the network
+                Find people, casts, and mini apps across the network
               </p>
             </div>
           )}
@@ -401,6 +413,149 @@ function ChevronRightIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
       <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+    </svg>
+  );
+}
+
+interface MiniAppsListProps {
+  frames: any[];
+  isLoading: boolean;
+  hasNextPage?: boolean;
+  fetchNextPage?: () => void;
+  isFetchingNextPage?: boolean;
+  query: string;
+}
+
+function MiniAppsList({ frames, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage, query }: MiniAppsListProps) {
+  if (isLoading) {
+    return (
+      <div className="divide-y divide-system-separator">
+        {[...Array(5)].map((_, i) => (
+          <div 
+            key={i} 
+            className="flex items-center gap-3 px-4 py-3"
+            style={{
+              animationName: 'pulse',
+              animationDuration: '1.5s',
+              animationTimingFunction: 'ease-in-out',
+              animationIterationCount: 'infinite',
+              animationDelay: `${i * 50}ms`,
+            }}
+          >
+            <div className="w-14 h-14 bg-system-secondary-background rounded-xl" />
+            <div className="flex-1">
+              <div className="w-32 h-4 bg-system-secondary-background rounded-md mb-1.5" />
+              <div className="w-24 h-3.5 bg-system-secondary-background/70 rounded-md" />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (frames.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center px-4">
+        <div className="w-14 h-14 rounded-full bg-system-secondary-background/50 flex items-center justify-center mb-4">
+          <CubeIcon className="w-6 h-6 text-system-tertiary-label" />
+        </div>
+        <h3 className="text-base font-semibold text-system-label mb-1">
+          No mini apps found
+        </h3>
+        <p className="text-[15px] text-system-secondary-label">
+          No results for "{query}"
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="divide-y divide-system-separator">
+      {frames.map((frame, index) => {
+        const frameName = frame.name || frame.title || frame.manifest?.frame?.name || frame.manifest?.miniapp?.name || 'Mini App';
+        const frameDescription = frame.description || frame.manifest?.frame?.description || frame.manifest?.miniapp?.description || '';
+        const developer = frame.developer || frame.author;
+        const iconUrl = frame.manifest?.frame?.icon_url || frame.manifest?.miniapp?.icon_url || frame.image;
+        
+        return (
+          <div
+            key={frame.uuid || frame.frames_url || `frame-${index}`}
+            className="flex items-center gap-3 px-4 py-3 hover:bg-system-secondary-background/30 transition-colors"
+            style={{
+              animationName: 'fadeSlideIn',
+              animationDuration: '0.25s',
+              animationTimingFunction: 'ease-out',
+              animationFillMode: 'forwards',
+              animationDelay: `${index * 30}ms`,
+              opacity: 0,
+            }}
+          >
+            <div className="w-14 h-14 rounded-xl bg-system-secondary-background overflow-hidden flex-shrink-0">
+              {iconUrl ? (
+                <img src={iconUrl} alt={frameName} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <CubeIcon className="w-6 h-6 text-system-tertiary-label" />
+                </div>
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-[15px] text-system-label truncate">
+                {frameName}
+              </p>
+              {frameDescription && (
+                <p className="text-[14px] text-system-secondary-label line-clamp-2 mt-0.5">
+                  {frameDescription}
+                </p>
+              )}
+              {developer && (
+                <div className="flex items-center gap-1.5 mt-1">
+                  <UserAvatar 
+                    username={developer.username} 
+                    pfpUrl={developer.pfp_url} 
+                    size="xs" 
+                    linked={false} 
+                  />
+                  <p className="text-[13px] text-system-secondary-label">
+                    by {developer.display_name}
+                  </p>
+                </div>
+              )}
+            </div>
+            <ChevronRightIcon className="w-4 h-4 text-system-tertiary-label flex-shrink-0" />
+          </div>
+        );
+      })}
+      {hasNextPage && (
+        <button
+          onClick={fetchNextPage}
+          disabled={isFetchingNextPage}
+          className="w-full py-4 text-[15px] text-brand-primary font-medium hover:bg-system-secondary-background/30 transition-colors disabled:opacity-50"
+        >
+          {isFetchingNextPage ? 'Loading...' : 'Show more'}
+        </button>
+      )}
+
+      <style jsx>{`
+        @keyframes fadeSlideIn {
+          from {
+            opacity: 0;
+            transform: translateY(8px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+function CubeIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="m21 7.5-9-5.25L3 7.5m18 0-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9-9m0 9-9-5.25" />
     </svg>
   );
 }

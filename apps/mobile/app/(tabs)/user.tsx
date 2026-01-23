@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState, useEffect } from 'react';
-import { View, StyleSheet, Text, Image, Platform, StatusBar, ActivityIndicator, useWindowDimensions } from 'react-native';
+import { View, StyleSheet, Text, Image, Platform, StatusBar, ActivityIndicator, useWindowDimensions, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LegendList } from '@legendapp/list';
@@ -11,6 +11,7 @@ import Cast from '../../components/Cast';
 import { TabPills } from '../../components/TabPills';
 import { EmptyState } from '../../components/EmptyState';
 import { SystemColors } from '../../constants/Colors';
+import ImageViewer from '../../components/ImageViewer';
 
 type TabType = 'casts' | 'recasts' | 'likes';
 
@@ -34,6 +35,7 @@ const UserScreen = () => {
   const { width } = useWindowDimensions();
   const showGuardrails = Platform.OS === 'web' && width > 768;
   const [activeTab, setActiveTab] = useState<TabType>('casts');
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const router = useRouter();
   
   const { data: userData, isLoading: userLoading, error: userError } = useUser(DEFAULT_FID);
@@ -113,10 +115,15 @@ const UserScreen = () => {
           {/* Profile Header - Posts style */}
           <View style={styles.profileHeader}>
             <View style={styles.topSection}>
-              <Image
-                source={{ uri: user.pfp_url }}
-                style={styles.avatar}
-              />
+              <TouchableOpacity
+                onPress={() => user.pfp_url && setSelectedImage(user.pfp_url)}
+                activeOpacity={0.9}
+              >
+                <Image
+                  source={{ uri: user.pfp_url }}
+                  style={styles.avatar}
+                />
+              </TouchableOpacity>
               <View style={styles.infoSection}>
                 <View style={styles.nameRow}>
                   <Text style={styles.displayName}>{user.display_name}</Text>
@@ -187,6 +194,13 @@ const UserScreen = () => {
         />
         </View>
       </View>
+      
+      {/* Full-screen image viewer */}
+      <ImageViewer
+        visible={selectedImage !== null}
+        imageUrl={selectedImage || ''}
+        onClose={() => setSelectedImage(null)}
+      />
     </SafeAreaView>
   );
 };
