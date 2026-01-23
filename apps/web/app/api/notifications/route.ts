@@ -1,13 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { NeynarAPIClient, NotificationType } from '@neynar/nodejs-sdk';
-
-function getNeynarClient() {
-  const apiKey = process.env.NEYNAR_API_KEY?.trim();
-  if (!apiKey) {
-    throw new Error('NEYNAR_API_KEY not configured');
-  }
-  return new NeynarAPIClient({ apiKey });
-}
+import type { NotificationType } from '@litecast/types';
+import { getNeynarClient } from '@/lib/neynar/client';
 
 export async function GET(request: NextRequest) {
   try {

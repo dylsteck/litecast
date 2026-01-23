@@ -23,8 +23,8 @@ export default function CastDetailContent({ hash }: CastDetailContentProps) {
   }, [conversation]);
 
   const replies = useMemo(() => {
-    if (!conversation?.cast?.direct_replies) return [];
-    return conversation.cast.direct_replies;
+    if (!conversation?.direct_replies) return [];
+    return conversation.direct_replies;
   }, [conversation]);
 
   if (isLoading) {
