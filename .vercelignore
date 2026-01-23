@@ -1,0 +1,43 @@
+# Build outputs
+.next/
+**/.next/
+dist/
+**/dist/
+.turbo/
+**/.turbo/
+.vinxi/
+**/.vinxi/
+.output/
+**/.output/
+
+# Mobile app (not needed for web deployment)
+apps/mobile/
+
+# Dependencies (should already be ignored but explicit)
+node_modules/
+**/node_modules/
+
+# Expo
+.expo/
+**/.expo/
+web-build/
+**/web-build/
+
+# Cache
+.cache/
+**/.cache/
+
+# Environment files
+.env
+.env*.local
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

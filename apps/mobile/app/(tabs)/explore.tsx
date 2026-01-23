@@ -166,7 +166,7 @@ const ExploreScreen = () => {
                     </TouchableOpacity>
                   </Link>
                 ))}
-                {sortedUsers.length > 3 && !showAllUsers && (
+                {users.length > 3 && !showAllUsers && (
                   <TouchableOpacity 
                     onPress={() => setShowAllUsers(true)}
                     style={styles.viewMoreButton}

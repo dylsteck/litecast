@@ -144,7 +144,7 @@ export const MiniAppModal: React.FC<MiniAppModalProps> = ({
           return Math.abs(gestureState.dy) > 10 && gestureState.dy > 0;
         },
         onPanResponderGrant: () => {
-          dragOffset.setOffset(dragOffset._value);
+          dragOffset.setOffset(0);
           dragOffset.setValue(0);
         },
         onPanResponderMove: (_, gestureState) => {
@@ -245,7 +245,7 @@ export const MiniAppModal: React.FC<MiniAppModalProps> = ({
       >
         {/* Header */}
         <View 
-          style={[styles.header, { paddingTop: insets.top + 4 }]}
+          style={[styles.header, { paddingTop: insets.top }]}
           {...panResponder.panHandlers}
         >
           <View style={styles.headerContent}>
@@ -419,7 +419,7 @@ const styles = StyleSheet.create({
   // Header
   header: {
     backgroundColor: SystemColors.background,
-    paddingBottom: 12,
+    paddingBottom: 2,
   },
   headerContent: {
     flexDirection: 'row',

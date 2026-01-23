@@ -102,6 +102,10 @@ export default function ExploreContent() {
     });
   }, [castsQuery.data]);
 
+  const frames = useMemo(() => {
+    return framesQuery.data?.pages.flatMap((page) => page.frames ?? []) || [];
+  }, [framesQuery.data]);
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (query.trim()) {
@@ -513,7 +517,7 @@ function MiniAppsList({ frames, isLoading, hasNextPage, fetchNextPage, isFetchin
                   <UserAvatar 
                     username={developer.username} 
                     pfpUrl={developer.pfp_url} 
-                    size="xs" 
+                    size="sm" 
                     linked={false} 
                   />
                   <p className="text-[13px] text-system-secondary-label">
