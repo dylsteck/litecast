@@ -7,5 +7,12 @@ export default defineConfig({
   splitting: false,
   sourcemap: true,
   clean: true,
-  external: ['react', '@tanstack/react-query', '@litecast/types'],
+  external: [
+    'react',
+    'react/jsx-runtime',
+    'react/jsx-dev-runtime',
+    '@tanstack/react-query',
+    '@litecast/types',
+  ],
+  noExternal: [],
 });

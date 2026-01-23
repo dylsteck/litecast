@@ -56,7 +56,15 @@
     "react-refresh": "~0.14.0"
   },
   "resolutions": {
-    "react-refresh": "~0.14.0"
+    "react-refresh": "~0.14.0",
+    "react": "19.1.0",
+    "react-dom": "19.1.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "react": "19.1.0",
+      "react-dom": "19.1.0"
+    }
   },
   "private": true
 }

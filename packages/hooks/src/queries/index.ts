@@ -1,5 +1,6 @@
 export * from './useFeed';
 export * from './useForYouFeed';
+export * from './useTrendingFeed';
 export * from './useChannelFeed';
 export * from './useThread';
 export * from './useUser';

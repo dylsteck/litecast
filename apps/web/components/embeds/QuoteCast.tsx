@@ -5,9 +5,10 @@ import { UserAvatar } from '../UserAvatar';
 
 interface QuoteCastProps {
   embed: NeynarEmbed;
+  compact?: boolean; // Fixed height for horizontal scroll layout
 }
 
-export function QuoteCast({ embed }: QuoteCastProps) {
+export function QuoteCast({ embed, compact = false }: QuoteCastProps) {
   const cast = embed.cast;
   if (!cast) return null;
 
@@ -17,7 +18,9 @@ export function QuoteCast({ embed }: QuoteCastProps) {
     <Link
       href={`/cast/${cast.hash}`}
       onClick={(e) => e.stopPropagation()}
-      className="block border border-system-separator rounded-xl p-3 hover:bg-system-secondary-background/50 transition-colors"
+      className={`block border border-system-separator rounded-xl p-3 hover:bg-system-secondary-background/50 transition-colors ${
+        compact ? 'h-[340px] overflow-hidden' : ''
+      }`}
     >
       <div className="flex items-center gap-2 mb-2">
         <UserAvatar
@@ -26,18 +29,18 @@ export function QuoteCast({ embed }: QuoteCastProps) {
           size="sm"
           linked={false}
         />
-        <span className="font-semibold text-sm text-system-label">
+        <span className="font-semibold text-sm text-system-label truncate">
           {author.display_name}
         </span>
-        <span className="text-sm text-system-secondary-label">
+        <span className="text-sm text-system-secondary-label truncate">
           @{author.username}
         </span>
-        <span className="text-system-tertiary-label">·</span>
-        <span className="text-sm text-system-secondary-label">
+        <span className="text-system-tertiary-label flex-shrink-0">·</span>
+        <span className="text-sm text-system-secondary-label flex-shrink-0">
           {formatRelativeTime(timestamp)}
         </span>
       </div>
-      <p className="text-sm text-system-label line-clamp-4 whitespace-pre-wrap">
+      <p className={`text-sm text-system-label whitespace-pre-wrap ${compact ? 'line-clamp-[10]' : 'line-clamp-4'}`}>
         {text}
       </p>
     </Link>

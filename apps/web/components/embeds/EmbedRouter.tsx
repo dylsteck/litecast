@@ -58,27 +58,53 @@ export function EmbedRouter({ embeds }: EmbedRouterProps) {
     links.push(embed);
   }
 
+  // Calculate total non-image embeds for horizontal scrolling
+  const totalNonImageEmbeds = videos.length + quotedCasts.length + links.length;
+  const hasMultipleEmbeds = totalNonImageEmbeds > 1;
+
   return (
     <div className="space-y-3">
       {images.length > 0 && <ImageGallery images={images} />}
 
-      {videos.map((video, index) => (
-        <div key={index}>
-          {video.url && isYouTubeUrl(video.url) ? (
-            <YouTubeEmbed url={video.url} />
-          ) : (
-            <VideoEmbed url={video.url!} />
-          )}
+      {/* Horizontal scrollable container for multiple embeds */}
+      {totalNonImageEmbeds > 0 && (
+        <div
+          className={hasMultipleEmbeds ? 'overflow-x-auto -mx-4 px-4 scrollbar-hide' : ''}
+        >
+          <div className={hasMultipleEmbeds ? 'flex gap-3' : 'space-y-3'}>
+            {videos.map((video, index) => (
+              <div
+                key={index}
+                className={hasMultipleEmbeds ? 'flex-shrink-0 w-[420px]' : ''}
+              >
+                {video.url && isYouTubeUrl(video.url) ? (
+                  <YouTubeEmbed url={video.url} />
+                ) : (
+                  <VideoEmbed url={video.url!} />
+                )}
+              </div>
+            ))}
+
+            {quotedCasts.map((quoted, index) => (
+              <div
+                key={index}
+                className={hasMultipleEmbeds ? 'flex-shrink-0 w-[420px]' : ''}
+              >
+                <QuoteCast embed={quoted} compact={hasMultipleEmbeds} />
+              </div>
+            ))}
+
+            {links.map((link, index) => (
+              <div
+                key={index}
+                className={hasMultipleEmbeds ? 'flex-shrink-0 w-[420px]' : ''}
+              >
+                <RichLinkPreview embed={link} compact={hasMultipleEmbeds} />
+              </div>
+            ))}
+          </div>
         </div>
-      ))}
-
-      {quotedCasts.map((quoted, index) => (
-        <QuoteCast key={index} embed={quoted} />
-      ))}
-
-      {links.map((link, index) => (
-        <RichLinkPreview key={index} embed={link} />
-      ))}
+      )}
     </div>
   );
 }

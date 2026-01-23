@@ -5,10 +5,9 @@ import { LegendList } from '@legendapp/list'
 import { Ionicons } from '@expo/vector-icons'
 import ComposeCast from '../../components/ComposeCast'
 import Cast from '../../components/Cast'
-import { useChannelFeed } from '../../hooks/queries/useChannelFeed'
-import { useForYouFeed } from '../../hooks/queries/useForYouFeed'
+import { useForYouFeed, useTrendingFeed } from '@litecast/hooks'
+import type { NeynarCast } from '@litecast/types'
 import { EmptyState } from '../../components/EmptyState'
-import { NeynarCast } from '../../lib/neynar/types'
 import { SystemColors } from '../../constants/Colors'
 import { TabPills } from '../../components/TabPills'
 
@@ -25,10 +24,10 @@ const TabOneScreen = () => {
   const [activeTab, setActiveTab] = useState<FeedTab>('trending')
   const showGuardrails = Platform.OS === 'web' && width > 768
   
-  // For You feed - uses /farcaster/feed/for_you endpoint
-  const forYouQuery = useForYouFeed()
-  // Trending feed - uses /farcaster/feed/trending endpoint
-  const trendingQuery = useChannelFeed('trending')
+  // For You feed - uses web API /api/feed/for-you
+  const forYouQuery = useForYouFeed(616) // Default FID for testing
+  // Trending feed - uses web API /api/feed/trending
+  const trendingQuery = useTrendingFeed()
   
   // Select the active query based on tab
   const activeQuery = activeTab === 'foryou' ? forYouQuery : trendingQuery
