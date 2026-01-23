@@ -2,7 +2,7 @@ import React from 'react';
 import { View, StyleSheet, Text, Image, TouchableOpacity, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Link } from 'expo-router';
-import { NeynarNotification } from '../lib/neynar/types';
+import type { NeynarNotification } from '@litecast/types';
 import { SystemColors } from '../constants/Colors';
 
 interface NotificationProps {

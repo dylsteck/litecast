@@ -1,4 +1,4 @@
-import { NeynarEmbed } from '../../lib/neynar/types';
+import type { NeynarEmbed } from '@litecast/types';
 
 export type EmbedPlatform = 'twitter' | 'youtube' | 'github' | 'miniapp' | 'generic';
 

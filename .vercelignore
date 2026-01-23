@@ -10,9 +10,6 @@ dist/
 .output/
 **/.output/
 
-# Mobile app (not needed for web deployment)
-apps/mobile/
-
 # Dependencies (should already be ignored but explicit)
 node_modules/
 **/node_modules/

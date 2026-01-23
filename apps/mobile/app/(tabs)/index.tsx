@@ -111,9 +111,7 @@ const TabOneScreen = () => {
                   letterSpacing: -0.1,
                 }}
               >
-                {error.message === 'Neynar API key not configured' 
-                  ? 'API key is not configured'
-                  : 'Check your connection and try again'}
+                Check your connection and try again
               </Text>
               <TouchableOpacity 
                 onPress={() => refetch()}

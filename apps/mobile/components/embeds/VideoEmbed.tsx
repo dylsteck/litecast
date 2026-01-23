@@ -1,7 +1,7 @@
 import React, { useState, useRef, useMemo } from 'react';
 import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { NeynarEmbed } from '../../lib/neynar/types';
+import type { NeynarEmbed } from '@litecast/types';
 import { SystemColors } from '../../constants/Colors';
 import { getVideoAspectRatio } from './utils';
 

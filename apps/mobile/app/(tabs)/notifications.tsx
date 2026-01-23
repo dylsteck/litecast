@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LegendList } from '@legendapp/list';
 import { useNotifications } from '@litecast/hooks';
 import type { NeynarNotification } from '@litecast/types';
-import { DEFAULT_FID } from '../../lib/neynar/constants';
+import { DEFAULT_FID } from '../../constants/Farcaster';
 import Notification from '../../components/Notification';
 import { EmptyState } from '../../components/EmptyState';
 import { SystemColors } from '../../constants/Colors';

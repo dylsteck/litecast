@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, Text, Platform } from 'react-native';
 import { Link } from 'expo-router';
-import { NeynarCast } from '../lib/neynar/types';
+import type { NeynarCast } from '@litecast/types';
 import { UserAvatar } from './UserAvatar';
 import { SystemColors } from '../constants/Colors';
 

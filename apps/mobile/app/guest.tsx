@@ -5,7 +5,7 @@ import { LegendList } from '@legendapp/list'
 import { withUniwind } from 'uniwind'
 import Cast from '../components/Cast'
 import { useFeed } from '@litecast/hooks'
-import { DEFAULT_FID } from '../lib/neynar/constants'
+import { DEFAULT_FID } from '../constants/Farcaster'
 
 const StyledSafeAreaView = withUniwind(SafeAreaView)
 

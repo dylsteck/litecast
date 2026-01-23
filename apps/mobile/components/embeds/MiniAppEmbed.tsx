@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { View, StyleSheet, Text, Image, TouchableOpacity, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { NeynarFrameEmbed } from '../../lib/neynar/types';
+import type { NeynarFrameEmbed } from '@litecast/types';
 import { SystemColors } from '../../constants/Colors';
 import { useMiniApp } from '../../context/MiniAppContext';
 

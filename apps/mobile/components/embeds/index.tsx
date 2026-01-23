@@ -1,5 +1,5 @@
 import React from 'react';
-import { NeynarEmbed } from '../../lib/neynar/types';
+import type { NeynarEmbed } from '@litecast/types';
 import { getPlatformFromUrl, isMiniAppEmbed, isQuoteCastEmbed, getFrameData, isVideoEmbed } from './utils';
 import TwitterEmbed from './TwitterEmbed';
 import YouTubeEmbed from './YouTubeEmbed';

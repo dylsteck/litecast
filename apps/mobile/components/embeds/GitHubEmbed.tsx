@@ -2,7 +2,7 @@ import React from 'react';
 import { View, StyleSheet, Text, Image, TouchableOpacity, Platform } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
 import { Ionicons } from '@expo/vector-icons';
-import { NeynarEmbed } from '../../lib/neynar/types';
+import type { NeynarEmbed } from '@litecast/types';
 import { SystemColors } from '../../constants/Colors';
 import { getDomain } from './utils';
 

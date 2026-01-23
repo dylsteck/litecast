@@ -16,7 +16,7 @@ import {
   useExposeWebViewToEndpoint,
 } from '@farcaster/miniapp-host-react-native';
 import { Context } from '@farcaster/miniapp-core';
-import { DEFAULT_FID } from '../../lib/neynar/constants';
+import { DEFAULT_FID } from '../../constants/Farcaster';
 import type { MiniAppBridgeResult, UseMiniAppBridgeOptions, SetPrimaryButtonOptions } from './types';
 
 export function useMiniAppBridge(options: UseMiniAppBridgeOptions): MiniAppBridgeResult {

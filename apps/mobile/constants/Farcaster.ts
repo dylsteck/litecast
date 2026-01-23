@@ -3,3 +3,5 @@ export const LOCAL_STORAGE_KEYS = {
 };
 
 export const API_URL = process.env.EXPO_PUBLIC_API_URL as string;
+
+export const DEFAULT_FID = 616; // Testing FID

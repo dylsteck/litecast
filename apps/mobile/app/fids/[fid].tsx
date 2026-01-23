@@ -6,7 +6,7 @@ import { LegendList } from '@legendapp/list';
 import { useLocalSearchParams, useNavigation } from 'expo-router';
 import { useUser, useUserCasts, useUserReactions } from '@litecast/hooks';
 import type { NeynarCast } from '@litecast/types';
-import { DEFAULT_FID } from '../../lib/neynar/constants';
+import { DEFAULT_FID } from '../../constants/Farcaster';
 import Cast from '../../components/Cast';
 import { TabPills } from '../../components/TabPills';
 import { EmptyState } from '../../components/EmptyState';
