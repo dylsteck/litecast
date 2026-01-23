@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, StyleSheet, Text, Image, TouchableOpacity, Platform } from 'react-native';
-import * as WebBrowser from 'expo-web-browser';
 import { Ionicons } from '@expo/vector-icons';
 import { NeynarFrameEmbed } from '../../lib/neynar/types';
 import { SystemColors } from '../../constants/Colors';
+import { useMiniApp } from '../../context/MiniAppContext';
 
 // Extended frame type that includes fields from getFrameData
 interface FrameData extends Partial<NeynarFrameEmbed> {
@@ -18,6 +18,9 @@ interface FrameData extends Partial<NeynarFrameEmbed> {
   }>;
   splashImageUrl?: string;
   splashBackgroundColor?: string;
+  // Icon from manifest or developer
+  iconUrl?: string;
+  name?: string;
 }
 
 interface MiniAppEmbedProps {
@@ -25,14 +28,53 @@ interface MiniAppEmbedProps {
 }
 
 const MiniAppEmbed = ({ frame }: MiniAppEmbedProps) => {
-  const handlePress = async () => {
-    const url = frame.frames_url || frame.url;
-    if (url) {
-      try {
-        await WebBrowser.openBrowserAsync(url);
-      } catch (e) {
-        console.warn('Failed to open browser:', e);
-      }
+  const { openMiniApp } = useMiniApp();
+
+  const miniappUrl = frame.frames_url || frame.url;
+  
+  // Extract domain from URL
+  const domain = useMemo(() => {
+    if (!miniappUrl) return '';
+    try {
+      return new URL(miniappUrl).hostname;
+    } catch {
+      return '';
+    }
+  }, [miniappUrl]);
+
+  // Get app icon - check multiple sources
+  const appIconUrl = useMemo(() => {
+    return (
+      frame.iconUrl ||
+      (frame as any).icon_url ||
+      frame.manifest?.miniapp?.iconUrl ||
+      frame.manifest?.frame?.iconUrl ||
+      frame.splashImageUrl || // Splash is often the app icon
+      frame.developer?.pfp_url ||
+      frame.author?.pfp_url
+    );
+  }, [frame]);
+
+  // Get app title - prioritize name, then title, then manifest names
+  const appTitle = useMemo(() => {
+    return (
+      frame.name ||
+      frame.title ||
+      frame.manifest?.miniapp?.name ||
+      frame.manifest?.frame?.name
+    );
+  }, [frame.name, frame.title, frame.manifest]);
+
+  const handlePress = () => {
+    if (miniappUrl && domain) {
+      openMiniApp({
+        url: miniappUrl,
+        domain,
+        iconUrl: appIconUrl,
+        title: appTitle,
+        splashImageUrl: frame.splashImageUrl || frame.image,
+        splashBackgroundColor: frame.splashBackgroundColor,
+      });
     }
   };
 

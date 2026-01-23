@@ -48,6 +48,8 @@ const ChannelScreen = () => {
         onEndReached={onEndReached}
         onEndReachedThreshold={0.1}
         recycleItems
+        style={{ flex: 1 }}
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: 100 }}
         ListFooterComponent={() =>
           isFetchingNextPage ? (
             <ActivityIndicator size="large" color="#000000" style={styles.loader} />

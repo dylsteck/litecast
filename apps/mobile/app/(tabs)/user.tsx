@@ -162,6 +162,8 @@ const UserScreen = () => {
           onEndReached={onEndReached}
           onEndReachedThreshold={0.1}
           recycleItems
+          style={{ flex: 1 }}
+          contentContainerStyle={{ flexGrow: 1, paddingBottom: 100 }}
           ListFooterComponent={() =>
             isFetchingMore ? (
               <ActivityIndicator size="small" color={SystemColors.secondaryLabel} style={styles.loader} />

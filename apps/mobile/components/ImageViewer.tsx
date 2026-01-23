@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useRef } from 'react';
 import {
   View,
   StyleSheet,
@@ -11,7 +11,6 @@ import {
   SafeAreaView,
   Animated,
   PanResponder,
-  Text,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SystemColors } from '../constants/Colors';
@@ -37,8 +36,6 @@ const ImageViewer = ({ visible, imageUrl, onClose }: ImageViewerProps) => {
   const initialDistance = useRef(0);
   const isPinching = useRef(false);
   
-  const [showHint, setShowHint] = useState(true);
-
   // Reset transforms when modal opens/closes
   React.useEffect(() => {
     if (visible) {
@@ -48,11 +45,6 @@ const ImageViewer = ({ visible, imageUrl, onClose }: ImageViewerProps) => {
       lastScale.current = 1;
       lastTranslateX.current = 0;
       lastTranslateY.current = 0;
-      setShowHint(true);
-      
-      // Hide hint after 2 seconds
-      const timer = setTimeout(() => setShowHint(false), 2000);
-      return () => clearTimeout(timer);
     }
   }, [visible]);
 
@@ -68,7 +60,6 @@ const ImageViewer = ({ visible, imageUrl, onClose }: ImageViewerProps) => {
       onMoveShouldSetPanResponder: () => true,
       
       onPanResponderGrant: (evt) => {
-        setShowHint(false);
         if (evt.nativeEvent.touches.length === 2) {
           isPinching.current = true;
           initialDistance.current = getDistance(evt.nativeEvent.touches);
@@ -121,7 +112,7 @@ const ImageViewer = ({ visible, imageUrl, onClose }: ImageViewerProps) => {
     })
   ).current;
 
-  const handleDoubleTap = useRef<NodeJS.Timeout | null>(null);
+  const handleDoubleTap = useRef<ReturnType<typeof setTimeout> | null>(null);
   
   const onTap = () => {
     if (handleDoubleTap.current) {
@@ -194,13 +185,6 @@ const ImageViewer = ({ visible, imageUrl, onClose }: ImageViewerProps) => {
               />
             </TouchableOpacity>
           </View>
-
-          {/* Hint text */}
-          {showHint && (
-            <View style={styles.hintContainer}>
-              <Text style={styles.hintText}>Pinch to zoom • Double-tap to zoom</Text>
-            </View>
-          )}
         </SafeAreaView>
       </View>
     </Modal>
@@ -252,23 +236,6 @@ const styles = StyleSheet.create({
   image: {
     width: SCREEN_WIDTH,
     height: SCREEN_HEIGHT * 0.75,
-  },
-  hintContainer: {
-    position: 'absolute',
-    bottom: Platform.OS === 'ios' ? 50 : 30,
-    left: 0,
-    right: 0,
-    alignItems: 'center',
-  },
-  hintText: {
-    color: 'rgba(255, 255, 255, 0.6)',
-    fontSize: 13,
-    fontWeight: '500',
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    overflow: 'hidden',
   },
 });
 

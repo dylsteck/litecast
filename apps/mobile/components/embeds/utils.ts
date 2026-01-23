@@ -95,11 +95,19 @@ export const isMiniAppEmbed = (embed: NeynarEmbed): boolean => {
 
 /**
  * Extract frame data from embed (normalizes different locations)
+ * Ensures iconUrl and name are properly extracted for the modal header
  */
 export const getFrameData = (embed: NeynarEmbed) => {
-  // Direct frame embed
+  // Direct frame embed - enhance with proper icon and name extraction
   if (embed.frame) {
-    return embed.frame;
+    const frame = embed.frame;
+    return {
+      ...frame,
+      // App name - prioritize manifest names, then title
+      name: frame.manifest?.miniapp?.name || frame.manifest?.frame?.name || frame.title,
+      // Icon URL - use splash image if available, or developer pfp as fallback
+      iconUrl: (frame as any).iconUrl || (frame as any).icon_url || frame.developer?.pfp_url || frame.author?.pfp_url,
+    };
   }
   
   // Frame from metadata.frame and metadata.html.fcFrame
@@ -107,9 +115,13 @@ export const getFrameData = (embed: NeynarEmbed) => {
   const fcFrame = embed.metadata?.html?.fcFrame;
   
   if (metaFrame || fcFrame) {
+    // Get the app name from action.name (Farcaster spec) or title
+    const appName = fcFrame?.button?.action?.name || metaFrame?.title || fcFrame?.button?.title;
+    
     return {
       url: embed.url || metaFrame?.frames_url || '',
-      title: fcFrame?.button?.action?.name || metaFrame?.title || fcFrame?.button?.title,
+      title: appName,
+      name: appName, // Also set as name for consistency
       image: fcFrame?.imageUrl || metaFrame?.image,
       frames_url: metaFrame?.frames_url || embed.url,
       buttons: fcFrame?.button ? [{
@@ -117,9 +129,11 @@ export const getFrameData = (embed: NeynarEmbed) => {
         title: fcFrame.button.title || 'Open',
         action_type: fcFrame.button.action?.type || 'launch_frame',
       }] : undefined,
-      // Additional fcFrame data
+      // Splash and icon
       splashImageUrl: fcFrame?.button?.action?.splashImageUrl,
       splashBackgroundColor: fcFrame?.button?.action?.splashBackgroundColor,
+      // Use splash image as icon fallback (often a square logo)
+      iconUrl: fcFrame?.button?.action?.splashImageUrl,
     };
   }
   

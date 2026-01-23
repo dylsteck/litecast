@@ -21,7 +21,7 @@ const FEED_TABS: { id: FeedTab; label: string }[] = [
 
 const TabOneScreen = () => {
   const { width } = useWindowDimensions()
-  const [activeTab, setActiveTab] = useState<FeedTab>('trending')
+  const [activeTab, setActiveTab] = useState<FeedTab>('foryou')
   const showGuardrails = Platform.OS === 'web' && width > 768
   
   // For You feed - uses web API /api/feed/for-you

@@ -102,14 +102,19 @@ export interface NeynarFrameEmbed {
   }>;
   // Enhanced fields from NeynarFrame when available
   description?: string;
+  name?: string; // App name from manifest
+  iconUrl?: string; // Square app icon
+  icon_url?: string; // Alternative casing
   manifest?: {
     frame?: {
       name?: string;
       description?: string;
+      iconUrl?: string;
     };
     miniapp?: {
       name?: string;
       description?: string;
+      iconUrl?: string;
     };
   };
   developer?: {

@@ -93,6 +93,8 @@ const NotificationsScreen = () => {
           onEndReached={onEndReached}
           onEndReachedThreshold={0.1}
           recycleItems
+          style={{ flex: 1 }}
+          contentContainerStyle={{ flexGrow: 1, paddingBottom: 100 }}
           ListFooterComponent={() =>
             isFetchingNextPage ? (
               <ActivityIndicator size="small" color={SystemColors.secondaryLabel} style={styles.loader} />

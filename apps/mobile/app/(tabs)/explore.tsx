@@ -111,7 +111,7 @@ const ExploreScreen = () => {
             <ActivityIndicator size="small" color={SystemColors.secondaryLabel} />
           </View>
         ) : searchQuery.length > 0 && hasResults ? (
-          <ScrollView style={styles.resultsContainer} showsVerticalScrollIndicator={false}>
+          <ScrollView style={styles.resultsContainer} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
             {/* Users Section */}
             {users.length > 0 && (
               <View style={styles.section}>
@@ -216,7 +216,7 @@ const ExploreScreen = () => {
             subtitle="Try a different search term"
           />
         ) : (
-          <ScrollView style={styles.emptyContainer} showsVerticalScrollIndicator={false}>
+          <ScrollView style={styles.emptyContainer} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
             {recentSearches.length > 0 && (
               <View style={styles.recentSection}>
                 <View style={styles.recentHeader}>

@@ -1,5 +1,6 @@
 import React, { useLayoutEffect, useMemo } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, SafeAreaView, Platform, StatusBar, useWindowDimensions, ScrollView, Image } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, Platform, StatusBar, useWindowDimensions, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useNavigation } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import ComposeCast from '../../components/ComposeCast';
@@ -50,11 +51,15 @@ export default function CastScreen() {
   
   // Extract cast and replies from thread response
   const cast = useMemo(() => data?.conversation?.cast, [data]);
-  const replies = useMemo(() => data?.conversation?.direct_replies ?? [], [data]);
+  const replies = useMemo(() => {
+    const directReplies = data?.conversation?.direct_replies;
+    // Ensure we return an array even if it's undefined
+    return Array.isArray(directReplies) ? directReplies : [];
+  }, [data]);
 
   if (error) {
     return (
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={styles.safeArea} edges={['top']}>
         <PageHeader />
         <View style={styles.errorContainer}>
           <Ionicons name="alert-circle-outline" size={48} color={SystemColors.secondaryLabel} />
@@ -67,7 +72,7 @@ export default function CastScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={styles.safeArea} edges={['top']}>
         <PageHeader />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={SystemColors.secondaryLabel} />
@@ -78,7 +83,7 @@ export default function CastScreen() {
 
   if (!cast && !isLoading) {
     return (
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={styles.safeArea} edges={['top']}>
         <PageHeader />
         <View style={styles.emptyContainer}>
           <Ionicons name="chatbubble-outline" size={48} color={SystemColors.secondaryLabel} />
@@ -90,7 +95,7 @@ export default function CastScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
       <View style={styles.wrapper}>
         {showGuardrails && (
           <>
@@ -159,10 +164,18 @@ export default function CastScreen() {
               {/* Replies Section */}
               {replies.length > 0 ? (
                 <View style={styles.repliesSection}>
-                  <Text style={styles.repliesSectionTitle}>Replies</Text>
+                  <Text style={styles.repliesSectionTitle}>
+                    {replies.length === 1 ? '1 Reply' : `${replies.length} Replies`}
+                  </Text>
                   {replies.map((reply: NeynarCast) => (
                     <Cast key={reply.hash} cast={reply} truncate={false} />
                   ))}
+                </View>
+              ) : cast.replies.count > 0 ? (
+                // If count says there are replies but array is empty, show loading
+                <View style={styles.noRepliesContainer}>
+                  <ActivityIndicator size="small" color={SystemColors.secondaryLabel} />
+                  <Text style={styles.noRepliesText}>Loading replies...</Text>
                 </View>
               ) : (
                 <View style={styles.noRepliesContainer}>

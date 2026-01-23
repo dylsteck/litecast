@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo, useState, useLayoutEffect } from 'react';
-import { View, StyleSheet, Text, Image, SafeAreaView, Platform, StatusBar, ActivityIndicator, useWindowDimensions } from 'react-native';
+import { View, StyleSheet, Text, Image, Platform, StatusBar, ActivityIndicator, useWindowDimensions } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesome } from '@expo/vector-icons';
 import { LegendList } from '@legendapp/list';
 import { useLocalSearchParams, useNavigation } from 'expo-router';
@@ -81,7 +82,7 @@ export default function UsernameProfileScreen() {
 
   if (userError || castsError || recastsError || likesError) {
     return (
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={styles.safeArea} edges={['top']}>
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>Failed to load profile</Text>
           <Text style={styles.errorSubtext}>{(userError || castsError || recastsError || likesError)?.message}</Text>
@@ -92,7 +93,7 @@ export default function UsernameProfileScreen() {
 
   if (userLoading || !user) {
     return (
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={styles.safeArea} edges={['top']}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#000000" />
         </View>
@@ -101,7 +102,7 @@ export default function UsernameProfileScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
       <View style={styles.wrapper}>
         {showGuardrails && (
           <>
@@ -157,6 +158,8 @@ export default function UsernameProfileScreen() {
             onEndReached={onEndReached}
             onEndReachedThreshold={0.1}
             recycleItems
+            style={{ flex: 1 }}
+            contentContainerStyle={{ flexGrow: 1, paddingBottom: 100 }}
             ListFooterComponent={() =>
               isFetchingMore ? (
                 <ActivityIndicator size="large" color="#000" style={styles.loader} />

@@ -7,6 +7,7 @@ import { useColorScheme, Platform } from 'react-native';
 import GuestHeaderLeft from '../components/GuestHeaderLeft';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ApiProvider } from '@litecast/hooks';
+import { MiniAppProvider } from '../context/MiniAppContext';
 
 // Create a client with optimized settings for prefetching
 // Inspired by Base App's prefetching strategy:
@@ -88,11 +89,13 @@ function RootLayoutNav() {
     <QueryClientProvider client={queryClient}>
       <ApiProvider config={apiConfig}>
         <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-          <Stack>
-            <Stack.Screen name="index" options={{ headerShown: false }} />
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="guest" options={{ headerShown: true, title: 'Feed', headerTitleStyle: { color: 'black' }, headerLeft: GuestHeaderLeft, headerStyle: { backgroundColor: 'white'} }}/>
-          </Stack>
+          <MiniAppProvider>
+            <Stack>
+              <Stack.Screen name="index" options={{ headerShown: false }} />
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen name="guest" options={{ headerShown: true, title: 'Feed', headerTitleStyle: { color: 'black' }, headerLeft: GuestHeaderLeft, headerStyle: { backgroundColor: 'white'} }}/>
+            </Stack>
+          </MiniAppProvider>
         </ThemeProvider>
       </ApiProvider>
     </QueryClientProvider>
