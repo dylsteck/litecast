@@ -17,40 +17,62 @@ export async function GET(request: NextRequest) {
       replyDepth: 10,
     });
 
-    // The SDK type may not include direct_replies in the type definition,
-    // but it can be present in the response. We'll handle it safely.
+    // The SDK returns direct_replies nested inside cast.direct_replies
+    // We need to move it to conversation.direct_replies for consistency with our types
     const conversation = data?.conversation;
+    const cast = conversation?.cast;
     
-    // Type assertion for conversation with optional direct_replies
-    // The SDK's ConversationConversation type doesn't always include direct_replies
-    type ConversationWithReplies = typeof conversation & { direct_replies?: unknown[] };
-    const conversationWithReplies = conversation as ConversationWithReplies | undefined;
-
-    // If direct_replies is missing but cast has replies, fetch them separately
-    if (conversation?.cast && !conversationWithReplies?.direct_replies && conversation.cast.replies?.count > 0) {
-      try {
-        const cast = conversation.cast;
-        // Construct parent URL using farcaster.xyz
-        const parentUrl = `https://farcaster.xyz/${cast.author.username}/${cast.hash}`;
-        
-        // Fetch replies using parent URL feed
-        const repliesData = await client.fetchFeedByParentUrls({
-          parentUrls: [parentUrl],
-          limit: 50,
-        });
-
-        // Extract direct replies (casts that reply to this specific cast)
-        const directReplies = repliesData.casts?.filter(
-          (reply) => reply.parent_hash === cast.hash
-        ) || [];
-
-        // Add direct_replies to the conversation
-        if (conversationWithReplies && directReplies.length > 0) {
-          conversationWithReplies.direct_replies = directReplies;
+    if (conversation && cast) {
+      // Check if direct_replies is in cast object (Neynar SDK structure)
+      const castDirectReplies = (cast as any)?.direct_replies;
+      
+      if (Array.isArray(castDirectReplies)) {
+        // Move direct_replies from cast to conversation level
+        (conversation as any).direct_replies = castDirectReplies;
+        // Remove from cast to avoid duplication
+        delete (cast as any).direct_replies;
+      } else {
+        // Ensure direct_replies exists as empty array if missing
+        if (!('direct_replies' in conversation)) {
+          (conversation as any).direct_replies = [];
         }
-      } catch (error: any) {
-        // Continue without replies rather than failing
-        // Silently handle error - replies will just be empty
+      }
+      
+      // If direct_replies is still empty but cast has replies, try fallback fetch
+      const existingReplies = (conversation as any)?.direct_replies;
+      const hasReplies = cast.replies?.count > 0;
+      const needsFetch = hasReplies && (!existingReplies || existingReplies.length === 0);
+      
+      if (needsFetch) {
+        try {
+          // Try multiple parent URL formats
+          const parentUrls = [
+            `https://farcaster.xyz/${cast.author.username}/${cast.hash}`,
+            `https://warpcast.com/${cast.author.username}/${cast.hash}`,
+          ];
+          
+          // Fetch replies using parent URL feed
+          const repliesData = await client.fetchFeedByParentUrls({
+            parentUrls: parentUrls,
+            limit: 50,
+          });
+
+          // Extract direct replies (casts that reply to this specific cast)
+          const directReplies = repliesData.casts?.filter(
+            (reply) => reply.parent_hash === cast.hash
+          ) || [];
+
+          // Update direct_replies in the conversation object
+          if (conversation) {
+            (conversation as any).direct_replies = directReplies;
+          }
+        } catch (error: any) {
+          // Continue without replies rather than failing
+          // Ensure direct_replies is at least an empty array
+          if (conversation && !('direct_replies' in conversation)) {
+            (conversation as any).direct_replies = [];
+          }
+        }
       }
     }
 

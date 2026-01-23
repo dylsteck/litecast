@@ -108,11 +108,18 @@ export default function CastDetailContent({ hash }: CastDetailContentProps) {
         </div>
       )}
 
-      {replies.length === 0 && (
+      {replies.length === 0 && repliesCount.count === 0 && (
         <EmptyState
           title="No replies yet"
           description="Be the first to reply to this cast."
         />
+      )}
+
+      {replies.length === 0 && repliesCount.count > 0 && (
+        <div className="px-4 py-8 text-center">
+          <div className="inline-block animate-spin rounded-full h-6 w-6 border-2 border-system-label border-t-transparent mb-2"></div>
+          <p className="text-system-secondary-label">Loading replies...</p>
+        </div>
       )}
     </div>
   );

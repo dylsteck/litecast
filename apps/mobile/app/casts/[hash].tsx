@@ -57,16 +57,9 @@ export default function CastScreen() {
   const replies = useMemo(() => {
     const directReplies = data?.conversation?.direct_replies;
     
+    // Ensure we return an array (empty if undefined/null)
     if (Array.isArray(directReplies)) {
       return directReplies;
-    }
-    
-    // Fallback: check if replies are nested differently
-    if (data?.conversation && 'replies' in data.conversation) {
-      const repliesData = (data.conversation as any).replies;
-      if (Array.isArray(repliesData)) {
-        return repliesData;
-      }
     }
     
     return [];
