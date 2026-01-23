@@ -1,7 +1,8 @@
-import React, { useState } from 'react'
-import { View, StyleSheet, Text, Image, Platform, Pressable, TouchableOpacity } from 'react-native'
+import React, { useState, useCallback, useMemo } from 'react'
+import { View, StyleSheet, Text, Image, Platform, Pressable, TouchableOpacity, ScrollView } from 'react-native'
 import { Link, router } from 'expo-router'
-import { NeynarCast, NeynarEmbed } from '../lib/neynar/types'
+import type { NeynarCast, NeynarEmbed } from '@litecast/types'
+import { usePrefetchThread } from '@litecast/hooks'
 import { UserAvatar } from './UserAvatar'
 import { ReactionBar } from './ReactionBar'
 import { SystemColors } from '../constants/Colors'
@@ -11,6 +12,15 @@ import ImageViewer from './ImageViewer'
 
 const Cast = ({ cast, truncate = false }: { cast: NeynarCast; truncate?: boolean }) => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const prefetchThread = usePrefetchThread();
+  
+  // Prefetch thread data when user presses on the cast
+  // This eliminates loading states when navigating to cast detail
+  const handleCastPress = useCallback(() => {
+    prefetchThread(cast.hash);
+    router.push(`/casts/${cast.hash}`);
+  }, [cast.hash, prefetchThread]);
+  
   const handleReaction = async (type: 'like' | 'recast', hash: string) => {
     // TODO: Implement reaction posting with new auth system
     console.log(`Reaction disabled: ${type} for ${hash}`)
@@ -60,65 +70,93 @@ const Cast = ({ cast, truncate = false }: { cast: NeynarCast; truncate?: boolean
     return false;
   };
 
+  // Categorize embeds for rendering
+  const { imageEmbeds, nonImageEmbeds } = useMemo(() => {
+    if (!cast.embeds || cast.embeds.length === 0) {
+      return { imageEmbeds: [], nonImageEmbeds: [] };
+    }
+
+    const images: Array<{ embed: NeynarEmbed; index: number }> = [];
+    const others: Array<{ embed: NeynarEmbed; index: number }> = [];
+
+    cast.embeds.slice(0, 4).forEach((embed, index) => {
+      // Skip Farcaster token links
+      if (embed.url && /farcaster\.xyz\/~\/ca\//i.test(embed.url)) {
+        return;
+      }
+
+      const mimeType = embed.metadata?.content_type || embed.metadata?.mime_type;
+      
+      // Check if it's an image
+      if (embed.url && (mimeType?.startsWith('image/') || embed.metadata?.image || isImageUrl(embed.url, embed.metadata))) {
+        images.push({ embed, index });
+      } else {
+        others.push({ embed, index });
+      }
+    });
+
+    return { imageEmbeds: images, nonImageEmbeds: others };
+  }, [cast.embeds]);
+
   const renderEmbeds = () => {
     if (!cast.embeds || cast.embeds.length === 0) {
       return null;
     }
 
-    // Limit to 3 embeds max for clean layout
-    const embedsToRender = cast.embeds.slice(0, 3);
+    const renderedImages = imageEmbeds.map(({ embed, index }) => (
+      <TouchableOpacity 
+        key={`image-${embed.url}-${index}`}
+        activeOpacity={0.9}
+        onPress={() => setSelectedImage(embed.url!)}
+      >
+        <Image 
+          source={{ uri: embed.url }} 
+          style={styles.image}
+          resizeMode="cover"
+        />
+      </TouchableOpacity>
+    ));
 
-    return embedsToRender.map((embed: NeynarEmbed, index: number) => {
-      // Skip Farcaster token links for now (farcaster.xyz/~/ca/[anything])
-      if (embed.url && /farcaster\.xyz\/~\/ca\//i.test(embed.url)) {
-        return null;
-      }
-
-      // Quote cast embed - handled separately
+    const renderNonImageEmbed = ({ embed, index }: { embed: NeynarEmbed; index: number }) => {
+      // Quote cast embed
       if (embed.cast) {
         return <QuoteCast key={`quote-${embed.cast.hash}-${index}`} cast={embed.cast} />;
       }
-
-      // Skip video embeds - they're handled by EmbedRouter
-      const mimeType = embed.metadata?.content_type || embed.metadata?.mime_type;
-      if (embed.url && (mimeType?.startsWith('video/') || mimeType === 'application/vnd.apple.mpegurl' || embed.metadata?.video)) {
-        // Let EmbedRouter handle video embeds
-      } else if (embed.url && (mimeType?.startsWith('image/') || embed.metadata?.image)) {
-        return (
-          <TouchableOpacity 
-            key={`image-mime-${embed.url}-${index}`}
-            activeOpacity={0.9}
-            onPress={() => setSelectedImage(embed.url!)}
-          >
-            <Image 
-              source={{ uri: embed.url }} 
-              style={styles.image}
-              resizeMode="cover"
-            />
-          </TouchableOpacity>
-        );
-      }
-
-      // Plain URL embed - check if it's an image
-      if (embed.url && isImageUrl(embed.url, embed.metadata)) {
-        return (
-          <TouchableOpacity 
-            key={`image-${embed.url}-${index}`}
-            activeOpacity={0.9}
-            onPress={() => setSelectedImage(embed.url!)}
-          >
-            <Image 
-              source={{ uri: embed.url }} 
-              style={styles.image}
-              resizeMode="cover"
-            />
-          </TouchableOpacity>
-        );
-      }
-
-      // Use EmbedRouter for all other embeds (frames, URLs, etc.)
+      // Use EmbedRouter for all other embeds (videos, frames, URLs, etc.)
       return <EmbedRouter key={`embed-${index}`} embed={embed} index={index} />;
-    });
+    };
+
+    // If more than 2 non-image embeds, use horizontal scroll
+    const useHorizontalScroll = nonImageEmbeds.length > 2;
+
+    return (
+      <View style={styles.embedsWrapper}>
+        {/* Render images vertically (they're usually full-width) */}
+        {renderedImages}
+        
+        {/* Render non-image embeds */}
+        {nonImageEmbeds.length > 0 && (
+          useHorizontalScroll ? (
+            <ScrollView 
+              horizontal 
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.horizontalEmbedScroll}
+              style={styles.horizontalScrollContainer}
+            >
+              {nonImageEmbeds.map(({ embed, index }) => (
+                <View key={`scroll-embed-${index}`} style={styles.horizontalEmbedItem}>
+                  {renderNonImageEmbed({ embed, index })}
+                </View>
+              ))}
+            </ScrollView>
+          ) : (
+            <View style={styles.verticalEmbeds}>
+              {nonImageEmbeds.map(item => renderNonImageEmbed(item))}
+            </View>
+          )
+        )}
+      </View>
+    );
   }
 
   // Format relative time nicely (e.g., "22m", "3h", "2d")
@@ -211,23 +249,21 @@ const Cast = ({ cast, truncate = false }: { cast: NeynarCast; truncate?: boolean
             size={40}
           />
             <View style={styles.contentContainer}>
-              <Link href={`/casts/${cast.hash}`} asChild>
-                <Pressable>
-                  <View>
-                    <Text style={styles.headerText} numberOfLines={1}>
-                      <Text style={styles.displayName}>{cast.author.display_name}</Text>
-                      {' '}
-                      <Text style={styles.username}>@{cast.author.username}</Text>
-                      <Text style={styles.separator}> · </Text>
-                      <Text style={styles.timestamp}>{relativeTime}</Text>
-                    </Text>
-                    {renderTextWithMentions()}
-                    {isTruncated && (
-                      <Text style={styles.readMore}> Read more</Text>
-                    )}
-                  </View>
-                </Pressable>
-              </Link>
+              <Pressable onPress={handleCastPress}>
+                <View>
+                  <Text style={styles.headerText} numberOfLines={1}>
+                    <Text style={styles.displayName}>{cast.author.display_name}</Text>
+                    {' '}
+                    <Text style={styles.username}>@{cast.author.username}</Text>
+                    <Text style={styles.separator}> · </Text>
+                    <Text style={styles.timestamp}>{relativeTime}</Text>
+                  </Text>
+                  {renderTextWithMentions()}
+                  {isTruncated && (
+                    <Text style={styles.readMore}> Read more</Text>
+                  )}
+                </View>
+              </Pressable>
               {renderEmbeds()}
               <ReactionBar 
                 reactions={[
@@ -346,6 +382,24 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8f8f8',
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: SystemColors.separator,
+  },
+  // Embed layout styles
+  embedsWrapper: {
+    marginTop: 8,
+  },
+  verticalEmbeds: {
+    gap: 8,
+  },
+  horizontalScrollContainer: {
+    marginHorizontal: -16, // Extend to edges
+    marginTop: 8,
+  },
+  horizontalEmbedScroll: {
+    paddingHorizontal: 16,
+    gap: 12,
+  },
+  horizontalEmbedItem: {
+    width: 280, // Fixed width for horizontal scroll items
   },
 })
 

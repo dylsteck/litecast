@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   StyleSheet,
@@ -9,6 +9,9 @@ import {
   StatusBar,
   Platform,
   SafeAreaView,
+  Animated,
+  PanResponder,
+  Text,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SystemColors } from '../constants/Colors';
@@ -22,6 +25,134 @@ interface ImageViewerProps {
 }
 
 const ImageViewer = ({ visible, imageUrl, onClose }: ImageViewerProps) => {
+  const scale = useRef(new Animated.Value(1)).current;
+  const translateX = useRef(new Animated.Value(0)).current;
+  const translateY = useRef(new Animated.Value(0)).current;
+  
+  const lastScale = useRef(1);
+  const lastTranslateX = useRef(0);
+  const lastTranslateY = useRef(0);
+  
+  // Track pinch gesture
+  const initialDistance = useRef(0);
+  const isPinching = useRef(false);
+  
+  const [showHint, setShowHint] = useState(true);
+
+  // Reset transforms when modal opens/closes
+  React.useEffect(() => {
+    if (visible) {
+      scale.setValue(1);
+      translateX.setValue(0);
+      translateY.setValue(0);
+      lastScale.current = 1;
+      lastTranslateX.current = 0;
+      lastTranslateY.current = 0;
+      setShowHint(true);
+      
+      // Hide hint after 2 seconds
+      const timer = setTimeout(() => setShowHint(false), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [visible]);
+
+  const getDistance = (touches: any[]) => {
+    const dx = touches[0].pageX - touches[1].pageX;
+    const dy = touches[0].pageY - touches[1].pageY;
+    return Math.sqrt(dx * dx + dy * dy);
+  };
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: () => true,
+      
+      onPanResponderGrant: (evt) => {
+        setShowHint(false);
+        if (evt.nativeEvent.touches.length === 2) {
+          isPinching.current = true;
+          initialDistance.current = getDistance(evt.nativeEvent.touches);
+        }
+      },
+      
+      onPanResponderMove: (evt, gestureState) => {
+        if (evt.nativeEvent.touches.length === 2 && isPinching.current) {
+          // Pinch to zoom
+          const currentDistance = getDistance(evt.nativeEvent.touches);
+          const newScale = Math.max(1, Math.min(4, lastScale.current * (currentDistance / initialDistance.current)));
+          scale.setValue(newScale);
+        } else if (evt.nativeEvent.touches.length === 1 && lastScale.current > 1) {
+          // Pan when zoomed in
+          const newX = lastTranslateX.current + gestureState.dx;
+          const newY = lastTranslateY.current + gestureState.dy;
+          translateX.setValue(newX);
+          translateY.setValue(newY);
+        }
+      },
+      
+      onPanResponderRelease: (evt, gestureState) => {
+        if (isPinching.current) {
+          isPinching.current = false;
+          // @ts-ignore - Animated.Value has _value
+          lastScale.current = scale._value || 1;
+          
+          // Snap back to 1 if close to it
+          if (lastScale.current < 1.1) {
+            Animated.spring(scale, {
+              toValue: 1,
+              useNativeDriver: true,
+              friction: 5,
+            }).start();
+            lastScale.current = 1;
+            
+            // Also reset position
+            Animated.spring(translateX, { toValue: 0, useNativeDriver: true }).start();
+            Animated.spring(translateY, { toValue: 0, useNativeDriver: true }).start();
+            lastTranslateX.current = 0;
+            lastTranslateY.current = 0;
+          }
+        } else {
+          // @ts-ignore
+          lastTranslateX.current = translateX._value || 0;
+          // @ts-ignore
+          lastTranslateY.current = translateY._value || 0;
+        }
+      },
+    })
+  ).current;
+
+  const handleDoubleTap = useRef<NodeJS.Timeout | null>(null);
+  
+  const onTap = () => {
+    if (handleDoubleTap.current) {
+      // Double tap detected - toggle zoom
+      clearTimeout(handleDoubleTap.current);
+      handleDoubleTap.current = null;
+      
+      if (lastScale.current > 1) {
+        // Zoom out
+        Animated.parallel([
+          Animated.spring(scale, { toValue: 1, useNativeDriver: true, friction: 5 }),
+          Animated.spring(translateX, { toValue: 0, useNativeDriver: true }),
+          Animated.spring(translateY, { toValue: 0, useNativeDriver: true }),
+        ]).start();
+        lastScale.current = 1;
+        lastTranslateX.current = 0;
+        lastTranslateY.current = 0;
+      } else {
+        // Zoom in to 2x
+        Animated.spring(scale, { toValue: 2, useNativeDriver: true, friction: 5 }).start();
+        lastScale.current = 2;
+      }
+    } else {
+      // Wait for potential double tap
+      handleDoubleTap.current = setTimeout(() => {
+        handleDoubleTap.current = null;
+        // Single tap - could close but we don't want accidental closes
+      }, 300);
+    }
+  };
+
   return (
     <Modal
       visible={visible}
@@ -30,7 +161,7 @@ const ImageViewer = ({ visible, imageUrl, onClose }: ImageViewerProps) => {
       statusBarTranslucent
       onRequestClose={onClose}
     >
-      <StatusBar barStyle="light-content" backgroundColor="rgba(0,0,0,0.95)" />
+      <StatusBar barStyle="light-content" backgroundColor="rgba(0,0,0,0.98)" />
       <View style={styles.container}>
         <SafeAreaView style={styles.safeArea}>
           {/* Header with close button */}
@@ -40,26 +171,37 @@ const ImageViewer = ({ visible, imageUrl, onClose }: ImageViewerProps) => {
               onPress={onClose}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
-              <Ionicons name="close" size={28} color="#fff" />
+              <Ionicons name="close" size={24} color="#fff" />
             </TouchableOpacity>
           </View>
           
-          {/* Image container */}
-          <View style={styles.imageContainer}>
-            <Image
-              source={{ uri: imageUrl }}
-              style={styles.image}
-              resizeMode="contain"
-            />
+          {/* Image container with gestures */}
+          <View style={styles.imageContainer} {...panResponder.panHandlers}>
+            <TouchableOpacity activeOpacity={1} onPress={onTap} style={styles.imageTouchable}>
+              <Animated.Image
+                source={{ uri: imageUrl }}
+                style={[
+                  styles.image,
+                  {
+                    transform: [
+                      { scale },
+                      { translateX },
+                      { translateY },
+                    ],
+                  },
+                ]}
+                resizeMode="contain"
+              />
+            </TouchableOpacity>
           </View>
+
+          {/* Hint text */}
+          {showHint && (
+            <View style={styles.hintContainer}>
+              <Text style={styles.hintText}>Pinch to zoom • Double-tap to zoom</Text>
+            </View>
+          )}
         </SafeAreaView>
-        
-        {/* Tap anywhere to close */}
-        <TouchableOpacity
-          style={styles.backdrop}
-          activeOpacity={1}
-          onPress={onClose}
-        />
       </View>
     </Modal>
   );
@@ -68,14 +210,11 @@ const ImageViewer = ({ visible, imageUrl, onClose }: ImageViewerProps) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.95)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.98)',
   },
   safeArea: {
     flex: 1,
     width: '100%',
-    zIndex: 2,
   },
   header: {
     flexDirection: 'row',
@@ -87,29 +226,49 @@ const styles = StyleSheet.create({
     top: Platform.OS === 'ios' ? 50 : 20,
     left: 0,
     right: 0,
-    zIndex: 3,
+    zIndex: 10,
   },
   closeButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   imageContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 16,
+  },
+  imageTouchable: {
+    flex: 1,
+    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   image: {
-    width: SCREEN_WIDTH - 32,
-    height: SCREEN_HEIGHT * 0.7,
+    width: SCREEN_WIDTH,
+    height: SCREEN_HEIGHT * 0.75,
   },
-  backdrop: {
-    ...StyleSheet.absoluteFillObject,
-    zIndex: 1,
+  hintContainer: {
+    position: 'absolute',
+    bottom: Platform.OS === 'ios' ? 50 : 30,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
+  hintText: {
+    color: 'rgba(255, 255, 255, 0.6)',
+    fontSize: 13,
+    fontWeight: '500',
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    overflow: 'hidden',
   },
 });
 

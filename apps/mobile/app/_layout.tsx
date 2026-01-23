@@ -8,13 +8,18 @@ import GuestHeaderLeft from '../components/GuestHeaderLeft';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ApiProvider } from '@litecast/hooks';
 
-// Create a client
+// Create a client with optimized settings for prefetching
+// Inspired by Base App's prefetching strategy:
+// https://blog.base.dev/base-app-prefetching-at-scale
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 2,
-      staleTime: 1000 * 60 * 5, // 5 minutes
-      gcTime: 1000 * 60 * 30, // 30 minutes (previously cacheTime)
+      staleTime: 1000 * 60 * 5, // 5 minutes - data considered fresh
+      gcTime: 1000 * 60 * 30, // 30 minutes - keep unused data in cache
+      refetchOnWindowFocus: false, // Don't refetch when app comes to foreground
+      refetchOnMount: false, // Use cached data if fresh - enables prefetch to work
+      refetchOnReconnect: false, // Don't refetch on network reconnect
     },
   },
 });

@@ -2,9 +2,9 @@ import React, { useCallback, useMemo } from 'react';
 import { View, StyleSheet, Platform, StatusBar, ActivityIndicator, Text, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LegendList } from '@legendapp/list';
-import { useNotifications } from '../../hooks/queries/useNotifications';
+import { useNotifications } from '@litecast/hooks';
+import type { NeynarNotification } from '@litecast/types';
 import { DEFAULT_FID } from '../../lib/neynar/constants';
-import { NeynarNotification } from '../../lib/neynar/types';
 import Notification from '../../components/Notification';
 import { EmptyState } from '../../components/EmptyState';
 import { SystemColors } from '../../constants/Colors';
@@ -15,11 +15,11 @@ const NotificationsScreen = () => {
   
   // Fetch priority notifications (mentions and replies)
   const { data: priorityData, isLoading: priorityLoading } = 
-    useNotifications(DEFAULT_FID, ['mentions', 'replies']);
+    useNotifications({ fid: DEFAULT_FID, type: ['mentions', 'replies'] });
   
   // Fetch all notifications
   const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage, error } = 
-    useNotifications(DEFAULT_FID);
+    useNotifications({ fid: DEFAULT_FID });
 
   const notifications = useMemo(() => {
     const allNotifications = data?.pages.flatMap(page => page.notifications) ?? [];

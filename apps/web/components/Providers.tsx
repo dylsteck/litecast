@@ -7,13 +7,19 @@ import { useState, useMemo } from 'react';
 export function Providers({ children }: { children: React.ReactNode }) {
   // Create QueryClient with useState to ensure it's stable across re-renders
   // This pattern works correctly with Next.js App Router SSR
+  // 
+  // Optimized settings for prefetching, inspired by Base App:
+  // https://blog.base.dev/base-app-prefetching-at-scale
   const [queryClient] = useState(
     () =>
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: 1000 * 60 * 5,
+            staleTime: 1000 * 60 * 5, // 5 minutes - data considered fresh
+            gcTime: 1000 * 60 * 30, // 30 minutes - keep unused data in cache
             retry: 1,
+            refetchOnWindowFocus: false, // Don't refetch when tab regains focus
+            refetchOnMount: false, // Use cached data if fresh - enables prefetch
           },
         },
       })

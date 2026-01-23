@@ -53,7 +53,7 @@ const TabOneScreen = () => {
     return (
       <View style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
         <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
-        <SafeAreaView style={{ flex: 1, backgroundColor: '#FFFFFF', paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 }} edges={['top', 'bottom']}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: '#FFFFFF', paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 }} edges={['top']}>
           <TabPills
             tabs={FEED_TABS}
             activeTab={activeTab}
@@ -73,7 +73,7 @@ const TabOneScreen = () => {
     return (
       <View style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
         <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
-        <SafeAreaView style={{ flex: 1, backgroundColor: '#FFFFFF', paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 }} edges={['top', 'bottom']}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: '#FFFFFF', paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 }} edges={['top']}>
           <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32, backgroundColor: '#FFFFFF' }}>
             <View style={{ alignItems: 'center', maxWidth: 280 }}>
               <View style={{ marginBottom: 16 }}>
@@ -146,7 +146,7 @@ const TabOneScreen = () => {
   return (
     <View style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#FFFFFF', paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 }} edges={['top', 'bottom']}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: '#FFFFFF', paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 }} edges={['top']}>
         <View style={{ flex: 1, position: 'relative' }}>
         {showGuardrails && (
           <>
@@ -197,7 +197,7 @@ const TabOneScreen = () => {
             estimatedItemSize={200}
             recycleItems
             style={{ flex: 1 }}
-            contentContainerStyle={{ flexGrow: 1 }}
+            contentContainerStyle={{ flexGrow: 1, paddingBottom: 100 }}
             refreshControl={
               <RefreshControl
                 refreshing={isRefetching}

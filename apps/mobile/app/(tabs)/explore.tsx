@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { View, StyleSheet, Text, Platform, StatusBar, TextInput, ScrollView, Image, TouchableOpacity, ActivityIndicator, useWindowDimensions } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import { Link } from 'expo-router'
-import { useSearch } from '../../hooks/queries/useSearch'
+import { useSearchCasts, useSearchUsers, useSearchFrames } from '@litecast/hooks'
 import { useRecentSearches } from '../../hooks/useRecentSearches'
 import Cast from '../../components/Cast'
 import { SystemColors } from '../../constants/Colors'
@@ -14,7 +14,28 @@ const ExploreScreen = () => {
   const showGuardrails = Platform.OS === 'web' && width > 768;
   const [inputValue, setInputValue] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
-  const { casts, users, frames, isLoading } = useSearch(searchQuery)
+  
+  // Use separate search hooks
+  const castsQuery = useSearchCasts(searchQuery, searchQuery.length > 0)
+  const usersQuery = useSearchUsers(searchQuery, searchQuery.length > 0)
+  const framesQuery = useSearchFrames(searchQuery, searchQuery.length > 0)
+  
+  // Extract data from queries
+  const casts = useMemo(() => 
+    castsQuery.data?.pages.flatMap(page => page.result.casts) ?? [], 
+    [castsQuery.data]
+  )
+  const users = useMemo(() => 
+    usersQuery.data?.pages.flatMap(page => page.result.users) ?? [], 
+    [usersQuery.data]
+  )
+  const frames = useMemo(() => 
+    framesQuery.data?.pages.flatMap(page => page.frames ?? []) ?? [], 
+    [framesQuery.data]
+  )
+  
+  const isLoading = castsQuery.isLoading || usersQuery.isLoading || framesQuery.isLoading
+  
   const { recentSearches, addRecentSearch, clearRecentSearches } = useRecentSearches()
   const [showAllUsers, setShowAllUsers] = useState(false)
   const [showAllFrames, setShowAllFrames] = useState(false)

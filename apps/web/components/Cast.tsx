@@ -2,8 +2,10 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useCallback, useRef } from 'react';
 import type { NeynarCast } from '@litecast/types';
 import { formatRelativeTime } from '@litecast/utils';
+import { usePrefetchThread, usePrefetchUser } from '@litecast/hooks';
 import { UserAvatar } from './UserAvatar';
 import { ReactionBar } from './ReactionBar';
 import { EmbedRouter } from './embeds/EmbedRouter';
@@ -15,7 +17,24 @@ interface CastProps {
 
 export function Cast({ cast, showThread = false }: CastProps) {
   const router = useRouter();
+  const prefetchThread = usePrefetchThread();
+  const prefetchUser = usePrefetchUser();
+  const hasPrefetchedThread = useRef(false);
   const { author, text, timestamp, embeds, reactions, replies, viewer_context } = cast;
+
+  // Prefetch thread data on hover - eliminates loading states
+  // Inspired by Base App: https://blog.base.dev/base-app-prefetching-at-scale
+  const handleMouseEnter = useCallback(() => {
+    if (!hasPrefetchedThread.current) {
+      hasPrefetchedThread.current = true;
+      prefetchThread(cast.hash);
+    }
+  }, [cast.hash, prefetchThread]);
+
+  // Prefetch author profile when hovering on their name/avatar
+  const handleAuthorHover = useCallback(() => {
+    prefetchUser(author.username);
+  }, [author.username, prefetchUser]);
 
   const handleCastClick = (e: React.MouseEvent) => {
     // Don't navigate if clicking on an interactive element
@@ -23,26 +42,32 @@ export function Cast({ cast, showThread = false }: CastProps) {
     if (target.closest('a') || target.closest('button')) {
       return;
     }
+    // Prefetch immediately on click as well (in case hover didn't happen)
+    prefetchThread(cast.hash);
     router.push(`/cast/${cast.hash}`);
   };
 
   return (
     <article
       onClick={handleCastClick}
+      onMouseEnter={handleMouseEnter}
       className="py-3 hover:bg-system-secondary-background/30 transition-colors cursor-pointer"
     >
       <div className="px-4">
         <div className="flex gap-3">
-        <UserAvatar
-          username={author.username}
-          pfpUrl={author.pfp_url}
-          size="md"
-        />
+        <div onMouseEnter={handleAuthorHover}>
+          <UserAvatar
+            username={author.username}
+            pfpUrl={author.pfp_url}
+            size="md"
+          />
+        </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">
             <Link
               href={`/${author.username}`}
               onClick={(e) => e.stopPropagation()}
+              onMouseEnter={handleAuthorHover}
               className="font-semibold text-system-label truncate hover:underline"
             >
               {author.display_name}
@@ -50,6 +75,7 @@ export function Cast({ cast, showThread = false }: CastProps) {
             <Link
               href={`/${author.username}`}
               onClick={(e) => e.stopPropagation()}
+              onMouseEnter={handleAuthorHover}
               className="text-system-secondary-label hover:underline"
             >
               @{author.username}

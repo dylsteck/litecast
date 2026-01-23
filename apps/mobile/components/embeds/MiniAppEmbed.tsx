@@ -104,10 +104,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   bottomBar: {
-    paddingVertical: 0,
     backgroundColor: SystemColors.background,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: SystemColors.separator,
   },
   launchButton: {
     backgroundColor: '#1a1a1a', // Slightly lighter than pure black

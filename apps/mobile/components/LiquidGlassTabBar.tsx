@@ -28,7 +28,7 @@ export default function LiquidGlassTabBar({ state, descriptors, navigation }: Bo
   return (
     <View style={styles.wrapper}>
       <View style={styles.container}>
-        <BlurView intensity={100} tint="systemMaterial" style={styles.tabBar}>
+        <BlurView intensity={80} tint="light" style={styles.tabBar}>
           <View style={styles.tabBarInner}>
           {visibleRoutes.map((route) => {
             const routeIndex = state.routes.findIndex(r => r.key === route.key);
@@ -110,15 +110,16 @@ const styles = StyleSheet.create({
   tabBar: {
     borderRadius: 24,
     overflow: 'hidden',
-    backgroundColor: 'rgba(255, 255, 255, 0.85)',
+    // More transparent, glass-like background
+    backgroundColor: 'rgba(255, 255, 255, 0.6)',
     borderWidth: 0.5,
-    borderColor: 'rgba(0, 0, 0, 0.08)',
+    borderColor: 'rgba(255, 255, 255, 0.25)',
     ...Platform.select({
       ios: {
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
-        shadowRadius: 12,
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.12,
+        shadowRadius: 16,
       },
       android: {
         elevation: 8,

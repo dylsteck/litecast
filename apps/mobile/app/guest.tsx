@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { LegendList } from '@legendapp/list'
 import { withUniwind } from 'uniwind'
 import Cast from '../components/Cast'
-import { useFeed } from '../hooks/queries/useFeed'
+import { useFeed } from '@litecast/hooks'
 import { DEFAULT_FID } from '../lib/neynar/constants'
 
 const StyledSafeAreaView = withUniwind(SafeAreaView)

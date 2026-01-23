@@ -3,11 +3,9 @@ import { View, StyleSheet, Text, Image, SafeAreaView, Platform, StatusBar, Activ
 import { FontAwesome } from '@expo/vector-icons';
 import { LegendList } from '@legendapp/list';
 import { useLocalSearchParams, useNavigation } from 'expo-router';
-import { useUser } from '../hooks/queries/useUser';
-import { useUserCasts } from '../hooks/queries/useUserCasts';
-import { useUserReactions } from '../hooks/queries/useUserReactions';
+import { useUser, useUserCasts, useUserReactions } from '@litecast/hooks';
+import type { NeynarCast } from '@litecast/types';
 import { DEFAULT_FID } from '../lib/neynar/constants';
-import { NeynarCast } from '../lib/neynar/types';
 import Cast from '../components/Cast';
 import { TabPills } from '../components/TabPills';
 import { EmptyState } from '../components/EmptyState';
@@ -48,13 +46,13 @@ export default function UsernameProfileScreen() {
   
   const userFid = userData?.user?.fid;
   const { data: castsData, isLoading: castsLoading, fetchNextPage: fetchCastsNextPage, hasNextPage: hasCastsNextPage, isFetchingNextPage: isFetchingCastsNextPage, error: castsError } = 
-    useUserCasts(userFid || 0, false);
+    useUserCasts({ fid: userFid || 0, includeReplies: false });
   
   const { data: recastsData, isLoading: recastsLoading, fetchNextPage: fetchRecastsNextPage, hasNextPage: hasRecastsNextPage, isFetchingNextPage: isFetchingRecastsNextPage, error: recastsError } = 
-    useUserReactions(userFid || 0, 'recasts');
+    useUserReactions({ fid: userFid || 0, type: 'recasts' });
   
   const { data: likesData, isLoading: likesLoading, fetchNextPage: fetchLikesNextPage, hasNextPage: hasLikesNextPage, isFetchingNextPage: isFetchingLikesNextPage, error: likesError } = 
-    useUserReactions(userFid || 0, 'likes');
+    useUserReactions({ fid: userFid || 0, type: 'likes' });
 
   const casts = useMemo(() => {
     if (activeTab === 'casts') {

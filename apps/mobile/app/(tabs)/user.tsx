@@ -4,14 +4,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LegendList } from '@legendapp/list';
 import { useRouter } from 'expo-router';
-import { useUser } from '../../hooks/queries/useUser';
-import { useUserCasts } from '../../hooks/queries/useUserCasts';
-import { useUserReactions } from '../../hooks/queries/useUserReactions';
+import { useUser, useUserCasts, useUserReactions } from '@litecast/hooks';
+import type { NeynarCast } from '@litecast/types';
 import { DEFAULT_FID } from '../../lib/neynar/constants';
 import Cast from '../../components/Cast';
 import { TabPills } from '../../components/TabPills';
 import { EmptyState } from '../../components/EmptyState';
-import { NeynarCast } from '../../lib/neynar/types';
 import { SystemColors } from '../../constants/Colors';
 
 type TabType = 'casts' | 'recasts' | 'likes';
@@ -47,15 +45,15 @@ const UserScreen = () => {
   
   // Casts tab
   const { data: castsData, isLoading: castsLoading, fetchNextPage: fetchCastsNextPage, hasNextPage: hasCastsNextPage, isFetchingNextPage: isFetchingCastsNextPage, error: castsError } = 
-    useUserCasts(DEFAULT_FID, false);
+    useUserCasts({ fid: DEFAULT_FID, includeReplies: false });
   
   // Recasts tab
   const { data: recastsData, isLoading: recastsLoading, fetchNextPage: fetchRecastsNextPage, hasNextPage: hasRecastsNextPage, isFetchingNextPage: isFetchingRecastsNextPage, error: recastsError } = 
-    useUserReactions(DEFAULT_FID, 'recasts');
+    useUserReactions({ fid: DEFAULT_FID, type: 'recasts' });
   
   // Likes tab
   const { data: likesData, isLoading: likesLoading, fetchNextPage: fetchLikesNextPage, hasNextPage: hasLikesNextPage, isFetchingNextPage: isFetchingLikesNextPage, error: likesError } = 
-    useUserReactions(DEFAULT_FID, 'likes');
+    useUserReactions({ fid: DEFAULT_FID, type: 'likes' });
 
   const casts = useMemo(() => {
     if (activeTab === 'casts') {
@@ -253,10 +251,10 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   avatar: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    marginRight: 16,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    marginRight: 14,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: SystemColors.separator,
   },

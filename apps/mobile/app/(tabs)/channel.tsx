@@ -4,15 +4,20 @@ import { LegendList } from '@legendapp/list'
 import ComposeCast from '../../components/ComposeCast'
 import Cast from '../../components/Cast'
 import { useRoute } from '@react-navigation/native'
-import { useChannelFeed } from '../../hooks/queries/useChannelFeed'
-import { NeynarCast } from '../../lib/neynar/types'
+import { useChannelFeed, useTrendingFeed } from '@litecast/hooks'
+import type { NeynarCast } from '@litecast/types'
 
 const ChannelScreen = () => {
   const route = useRoute()
   const { type, parent_url } = route.params as { type: 'trending' | 'channel'; parent_url?: string }
   
+  // Use trending feed for trending type, channel feed otherwise
+  const trendingQuery = useTrendingFeed({})
+  const channelQuery = useChannelFeed({ parentUrl: parent_url })
+  
+  // Select the appropriate query based on type
   const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage, error } = 
-    useChannelFeed(type, parent_url)
+    type === 'trending' ? trendingQuery : channelQuery
 
   // Flatten pages into a single array of casts
   const casts = useMemo(() => {

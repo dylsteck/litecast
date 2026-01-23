@@ -2,6 +2,7 @@
 
 import { useCallback, useRef, useEffect } from 'react';
 import type { NeynarCast } from '@litecast/types';
+import { usePrefetchThreads } from '@litecast/hooks';
 import { Cast } from './Cast';
 import { EmptyState } from './EmptyState';
 
@@ -26,6 +27,8 @@ export function FeedList({
 }: FeedListProps) {
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadMoreRef = useRef<HTMLDivElement>(null);
+  const prefetchThreads = usePrefetchThreads();
+  const prefetchedHashes = useRef(new Set<string>());
 
   const handleObserver = useCallback(
     (entries: IntersectionObserverEntry[]) => {
@@ -52,6 +55,22 @@ export function FeedList({
       observerRef.current?.disconnect();
     };
   }, [handleObserver]);
+
+  // Prefetch first 3 visible casts when data loads
+  // Inspired by Base App: https://blog.base.dev/base-app-prefetching-at-scale
+  useEffect(() => {
+    if (casts.length > 0) {
+      const hashesToPrefetch = casts
+        .slice(0, 3)
+        .map((cast) => cast.hash)
+        .filter((hash) => !prefetchedHashes.current.has(hash));
+
+      if (hashesToPrefetch.length > 0) {
+        hashesToPrefetch.forEach((hash) => prefetchedHashes.current.add(hash));
+        prefetchThreads(hashesToPrefetch, 3);
+      }
+    }
+  }, [casts, prefetchThreads]);
 
   if (isLoading) {
     return <FeedSkeleton />;
