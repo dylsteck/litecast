@@ -1,11 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, Platform, Text } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { SystemColors } from '../constants/Colors';
+import { useAuth } from '../hooks/useAuth';
+import { SignInDrawer } from './SignInDrawer';
 
 export default function LiquidGlassTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
+  const { isAuthenticated } = useAuth();
+  const [showSignIn, setShowSignIn] = useState(false);
+
   // Filter to only show the main tabs
   const visibleRoutes = state.routes.filter(route => 
     ['index', 'explore', 'notifications', 'user'].includes(route.name)
@@ -16,6 +21,9 @@ export default function LiquidGlassTabBar({ state, descriptors, navigation }: Bo
   if (currentRoute === 'casts' || currentRoute === 'channel') {
     return null;
   }
+
+  // Protected routes that require authentication
+  const protectedRoutes = ['notifications', 'user'];
 
   const getLabel = (routeName: string) => {
     if (routeName === 'index') return 'Home';
@@ -35,6 +43,12 @@ export default function LiquidGlassTabBar({ state, descriptors, navigation }: Bo
             const isFocused = state.index === routeIndex;
 
             const onPress = () => {
+              // Check if route requires auth and user is not authenticated
+              if (protectedRoutes.includes(route.name) && !isAuthenticated) {
+                setShowSignIn(true);
+                return;
+              }
+
               const event = navigation.emit({
                 type: 'tabPress',
                 target: route.key,
@@ -85,6 +99,14 @@ export default function LiquidGlassTabBar({ state, descriptors, navigation }: Bo
           </View>
         </BlurView>
       </View>
+      <SignInDrawer
+        isOpen={showSignIn}
+        onClose={() => setShowSignIn(false)}
+        onSuccess={() => {
+          setShowSignIn(false);
+          // Optionally navigate to the route after sign-in
+        }}
+      />
     </View>
   );
 }

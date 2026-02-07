@@ -12,6 +12,8 @@ import { TabPills } from '../../components/TabPills';
 import { EmptyState } from '../../components/EmptyState';
 import { SystemColors } from '../../constants/Colors';
 import ImageViewer from '../../components/ImageViewer';
+import { useAuth } from '../../hooks/useAuth';
+import { SignInDrawer } from '../../components/SignInDrawer';
 
 type TabType = 'casts' | 'recasts' | 'likes';
 
@@ -37,8 +39,20 @@ const UserScreen = () => {
   const [activeTab, setActiveTab] = useState<TabType>('casts');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const router = useRouter();
+  const { isAuthenticated, signer, isLoading: authLoading, refetch: refetchAuth } = useAuth();
+  const [showSignIn, setShowSignIn] = useState(false);
   
-  const { data: userData, isLoading: userLoading, error: userError } = useUser(DEFAULT_FID);
+  // Only use signer's FID if authenticated, otherwise DEFAULT_FID (hooks will run but show empty state)
+  const fid = isAuthenticated ? (signer?.fid || DEFAULT_FID) : DEFAULT_FID;
+  
+  useEffect(() => {
+    // Show sign-in drawer if not authenticated when component mounts
+    if (!authLoading && !isAuthenticated) {
+      setShowSignIn(true);
+    }
+  }, [isAuthenticated, authLoading]);
+  
+  const { data: userData, isLoading: userLoading, error: userError } = useUser(fid);
   
   useEffect(() => {
     // Don't redirect - keep user profile in tabs so navbar shows
@@ -47,15 +61,15 @@ const UserScreen = () => {
   
   // Casts tab
   const { data: castsData, isLoading: castsLoading, fetchNextPage: fetchCastsNextPage, hasNextPage: hasCastsNextPage, isFetchingNextPage: isFetchingCastsNextPage, error: castsError } = 
-    useUserCasts({ fid: DEFAULT_FID, includeReplies: false });
+    useUserCasts({ fid, includeReplies: false });
   
   // Recasts tab
   const { data: recastsData, isLoading: recastsLoading, fetchNextPage: fetchRecastsNextPage, hasNextPage: hasRecastsNextPage, isFetchingNextPage: isFetchingRecastsNextPage, error: recastsError } = 
-    useUserReactions({ fid: DEFAULT_FID, type: 'recasts' });
+    useUserReactions({ fid, type: 'recasts' });
   
   // Likes tab
   const { data: likesData, isLoading: likesLoading, fetchNextPage: fetchLikesNextPage, hasNextPage: hasLikesNextPage, isFetchingNextPage: isFetchingLikesNextPage, error: likesError } = 
-    useUserReactions({ fid: DEFAULT_FID, type: 'likes' });
+    useUserReactions({ fid, type: 'likes' });
 
   const casts = useMemo(() => {
     if (activeTab === 'casts') {
@@ -200,6 +214,16 @@ const UserScreen = () => {
         visible={selectedImage !== null}
         imageUrl={selectedImage || ''}
         onClose={() => setSelectedImage(null)}
+      />
+      
+      {/* Sign-in drawer */}
+      <SignInDrawer
+        isOpen={showSignIn}
+        onClose={() => setShowSignIn(false)}
+        onSuccess={() => {
+          setShowSignIn(false);
+          refetchAuth();
+        }}
       />
     </SafeAreaView>
   );

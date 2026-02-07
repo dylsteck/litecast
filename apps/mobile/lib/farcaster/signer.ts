@@ -1,8 +1,14 @@
 import * as ed25519 from '@noble/ed25519';
-import { sha512 } from '@noble/hashes/sha2';
+import { sha512 } from '@noble/hashes/sha2.js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Crypto from 'expo-crypto';
 import { Platform } from 'react-native';
+import type {
+  StoredSigner,
+  SignedKeyRequestResponse,
+  SignerStatusResponse,
+} from '@litecast/types';
+import { apiPost, apiRequest, getApiConfig, configureApi, API_ENDPOINTS } from '@litecast/hooks';
 
 // Polyfill crypto.getRandomValues for React Native
 if (Platform.OS !== 'web' && typeof global.crypto === 'undefined') {
@@ -40,9 +46,9 @@ ed25519.etc.sha512Async = async (...messages: Uint8Array[]) => {
   return Promise.resolve(ed25519.etc.sha512Sync!(...messages));
 };
 
-// API base URL - use litecast.xyz for all platforms
-// This ensures API routes work in dev, production, and on native
-const API_ORIGIN = 'https://litecast.xyz';
+// API base URL - only use production in non-dev mode
+const API_ORIGIN_PROD = 'https://litecast.xyz';
+const API_ORIGIN_DEV = 'http://localhost:3000';
 
 const getApiUrl = (path: string) => {
   // If EXPO_PUBLIC_API_URL is set, use it (override)
@@ -55,38 +61,28 @@ const getApiUrl = (path: string) => {
     return `${window.location.origin}${path}`;
   }
   
-  // For production web and all native platforms, use litecast.xyz
-  return `${API_ORIGIN}${path}`;
+  // In development mode, prefer localhost (don't hit production)
+  if (__DEV__) {
+    // iOS Simulator can use localhost directly
+    if (Platform.OS === 'ios') {
+      return `${API_ORIGIN_DEV}${path}`;
+    }
+    // Android emulator uses 10.0.2.2 for localhost
+    if (Platform.OS === 'android') {
+      return `http://10.0.2.2:3000${path}`;
+    }
+    // Default to localhost for dev
+    return `${API_ORIGIN_DEV}${path}`;
+  }
+  
+  // Production mode - use production API
+  return `${API_ORIGIN_PROD}${path}`;
 };
 
 const STORAGE_KEYS = {
   SIGNER: 'FARCASTER_SIGNER',
   HAS_SEEN_ONBOARDING: 'HAS_SEEN_ONBOARDING',
 };
-
-export interface StoredSigner {
-  privateKey: string;      // hex-encoded Ed25519 private key
-  publicKey: string;       // hex-encoded Ed25519 public key
-  fid?: number;            // user's Farcaster ID (set after approval)
-  token?: string;          // token for polling status
-  createdAt: number;       // timestamp
-}
-
-export interface SignedKeyRequestResponse {
-  token: string;
-  deeplinkUrl: string;
-  key: string;            // public key
-  state: 'generated' | 'pending_approval' | 'approved' | 'completed' | 'revoked';
-  requestFid?: number;
-}
-
-export interface SignerStatusResponse {
-  token: string;
-  key: string;
-  state: 'generated' | 'pending_approval' | 'approved' | 'completed' | 'revoked';
-  requestFid?: number;
-  userFid?: number;
-}
 
 /**
  * Convert Uint8Array to hex string (React Native compatible)
@@ -114,45 +110,203 @@ export async function generateSignerKeypair(): Promise<{ privateKey: string; pub
  * Create a signed key request via our API (which handles the app signature)
  */
 export async function createSignedKeyRequest(
-  publicKey: string
+  publicKey: string,
+  options?: { retryWithProduction?: boolean }
 ): Promise<SignedKeyRequestResponse> {
-  const apiUrl = getApiUrl('/api/signer');
-  console.log('[Signer] Calling API:', apiUrl);
+  const retryWithProduction = options?.retryWithProduction ?? true;
   
   try {
-    const response = await fetch(apiUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ publicKey }),
-    });
+    // Try to use shared API client if configured, otherwise fall back to fetch
+    const apiConfig = getApiConfig();
+    let data: SignedKeyRequestResponse;
     
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      const errorMessage = errorData.error || `Failed to create signed key request: ${response.status}`;
-      console.error('[Signer] API error:', errorMessage, errorData);
-      throw new Error(errorMessage);
+    if (apiConfig.baseUrl) {
+      // Use shared API client
+      try {
+        data = await apiPost<SignedKeyRequestResponse>(
+          API_ENDPOINTS.SIGNER,
+          { publicKey }
+        );
+      } catch (apiError: any) {
+        // If it's a network error and we're using localhost in dev mode, retry with production
+        const isDev = __DEV__;
+        const isLocalhost = apiConfig.baseUrl.includes('localhost') || apiConfig.baseUrl.includes('10.0.2.2');
+        const isNetworkError = !apiError.status || apiError.message?.includes('Network request failed') || apiError.message?.includes('Failed to fetch');
+        
+        if (isDev && isLocalhost && isNetworkError && retryWithProduction) {
+          console.log('[Signer] Local dev server unreachable via API client, retrying with production...');
+          // Temporarily configure API to use production
+          const originalBaseUrl = apiConfig.baseUrl;
+          configureApi({ baseUrl: API_ORIGIN_PROD });
+          try {
+            data = await apiPost<SignedKeyRequestResponse>(
+              API_ENDPOINTS.SIGNER,
+              { publicKey }
+            );
+            console.log('[Signer] Production API response:', data);
+            // Restore original config
+            configureApi({ baseUrl: originalBaseUrl });
+            return data;
+          } catch (prodError: any) {
+            // Restore original config before rethrowing
+            configureApi({ baseUrl: originalBaseUrl });
+            throw apiError; // Throw original error, not production error
+          }
+        }
+        throw apiError;
+      }
+    } else {
+      // Fallback to fetch with full URL
+      const apiUrl = getApiUrl(API_ENDPOINTS.SIGNER);
+      console.log('[Signer] Calling API:', apiUrl);
+      
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ publicKey }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        const errorMessage = errorData.error || `Failed to create signed key request: ${response.status}`;
+        console.error('[Signer] API error:', errorMessage, errorData);
+        throw new Error(errorMessage);
+      }
+      
+      data = await response.json();
     }
     
-    const data = await response.json();
     console.log('[Signer] API response:', data);
     
-    // The Farcaster API returns the response wrapped in a 'result' object
-    return data.result || data;
+    // The API returns the response directly (no 'result' wrapper)
+    return data;
   } catch (error: any) {
-    console.error('[Signer] Fetch error:', error);
-    console.error('[Signer] API URL attempted:', apiUrl);
+    console.error('[Signer] ===== ERROR DETAILS =====');
+    console.error('[Signer] Error object:', error);
+    console.error('[Signer] Error message:', error.message);
+    console.error('[Signer] Error status:', error.status);
+    console.error('[Signer] Error data:', JSON.stringify(error.data, null, 2));
+    console.error('[Signer] Error type:', typeof error);
+    console.error('[Signer] Has status?', !!error.status);
     console.error('[Signer] Platform:', Platform.OS);
+    console.error('[Signer] API URL:', getApiUrl(API_ENDPOINTS.SIGNER));
+    console.error('[Signer] =========================');
     
-    // Provide more helpful error message
-    if (error.message?.includes('Network request failed') || error.message?.includes('Failed to fetch')) {
-      const helpfulMessage = Platform.OS === 'web' 
-        ? `Cannot reach API server at ${apiUrl}. On web, make sure Expo Router API routes are enabled and the server is running. Also ensure FARCASTER_APP_FID and FARCASTER_APP_MNEMONIC are set in your .env file.`
-        : `Cannot reach API server at ${apiUrl}. Make sure the server is running and FARCASTER_APP_FID and FARCASTER_APP_MNEMONIC are set.`;
+    // Extract actual error message from API response FIRST (before checking error type)
+    let errorMessage = error.message || 'Failed to create signed key request';
+    
+    // If error has data property (from apiPost), extract the actual error message
+    if (error.data) {
+      // Try to extract error message from various possible structures
+      if (typeof error.data === 'string') {
+        try {
+          const parsed = JSON.parse(error.data);
+          if (parsed.error) {
+            errorMessage = parsed.error;
+          }
+        } catch {
+          // Not JSON, use as-is
+          errorMessage = error.data;
+        }
+      } else if (typeof error.data === 'object') {
+        const apiError = error.data as { error?: string; details?: unknown; message?: string };
+        if (apiError.error) {
+          errorMessage = apiError.error;
+        } else if (apiError.message) {
+          errorMessage = apiError.message;
+        }
+        // Include details if available
+        if (apiError.details) {
+          console.error('[Signer] Error details:', apiError.details);
+          // If details is an object with error message, use it
+          if (typeof apiError.details === 'object' && 'error' in apiError.details) {
+            errorMessage = String((apiError.details as any).error);
+          }
+        }
+      }
+    }
+    
+    // Check for HTTP status errors FIRST (before network errors)
+    // This handles 500, 400, 401, etc. from the API server
+    if (error.status && typeof error.status === 'number') {
+      const apiUrl = getApiUrl(API_ENDPOINTS.SIGNER);
+      const isDev = __DEV__;
+      const isLocalhost = apiUrl.includes('localhost') || apiUrl.includes('10.0.2.2');
+      
+      // 500 errors - server configuration issue
+      if (error.status === 500) {
+        const troubleshooting = Platform.OS === 'web'
+          ? `\n\nTroubleshooting:\n1. Make sure the web server is running (pnpm dev:web)\n2. Check that FARCASTER_APP_FID and FARCASTER_APP_MNEMONIC are set in .env\n3. Check server logs for detailed error`
+          : `\n\nTroubleshooting:\n1. Make sure the web server is running (pnpm dev:web in another terminal)\n2. Check that FARCASTER_APP_FID and FARCASTER_APP_MNEMONIC are set in .env\n3. For local dev, set EXPO_PUBLIC_API_URL=http://localhost:3000\n4. Check server logs for detailed error`;
+        
+        // If we have a meaningful error message (not just "API error: 500"), show it
+        if (errorMessage && !errorMessage.includes('API error: 500')) {
+          throw new Error(`${errorMessage}${troubleshooting}`);
+        } else {
+          // Generic 500 error - show troubleshooting
+          throw new Error(`Server error (500). The API server returned an error.${troubleshooting}`);
+        }
+      }
+      
+      // Other HTTP errors (400, 401, 403, 404, etc.)
+      throw new Error(`API error (${error.status}): ${errorMessage}`);
+    }
+    
+    // Check for network errors (no status code = network issue)
+    if (error.message?.includes('Network request failed') || error.message?.includes('Failed to fetch') || error.message?.includes('API base URL not configured') || !error.status) {
+      const apiUrl = getApiUrl(API_ENDPOINTS.SIGNER);
+      const isDev = __DEV__;
+      const isLocalhost = apiUrl.includes('localhost') || apiUrl.includes('10.0.2.2');
+      let triedProduction = false;
+      
+      // In dev mode, if we tried localhost and it failed, retry with production
+      if (isDev && isLocalhost && retryWithProduction && !apiUrl.includes('litecast.xyz')) {
+        console.log('[Signer] Local dev server unreachable, retrying with production...');
+        triedProduction = true;
+        try {
+          // Temporarily override to use production
+          const prodUrl = `${API_ORIGIN_PROD}${API_ENDPOINTS.SIGNER}`;
+          console.log('[Signer] Retrying with production API:', prodUrl);
+          
+          const response = await fetch(prodUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ publicKey }),
+          });
+          
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            const errorMessage = errorData.error || `Failed to create signed key request: ${response.status}`;
+            throw new Error(errorMessage);
+          }
+          
+          const data = await response.json();
+          console.log('[Signer] Production API response:', data);
+          return data;
+        } catch (prodError: any) {
+          // Production also failed, fall through to show original error
+          console.error('[Signer] Production API also failed:', prodError);
+          // Continue to show the original localhost error message
+        }
+      }
+      
+      let helpfulMessage: string;
+      if (Platform.OS === 'web') {
+        helpfulMessage = `Cannot reach API server at ${apiUrl}. On web, make sure Expo Router API routes are enabled and the server is running. Also ensure FARCASTER_APP_FID and FARCASTER_APP_MNEMONIC are set in your .env file.`;
+      } else if (isDev && isLocalhost) {
+        helpfulMessage = `Cannot reach local development server at ${apiUrl}.\n\nMake sure:\n1. Web server is running: pnpm dev:web (in another terminal)\n2. FARCASTER_APP_FID and FARCASTER_APP_MNEMONIC are set in .env\n3. Server is accessible at ${apiUrl}${triedProduction ? '\n\nNote: Production fallback was attempted but also failed.' : ''}`;
+      } else {
+        helpfulMessage = `Cannot reach API server at ${apiUrl}. Make sure the server is running and configured correctly.`;
+      }
       throw new Error(helpfulMessage);
     }
-    throw error;
+    
+    // Throw error with actual message from API
+    throw new Error(errorMessage);
   }
 }
 
@@ -170,18 +324,31 @@ export async function pollSignerStatus(
   const { interval = 2000, timeout = 300000, onStatusUpdate } = options; // 2s interval, 5min timeout
   
   const startTime = Date.now();
+  const apiConfig = getApiConfig();
   
   while (Date.now() - startTime < timeout) {
     try {
-      const response = await fetch(getApiUrl(`/api/signer?token=${encodeURIComponent(token)}`));
+      let status: SignerStatusResponse;
       
-      if (!response.ok) {
-        throw new Error(`Failed to poll status: ${response.status}`);
+      if (apiConfig.baseUrl) {
+        // Use shared API client
+        status = await apiRequest<SignerStatusResponse>(
+          API_ENDPOINTS.SIGNER,
+          { token }
+        );
+      } else {
+        // Fallback to fetch with full URL
+        const apiUrl = getApiUrl(`${API_ENDPOINTS.SIGNER}?token=${encodeURIComponent(token)}`);
+        const response = await fetch(apiUrl);
+        
+        if (!response.ok) {
+          throw new Error(`Failed to poll status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        // The API returns the response directly (no 'result' wrapper)
+        status = data;
       }
-      
-      const data = await response.json();
-      // The Farcaster API returns the response wrapped in a 'result' object
-      const status: SignerStatusResponse = data.result || data;
       
       if (onStatusUpdate) {
         onStatusUpdate(status);
@@ -199,7 +366,7 @@ export async function pollSignerStatus(
       await new Promise(resolve => setTimeout(resolve, interval));
     } catch (error) {
       // If it's a network error, continue polling
-      if (error instanceof TypeError) {
+      if (error instanceof TypeError || (error instanceof Error && error.message.includes('Network request failed'))) {
         await new Promise(resolve => setTimeout(resolve, interval));
         continue;
       }

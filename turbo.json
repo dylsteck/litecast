@@ -4,11 +4,24 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": [".next/**", "!.next/cache/**", "dist/**", ".vinxi/**"]
+      "outputs": [".next/**", "!.next/cache/**", "dist/**", ".vinxi/**"],
+      "env": [
+        "NEYNAR_API_KEY",
+        "FARCASTER_APP_FID",
+        "FARCASTER_APP_MNEMONIC",
+        "FARCASTER_APP_PRIVATE_KEY"
+      ]
     },
     "dev": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "env": [
+        "NEYNAR_API_KEY",
+        "FARCASTER_APP_FID",
+        "FARCASTER_APP_MNEMONIC",
+        "FARCASTER_APP_PRIVATE_KEY",
+        "EXPO_PUBLIC_API_URL"
+      ]
     },
     "type-check": {
       "dependsOn": ["^build"]

@@ -37,8 +37,25 @@ const getApiBaseUrl = () => {
     return window.location.origin;
   }
 
-  // For production web and all native platforms, use litecast.xyz
-  return 'https://litecast.xyz';
+  // For iOS Simulator, try localhost first (common dev setup)
+  if (Platform.OS === 'ios' && __DEV__) {
+    return 'http://localhost:3000';
+  }
+
+  // For Android emulator, try localhost first (common dev setup)
+  if (Platform.OS === 'android' && __DEV__) {
+    return 'http://10.0.2.2:3000'; // Android emulator localhost
+  }
+
+  // For production or when explicitly configured, use litecast.xyz
+  // Only use production if not in dev mode
+  if (!__DEV__) {
+    return 'https://litecast.xyz';
+  }
+
+  // In dev mode without EXPO_PUBLIC_API_URL, default to localhost
+  // This prevents accidentally hitting production during development
+  return 'http://localhost:3000';
 };
 
 const apiConfig = {

@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useState, useEffect } from 'react';
 import { View, StyleSheet, Platform, StatusBar, ActivityIndicator, Text, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LegendList } from '@legendapp/list';
@@ -8,18 +8,32 @@ import { DEFAULT_FID } from '../../constants/Farcaster';
 import Notification from '../../components/Notification';
 import { EmptyState } from '../../components/EmptyState';
 import { SystemColors } from '../../constants/Colors';
+import { useAuth } from '../../hooks/useAuth';
+import { SignInDrawer } from '../../components/SignInDrawer';
 
 const NotificationsScreen = () => {
   const { width } = useWindowDimensions();
   const showGuardrails = Platform.OS === 'web' && width > 768;
+  const { isAuthenticated, signer, isLoading: authLoading, refetch: refetchAuth } = useAuth();
+  const [showSignIn, setShowSignIn] = useState(false);
   
-  // Fetch priority notifications (mentions and replies)
+  // Only use signer's FID if authenticated, otherwise DEFAULT_FID (hooks will run but show empty state)
+  const fid = isAuthenticated ? (signer?.fid || DEFAULT_FID) : DEFAULT_FID;
+  
+  useEffect(() => {
+    // Show sign-in drawer if not authenticated when component mounts
+    if (!authLoading && !isAuthenticated) {
+      setShowSignIn(true);
+    }
+  }, [isAuthenticated, authLoading]);
+  
+  // Fetch priority notifications (mentions and replies) - only if authenticated
   const { data: priorityData, isLoading: priorityLoading } = 
-    useNotifications({ fid: DEFAULT_FID, type: ['mentions', 'replies'] });
+    useNotifications({ fid, type: ['mentions', 'replies'] });
   
-  // Fetch all notifications
+  // Fetch all notifications - only if authenticated
   const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage, error } = 
-    useNotifications({ fid: DEFAULT_FID });
+    useNotifications({ fid });
 
   const notifications = useMemo(() => {
     const allNotifications = data?.pages.flatMap(page => page.notifications) ?? [];
@@ -102,16 +116,32 @@ const NotificationsScreen = () => {
           }
           ListEmptyComponent={() =>
             !isLoadingNotifications ? (
-              <EmptyState 
-                icon="notifications-off-outline"
-                title="All caught up!"
-                subtitle="No notifications to show"
-              />
+              isAuthenticated ? (
+                <EmptyState 
+                  icon="notifications-off-outline"
+                  title="All caught up!"
+                  subtitle="No notifications to show"
+                />
+              ) : (
+                <EmptyState 
+                  icon="log-in-outline"
+                  title="Sign in required"
+                  subtitle="Connect your Farcaster account to view notifications"
+                />
+              )
             ) : null
           }
         />
         </View>
       </View>
+      <SignInDrawer
+        isOpen={showSignIn}
+        onClose={() => setShowSignIn(false)}
+        onSuccess={() => {
+          setShowSignIn(false);
+          refetchAuth();
+        }}
+      />
     </SafeAreaView>
   );
 };

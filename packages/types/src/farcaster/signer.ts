@@ -21,3 +21,8 @@ export interface SignerStatusResponse {
   requestFid?: number;
   userFid?: number;
 }
+
+export interface SignerErrorResponse {
+  error: string;
+  details?: unknown;
+}
