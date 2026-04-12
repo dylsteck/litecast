@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { SignInButton } from '@farcaster/auth-kit';
+import { useLitecastSession } from './LitecastSessionContext';
 
 interface SignInDrawerProps {
   isOpen: boolean;
@@ -8,13 +10,13 @@ interface SignInDrawerProps {
 }
 
 export function SignInDrawer({ isOpen, onClose }: SignInDrawerProps) {
+  const { mergeIdentityFromAuth } = useLitecastSession();
   const [isAnimating, setIsAnimating] = useState(false);
   const [shouldRender, setShouldRender] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
       setShouldRender(true);
-      // Small delay to ensure DOM is ready for animation
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           setIsAnimating(true);
@@ -25,7 +27,7 @@ export function SignInDrawer({ isOpen, onClose }: SignInDrawerProps) {
       setIsAnimating(false);
       const timer = setTimeout(() => {
         setShouldRender(false);
-      }, 300); // Match animation duration
+      }, 300);
       document.body.style.overflow = '';
       return () => clearTimeout(timer);
     }
@@ -41,7 +43,6 @@ export function SignInDrawer({ isOpen, onClose }: SignInDrawerProps) {
 
   return (
     <>
-      {/* Backdrop */}
       <div
         className={`fixed inset-0 bg-black/40 backdrop-blur-sm z-50 transition-opacity duration-300 ${
           isAnimating ? 'opacity-100' : 'opacity-0'
@@ -50,7 +51,6 @@ export function SignInDrawer({ isOpen, onClose }: SignInDrawerProps) {
         aria-hidden="true"
       />
 
-      {/* Drawer */}
       <div
         className={`fixed bottom-0 left-0 right-0 z-50 transition-transform duration-300 ease-out ${
           isAnimating ? 'translate-y-0' : 'translate-y-full'
@@ -60,20 +60,17 @@ export function SignInDrawer({ isOpen, onClose }: SignInDrawerProps) {
         aria-labelledby="signin-drawer-title"
       >
         <div className="bg-white rounded-t-3xl shadow-2xl max-w-[600px] mx-auto">
-          {/* Handle */}
           <div className="flex justify-center pt-3 pb-2">
             <div className="w-10 h-1 bg-system-tertiary-label/40 rounded-full" />
           </div>
 
           <div className="px-6 pb-10 pt-4">
-            {/* Icon */}
             <div className="flex justify-center mb-6">
               <div className="w-16 h-16 rounded-full bg-brand-primary/10 flex items-center justify-center">
                 <FarcasterIcon className="w-8 h-8 text-brand-primary" />
               </div>
             </div>
 
-            {/* Content */}
             <h2
               id="signin-drawer-title"
               className="text-2xl font-bold text-system-label text-center mb-2"
@@ -81,21 +78,20 @@ export function SignInDrawer({ isOpen, onClose }: SignInDrawerProps) {
               Sign in to Litecast
             </h2>
             <p className="text-system-secondary-label text-center mb-8">
-              Connect your Farcaster account to view notifications, access your profile, and interact with casts.
+              Connect your Farcaster account to view notifications, access your profile, and enable
+              posting after you add a signer.
             </p>
 
-            {/* Sign in button */}
-            <button
-              className="w-full py-3.5 px-4 bg-brand-primary text-white font-semibold rounded-xl hover:bg-brand-primary/90 transition-colors mb-3"
-              onClick={() => {
-                // TODO: Implement sign in flow
-                console.log('Sign in clicked');
-              }}
-            >
-              Sign in with Farcaster
-            </button>
+            <div className="mb-3 [&_button]:w-full [&_button]:py-3.5 [&_button]:px-4 [&_button]:rounded-xl [&_button]:font-semibold [&_button]:bg-brand-primary [&_button]:text-white [&_button]:border-0">
+              <SignInButton
+                onSuccess={(res) => {
+                  mergeIdentityFromAuth(res);
+                  onClose();
+                }}
+                onError={() => {}}
+              />
+            </div>
 
-            {/* Cancel */}
             <button
               className="w-full py-3.5 px-4 text-system-secondary-label font-medium hover:text-system-label transition-colors"
               onClick={onClose}

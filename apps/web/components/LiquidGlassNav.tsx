@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import clsx from 'clsx';
 import { SignInDrawer } from './SignInDrawer';
+import { useLitecastSession } from './LitecastSessionContext';
+import { UserAvatar } from './UserAvatar';
 
 const navItems = [
   { href: '/', label: 'Home', icon: HomeIcon, iconFilled: HomeIconFilled, requiresAuth: false },
@@ -16,11 +18,10 @@ const navItems = [
 export function LiquidGlassNav() {
   const pathname = usePathname();
   const [showSignIn, setShowSignIn] = useState(false);
-  
-  // TODO: Replace with actual auth state
-  const isLoggedIn = false;
+  const { session } = useLitecastSession();
+  const isLoggedIn = !!session?.identity?.fid;
 
-  const handleNavClick = (item: typeof navItems[0], e: React.MouseEvent) => {
+  const handleNavClick = (item: (typeof navItems)[0], e: React.MouseEvent) => {
     if (item.requiresAuth && !isLoggedIn) {
       e.preventDefault();
       setShowSignIn(true);
@@ -30,19 +31,20 @@ export function LiquidGlassNav() {
   return (
     <>
       <nav className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50">
-        <div 
+        <div
           className="flex items-center gap-0 px-1.5 py-1 rounded-2xl backdrop-blur-xl border border-white/30"
           style={{
-            background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.3) 100%)',
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.6), 0 0 0 0.5px rgba(0, 0, 0, 0.05)',
+            background:
+              'linear-gradient(135deg, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.3) 100%)',
+            boxShadow:
+              '0 8px 32px rgba(0, 0, 0, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.6), 0 0 0 0.5px rgba(0, 0, 0, 0.05)',
           }}
         >
           {navItems.map((item) => {
-            const isActive = item.href === '/' 
-              ? pathname === '/' 
-              : pathname.startsWith(item.href);
+            const isActive =
+              item.href === '/' ? pathname === '/' : pathname.startsWith(item.href);
             const Icon = isActive ? item.iconFilled : item.icon;
-            
+
             return (
               <Link
                 key={item.href}
@@ -56,7 +58,21 @@ export function LiquidGlassNav() {
                 )}
                 aria-label={item.label}
               >
-                <Icon className="w-5 h-5" />
+                {item.href === '/profile' && isLoggedIn && session.identity.pfpUrl ? (
+                  <UserAvatar
+                    username={session.identity.username ?? 'me'}
+                    pfpUrl={session.identity.pfpUrl}
+                    size="sm"
+                    linked={false}
+                    className="!w-7 !h-7"
+                  />
+                ) : item.href === '/profile' && isLoggedIn ? (
+                  <span className="text-xs font-semibold text-system-label">
+                    {(session.identity.username || '?').slice(0, 1).toUpperCase()}
+                  </span>
+                ) : (
+                  <Icon className="w-5 h-5" />
+                )}
               </Link>
             );
           })}
@@ -68,11 +84,14 @@ export function LiquidGlassNav() {
   );
 }
 
-// Outline icons
 function HomeIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"
+      />
     </svg>
   );
 }
@@ -80,7 +99,11 @@ function HomeIcon({ className }: { className?: string }) {
 function SearchIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
+      />
     </svg>
   );
 }
@@ -88,7 +111,11 @@ function SearchIcon({ className }: { className?: string }) {
 function BellIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"
+      />
     </svg>
   );
 }
@@ -96,12 +123,15 @@ function BellIcon({ className }: { className?: string }) {
 function UserIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"
+      />
     </svg>
   );
 }
 
-// Filled icons
 function HomeIconFilled({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor">
@@ -114,7 +144,11 @@ function HomeIconFilled({ className }: { className?: string }) {
 function SearchIconFilled({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-      <path fillRule="evenodd" d="M10.5 3.75a6.75 6.75 0 1 0 0 13.5 6.75 6.75 0 0 0 0-13.5ZM2.25 10.5a8.25 8.25 0 1 1 14.59 5.28l4.69 4.69a.75.75 0 1 1-1.06 1.06l-4.69-4.69A8.25 8.25 0 0 1 2.25 10.5Z" clipRule="evenodd" />
+      <path
+        fillRule="evenodd"
+        d="M10.5 3.75a6.75 6.75 0 1 0 0 13.5 6.75 6.75 0 0 0 0-13.5ZM2.25 10.5a8.25 8.25 0 1 1 14.59 5.28l4.69 4.69a.75.75 0 1 1-1.06 1.06l-4.69-4.69A8.25 8.25 0 0 1 2.25 10.5Z"
+        clipRule="evenodd"
+      />
     </svg>
   );
 }
@@ -122,7 +156,11 @@ function SearchIconFilled({ className }: { className?: string }) {
 function BellIconFilled({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-      <path fillRule="evenodd" d="M5.25 9a6.75 6.75 0 0 1 13.5 0v.75c0 2.123.8 4.057 2.118 5.52a.75.75 0 0 1-.297 1.206c-1.544.57-3.16.99-4.831 1.243a3.75 3.75 0 1 1-7.48 0 24.585 24.585 0 0 1-4.831-1.244.75.75 0 0 1-.298-1.205A8.217 8.217 0 0 0 5.25 9.75V9Zm4.502 8.9a2.25 2.25 0 1 0 4.496 0 25.057 25.057 0 0 1-4.496 0Z" clipRule="evenodd" />
+      <path
+        fillRule="evenodd"
+        d="M5.25 9a6.75 6.75 0 0 1 13.5 0v.75c0 2.123.8 4.057 2.118 5.52a.75.75 0 0 1-.297 1.206c-1.544.57-3.16.99-4.831 1.243a3.75 3.75 0 1 1-7.48 0 24.585 24.585 0 0 1-4.831-1.244.75.75 0 0 1-.298-1.205A8.217 8.217 0 0 0 5.25 9.75V9Zm4.502 8.9a2.25 2.25 0 1 0 4.496 0 25.057 25.057 0 0 1-4.496 0Z"
+        clipRule="evenodd"
+      />
     </svg>
   );
 }
@@ -130,7 +168,11 @@ function BellIconFilled({ className }: { className?: string }) {
 function UserIconFilled({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-      <path fillRule="evenodd" d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z" clipRule="evenodd" />
+      <path
+        fillRule="evenodd"
+        d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z"
+        clipRule="evenodd"
+      />
     </svg>
   );
 }

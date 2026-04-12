@@ -2,13 +2,15 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import type { NeynarCast } from '@litecast/types';
 import { formatRelativeTime } from '@litecast/utils';
-import { usePrefetchThread, usePrefetchUser } from '@litecast/hooks';
+import { usePrefetchThread, usePrefetchUser, usePostReactionMessage } from '@litecast/hooks';
+import { buildSignedReactionAddJson } from '@litecast/farcaster-messages';
 import { UserAvatar } from './UserAvatar';
 import { ReactionBar } from './ReactionBar';
 import { EmbedRouter } from './embeds/EmbedRouter';
+import { useLitecastSession } from './LitecastSessionContext';
 
 interface CastProps {
   cast: NeynarCast;
@@ -19,8 +21,41 @@ export function Cast({ cast, showThread = false }: CastProps) {
   const router = useRouter();
   const prefetchThread = usePrefetchThread();
   const prefetchUser = usePrefetchUser();
+  const postReaction = usePostReactionMessage();
+  const { session, canWrite } = useLitecastSession();
+  const [actionError, setActionError] = useState<string | null>(null);
   const hasPrefetchedThread = useRef(false);
   const { author, text, timestamp, embeds, reactions, replies, viewer_context } = cast;
+
+  const submitReaction = useCallback(
+    async (reactionType: 'like' | 'recast') => {
+      if (!canWrite || !session?.signer?.fid || !session.signer.privateKey) {
+        setActionError('Sign in and enable posting to react.');
+        return;
+      }
+      setActionError(null);
+      try {
+        const message = await buildSignedReactionAddJson({
+          fid: session.signer.fid,
+          signerPrivateKeyHex: session.signer.privateKey,
+          targetFid: author.fid,
+          targetHash: cast.hash,
+          reactionType,
+        });
+        await postReaction.mutateAsync(message);
+      } catch (e) {
+        setActionError(e instanceof Error ? e.message : 'Reaction failed');
+      }
+    },
+    [
+      author.fid,
+      canWrite,
+      cast.hash,
+      postReaction,
+      session?.signer?.fid,
+      session?.signer?.privateKey,
+    ]
+  );
 
   // Prefetch thread data on hover - eliminates loading states
   // Inspired by Base App: https://blog.base.dev/base-app-prefetching-at-scale
@@ -103,12 +138,19 @@ export function Cast({ cast, showThread = false }: CastProps) {
           )}
 
           <div className="mt-2 pb-3">
+            {actionError && (
+              <p className="text-xs text-red-600 mb-1" onClick={(e) => e.stopPropagation()}>
+                {actionError}
+              </p>
+            )}
             <ReactionBar
               repliesCount={replies.count}
               recastsCount={reactions.recasts_count}
               likesCount={reactions.likes_count}
               liked={viewer_context?.liked}
               recasted={viewer_context?.recasted}
+              onLike={() => submitReaction('like')}
+              onRecast={() => submitReaction('recast')}
             />
           </div>
         </div>

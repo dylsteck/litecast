@@ -9,11 +9,15 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@farcaster/auth-kit": "^0.8.2",
+    "@farcaster/core": "^0.15.0",
+    "@litecast/farcaster-messages": "workspace:*",
     "@litecast/config": "workspace:*",
     "@litecast/hooks": "workspace:*",
     "@litecast/types": "workspace:*",
     "@litecast/utils": "workspace:*",
     "@neynar/nodejs-sdk": "^3.123.0",
+    "@noble/ed25519": "^2.0.0",
     "@tanstack/react-query": "^5.62.0",
     "clsx": "^2.1.1",
     "elysia": "^1.2.0",

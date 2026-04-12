@@ -9,6 +9,7 @@ import type {
   SignerStatusResponse,
 } from '@litecast/types';
 import { apiPost, apiRequest, getApiConfig, configureApi, API_ENDPOINTS } from '@litecast/hooks';
+import { persistLitecastSessionFromSigner, setLitecastSession } from '../litecast/session';
 
 // Polyfill crypto.getRandomValues for React Native
 if (Platform.OS !== 'web' && typeof global.crypto === 'undefined') {
@@ -383,6 +384,9 @@ export async function pollSignerStatus(
 export async function storeSigner(signer: StoredSigner): Promise<void> {
   try {
     await AsyncStorage.setItem(STORAGE_KEYS.SIGNER, JSON.stringify(signer));
+    if (signer.fid) {
+      await persistLitecastSessionFromSigner(signer);
+    }
   } catch (error) {
     console.error('Error storing signer:', error);
     throw error;
@@ -409,6 +413,7 @@ export async function getStoredSigner(): Promise<StoredSigner | null> {
 export async function removeStoredSigner(): Promise<void> {
   try {
     await AsyncStorage.removeItem(STORAGE_KEYS.SIGNER);
+    await setLitecastSession(null);
   } catch (error) {
     console.error('Error removing signer:', error);
     throw error;

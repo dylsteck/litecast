@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Providers } from '../components/Providers';
 import { LiquidGlassNav } from '../components/LiquidGlassNav';
 import './globals.css';
+import '@farcaster/auth-kit/styles.css';
 
 export const metadata: Metadata = {
   title: 'Litecast',

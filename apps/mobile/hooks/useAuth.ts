@@ -1,9 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { hasActiveSigner, getStoredSigner } from '../lib/farcaster/signer';
-import type { StoredSigner } from '@litecast/types';
+import type { LitecastSession, StoredSigner } from '@litecast/types';
+import { canWrite } from '@litecast/types';
+import { loadOrMigrateLitecastSession } from '../lib/litecast/session';
 
 export function useAuth() {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [session, setSession] = useState<LitecastSession | null>(null);
   const [signer, setSigner] = useState<StoredSigner | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -11,17 +13,18 @@ export function useAuth() {
     try {
       setIsLoading(true);
       const hasSigner = await hasActiveSigner();
-      if (hasSigner) {
-        const storedSigner = await getStoredSigner();
-        setSigner(storedSigner);
-        setIsAuthenticated(true);
-      } else {
+      if (!hasSigner) {
+        setSession(null);
         setSigner(null);
-        setIsAuthenticated(false);
+        return;
       }
+      const storedSigner = await getStoredSigner();
+      setSigner(storedSigner);
+      const s = await loadOrMigrateLitecastSession();
+      setSession(s);
     } catch (error) {
       console.error('Auth check error:', error);
-      setIsAuthenticated(false);
+      setSession(null);
       setSigner(null);
     } finally {
       setIsLoading(false);
@@ -32,9 +35,13 @@ export function useAuth() {
     checkAuth();
   }, [checkAuth]);
 
+  const isAuthenticated = !!session?.identity?.fid;
+
   return {
+    session,
     isAuthenticated,
     signer,
+    canWrite: canWrite(session),
     isLoading,
     refetch: checkAuth,
   };

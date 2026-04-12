@@ -4,8 +4,9 @@ import { useState, useMemo } from 'react';
 import { useForYouFeed, useFeed } from '@litecast/hooks';
 import { TabPills } from './TabPills';
 import { FeedList } from './FeedList';
+import { WebComposeBar } from './WebComposeBar';
+import { useLitecastSession } from './LitecastSessionContext';
 
-// Demo FID for testing - in production this would come from auth
 const DEMO_FID = 3;
 
 const TABS = [
@@ -15,9 +16,11 @@ const TABS = [
 
 export default function HomeContent() {
   const [activeTab, setActiveTab] = useState('for-you');
+  const { session } = useLitecastSession();
+  const feedFid = session?.identity?.fid ?? DEMO_FID;
 
-  const forYouQuery = useForYouFeed(DEMO_FID);
-  const trendingQuery = useFeed(DEMO_FID);
+  const forYouQuery = useForYouFeed(feedFid);
+  const trendingQuery = useFeed(feedFid);
 
   const activeQuery = activeTab === 'for-you' ? forYouQuery : trendingQuery;
 
@@ -40,6 +43,7 @@ export default function HomeContent() {
         emptyTitle="No casts yet"
         emptyDescription="Follow some people to see their casts here."
       />
+      <WebComposeBar />
     </div>
   );
 }

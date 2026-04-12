@@ -27,4 +27,8 @@ export const API_ENDPOINTS = {
 
   // Signer (auth)
   SIGNER: '/api/signer',
+
+  // Writes (signed protocol messages)
+  WRITE_CAST: '/api/write/cast',
+  WRITE_REACTION: '/api/write/reaction',
 } as const;

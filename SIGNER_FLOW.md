@@ -414,5 +414,18 @@ const { data, isLoading } = useSignerStatus(token, {
 
 ---
 
-**Last Updated:** February 6, 2026  
+## Litecast session: SIWF identity + optional signer (writes)
+
+Litecast separates **who you are** from **whether this device can post**:
+
+1. **Sign in with Farcaster (AuthKit)** — web stores `identity` (FID, username, pfp) in `localStorage` under `litecast.session.v2` (`LITECAST_SESSION_KEY`). Mobile may derive identity from the approved signer FID until a dedicated SIWF flow is added.
+2. **App signer (signed-key request)** — same as this document: Ed25519 keypair, `POST /api/signer`, Warpcast approval, poll until approved. The approved signer is merged into the same session object as `signer` (`StoredSigner`).
+3. **`canWrite`** — posting and reactions require `session.identity.fid === session.signer.fid` (and an approved signer with keys). If the user signs in as FID A but approves the key in Warpcast as FID B, the app blocks writes with a clear error.
+4. **Publishing** — the client builds a signed Farcaster protocol `Message` with `@farcaster/core` (see `packages/farcaster-messages`) and sends `{ message }` to `POST /api/write/cast` or `POST /api/write/reaction`. The web API calls Neynar `publishMessageToFarcaster` (no `signer_uuid`).
+
+Env for AuthKit on web: `NEXT_PUBLIC_APP_DOMAIN`, optional `NEXT_PUBLIC_FARCASTER_RELAY_URL` (see `.env.example`).
+
+---
+
+**Last Updated:** April 12, 2026  
 **Status:** ✅ All fixes complete, flow documented

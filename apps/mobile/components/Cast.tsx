@@ -2,7 +2,9 @@ import React, { useState, useCallback, useMemo } from 'react'
 import { View, StyleSheet, Text, Image, Platform, Pressable, TouchableOpacity, ScrollView } from 'react-native'
 import { Link, router } from 'expo-router'
 import type { NeynarCast, NeynarEmbed } from '@litecast/types'
-import { usePrefetchThread } from '@litecast/hooks'
+import { usePrefetchThread, usePostReactionMessage } from '@litecast/hooks'
+import { buildSignedReactionAddJson } from '@litecast/farcaster-messages'
+import { useAuth } from '../hooks/useAuth'
 import { UserAvatar } from './UserAvatar'
 import { ReactionBar } from './ReactionBar'
 import { SystemColors } from '../constants/Colors'
@@ -13,6 +15,8 @@ import ImageViewer from './ImageViewer'
 const Cast = ({ cast, truncate = false }: { cast: NeynarCast; truncate?: boolean }) => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const prefetchThread = usePrefetchThread();
+  const postReaction = usePostReactionMessage();
+  const { canWrite, session } = useAuth();
   
   // Prefetch thread data when user presses on the cast
   // This eliminates loading states when navigating to cast detail
@@ -21,9 +25,23 @@ const Cast = ({ cast, truncate = false }: { cast: NeynarCast; truncate?: boolean
     router.push(`/casts/${cast.hash}`);
   }, [cast.hash, prefetchThread]);
   
-  const handleReaction = async (type: 'like' | 'recast', hash: string) => {
-    // TODO: Implement reaction posting with new auth system
-    console.log(`Reaction disabled: ${type} for ${hash}`)
+  const handleReaction = async (type: 'like' | 'recast', castHash: string) => {
+    if (!canWrite || !session?.signer?.fid || !session.signer.privateKey) {
+      console.warn('Reactions require an approved signer');
+      return;
+    }
+    try {
+      const message = await buildSignedReactionAddJson({
+        fid: session.signer.fid,
+        signerPrivateKeyHex: session.signer.privateKey,
+        targetFid: cast.author.fid,
+        targetHash: castHash,
+        reactionType: type,
+      });
+      await postReaction.mutateAsync(message);
+    } catch (e) {
+      console.error('Reaction error:', e);
+    }
   }
 
   // Helper to check if URL is an image

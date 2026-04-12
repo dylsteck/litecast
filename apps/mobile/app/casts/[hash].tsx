@@ -283,7 +283,9 @@ export default function CastScreen() {
             </>
           )}
         </ScrollView>
-        {Platform.OS !== 'web' && cast && <ComposeCast hash={cast.hash} />}
+        {Platform.OS !== 'web' && cast && (
+          <ComposeCast hash={cast.hash} parentAuthorFid={cast.author.fid} />
+        )}
       </View>
     </SafeAreaView>
   );

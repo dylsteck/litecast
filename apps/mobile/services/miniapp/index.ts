@@ -5,4 +5,4 @@
  */
 
 export * from './types';
-export { useMiniAppBridge, type UseMiniAppBridgeOptions, type MiniAppBridgeResult } from './useMiniAppBridge';
+export { useMiniAppBridge } from './useMiniAppBridge';

@@ -174,8 +174,14 @@ export default function UsernameProfileScreen() {
             }
             ListEmptyComponent={() =>
               !isLoading ? (
-                <EmptyState 
-                  icon={activeTab === 'likes' ? 'heart-o' : activeTab === 'recasts' ? 'retweet' : 'comment-o'}
+                <EmptyState
+                  icon={
+                    activeTab === 'likes'
+                      ? 'heart-outline'
+                      : activeTab === 'recasts'
+                        ? 'repeat'
+                        : 'chatbubble-outline'
+                  }
                   title={`No ${activeTab} yet`}
                   subtitle={
                     activeTab === 'likes' 

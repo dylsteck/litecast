@@ -1,4 +1,4 @@
-import type { NeynarEmbed } from '@litecast/types';
+import type { NeynarEmbed, NeynarVideoStreamMetadata } from '@litecast/types';
 
 export type EmbedPlatform = 'twitter' | 'youtube' | 'github' | 'miniapp' | 'generic';
 
@@ -190,11 +190,13 @@ export const getVideoAspectRatio = (embed: NeynarEmbed): number | null => {
 
   // Get the highest quality stream (usually the first one, or find the one with largest dimensions)
   const streams = videoMetadata.streams;
-  const highestQualityStream = streams.reduce((prev, current) => {
-    const prevPixels = (prev.width_px || 0) * (prev.height_px || 0);
-    const currentPixels = (current.width_px || 0) * (current.height_px || 0);
-    return currentPixels > prevPixels ? current : prev;
-  });
+  const highestQualityStream = streams.reduce(
+    (prev: NeynarVideoStreamMetadata, current: NeynarVideoStreamMetadata) => {
+      const prevPixels = (prev.width_px || 0) * (prev.height_px || 0);
+      const currentPixels = (current.width_px || 0) * (current.height_px || 0);
+      return currentPixels > prevPixels ? current : prev;
+    },
+  );
 
   const width = highestQualityStream.width_px;
   const height = highestQualityStream.height_px;

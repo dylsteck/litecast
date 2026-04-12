@@ -50,6 +50,11 @@ export interface NeynarMetadataFrame {
   frames_url?: string;
 }
 
+export interface NeynarVideoStreamMetadata {
+  width_px?: number;
+  height_px?: number;
+}
+
 export interface NeynarEmbedMetadata {
   url: string;
   title?: string;
@@ -63,6 +68,10 @@ export interface NeynarEmbedMetadata {
   image?: {
     height_px?: number;
     width_px?: number;
+  };
+  /** Stream / video embed metadata from hubs (e.g. stream.farcaster.xyz). */
+  video?: {
+    streams?: NeynarVideoStreamMetadata[];
   };
   html?: NeynarHtmlMetadata;
   frame?: NeynarMetadataFrame;

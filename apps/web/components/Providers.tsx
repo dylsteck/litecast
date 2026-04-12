@@ -2,30 +2,26 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ApiProvider } from '@litecast/hooks';
-import { useState, useMemo } from 'react';
+import { AuthKitProvider } from '@farcaster/auth-kit';
+import { useMemo, useState } from 'react';
+import { LitecastSessionProvider } from './LitecastSessionContext';
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  // Create QueryClient with useState to ensure it's stable across re-renders
-  // This pattern works correctly with Next.js App Router SSR
-  // 
-  // Optimized settings for prefetching, inspired by Base App:
-  // https://blog.base.dev/base-app-prefetching-at-scale
   const [queryClient] = useState(
     () =>
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: 1000 * 60 * 5, // 5 minutes - data considered fresh
-            gcTime: 1000 * 60 * 30, // 30 minutes - keep unused data in cache
+            staleTime: 1000 * 60 * 5,
+            gcTime: 1000 * 60 * 30,
             retry: 1,
-            refetchOnWindowFocus: false, // Don't refetch when tab regains focus
-            refetchOnMount: false, // Use cached data if fresh - enables prefetch
+            refetchOnWindowFocus: false,
+            refetchOnMount: false,
           },
         },
       })
   );
 
-  // Memoize API config to avoid recreating on every render
   const apiConfig = useMemo(
     () => ({
       baseUrl: typeof window !== 'undefined' ? window.location.origin : '',
@@ -33,9 +29,22 @@ export function Providers({ children }: { children: React.ReactNode }) {
     []
   );
 
+  const authConfig = useMemo(
+    () => ({
+      relay:
+        process.env.NEXT_PUBLIC_FARCASTER_RELAY_URL?.trim() || 'https://relay.farcaster.xyz',
+      domain: process.env.NEXT_PUBLIC_APP_DOMAIN?.trim() || 'localhost:3000',
+    }),
+    []
+  );
+
   return (
     <QueryClientProvider client={queryClient}>
-      <ApiProvider config={apiConfig}>{children}</ApiProvider>
+      <ApiProvider config={apiConfig}>
+        <AuthKitProvider config={authConfig}>
+          <LitecastSessionProvider>{children}</LitecastSessionProvider>
+        </AuthKitProvider>
+      </ApiProvider>
     </QueryClientProvider>
   );
 }
