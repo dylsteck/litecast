@@ -1,115 +1,44 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, Image, SafeAreaView, Platform, StatusBar, TouchableOpacity } from 'react-native';
-import { Text, View } from '../components/Themed';
 import { useRouter } from 'expo-router';
-import { generateJWT, storeJWT, getJWT } from '../utils/auth';
-import { BlurView } from 'expo-blur';
+import { useEffect } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { SignInCard } from '../components/SignInCard';
+import { SystemColors } from '../constants/Colors';
+import { useSession } from '../providers/SessionProvider';
 
-export default function IndexScreen() {
+export default function LandingScreen() {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(true);
+  const { ready, isSignedIn } = useSession();
 
   useEffect(() => {
-    checkAuth();
-  }, []);
+    if (ready && isSignedIn) router.replace('/(tabs)');
+  }, [ready, isSignedIn, router]);
 
-  const checkAuth = async () => {
-    // On web, automatically login and skip the landing screen
-    if (Platform.OS === 'web') {
-      try {
-        const token = generateJWT();
-        await storeJWT(token);
-        router.push('/(tabs)');
-      } catch (error) {
-        console.error('Auto-login error:', error);
-        setIsLoading(false);
-      }
-      return;
-    }
-
-    // On mobile, check for existing token
-    const token = await getJWT();
-    if (token) {
-      router.push('/(tabs)');
-    } else {
-      setIsLoading(false);
-    }
-  };
-
-  const handleLogin = async () => {
-    try {
-      const token = generateJWT();
-      await storeJWT(token);
-      router.push('/(tabs)');
-    } catch (error) {
-      console.error('Login error:', error);
-    }
-  };
-
-  if (isLoading) {
-    return null;
-  }
+  if (!ready) return null;
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.textContainer}>
+    <SafeAreaView style={styles.safe}>
+      <View style={styles.hero}>
         <Text style={styles.title}>Litecast</Text>
         <Text style={styles.subtitle}>A beautiful yet simple Farcaster client</Text>
-        <BlurView
-          intensity={80}
-          tint="light"
-          style={styles.glassButton}
-        >
-          <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-            <Text style={styles.loginButtonText}>Continue</Text>
-          </TouchableOpacity>
-        </BlurView>
       </View>
+      <SignInCard />
+      <Text style={styles.guest} onPress={() => router.replace('/(tabs)')}>
+        Continue as guest
+      </Text>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
-    backgroundColor: 'white',
-    color: 'black'
-  },
-  textContainer: {
-    marginTop: '20%',
-    paddingLeft: '10%',
-    backgroundColor: 'white',
-  },
-  title: {
-    fontSize: 40,
-    fontWeight: '400',
-    color: 'black'
-  },
-  subtitle: {
-    fontSize: 18,
-    color: 'black',
-    marginBottom: 30,
-  },
-  homepageHeader: {
-    width: '100%', 
-    height: undefined,
-    aspectRatio: 2150 / 200,
-  },
-  glassButton: {
-    alignSelf: 'flex-start',
-    marginTop: 10,
-    borderRadius: 24,
-    overflow: 'hidden',
-    backgroundColor: '#000',
-  },
-  loginButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 32,
-  },
-  loginButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
+  safe: { flex: 1, backgroundColor: SystemColors.background },
+  hero: { paddingTop: '18%', paddingHorizontal: '10%', paddingBottom: 8 },
+  title: { fontSize: 40, fontWeight: '400', color: SystemColors.label, letterSpacing: -1 },
+  subtitle: { fontSize: 18, color: SystemColors.label, marginTop: 6 },
+  guest: {
+    paddingHorizontal: '10%',
+    paddingBottom: 32,
+    color: SystemColors.secondaryLabel,
+    fontSize: 15,
   },
 });

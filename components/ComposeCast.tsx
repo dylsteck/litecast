@@ -1,94 +1,57 @@
-import React, { useState, useCallback } from 'react';
-import { View, TextInput, StyleSheet, TouchableOpacity, Image, KeyboardAvoidingView, Platform } from 'react-native';
-import { BlurView } from 'expo-blur';
 import { FontAwesome } from '@expo/vector-icons';
+import { BlurView } from 'expo-blur';
+import React, { useState } from 'react';
+import { KeyboardAvoidingView, Platform, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+import { useCastActions } from '../hooks/useCastActions';
+import { SystemColors } from '../constants/Colors';
 
-const ComposeCast = ({ hash }: { hash?: string }) => {
-  const DEFAULT_PLACEHOLDER = 'cast something...';
-  const [text, setText] = useState<string>('');
-  const [placeholder, setPlaceholder] = useState<string>(DEFAULT_PLACEHOLDER);
+export function ComposeCast({ parentHash }: { parentHash?: string }) {
+  const [text, setText] = useState('');
+  const { compose, canWrite } = useCastActions();
 
-  const handleCast = useCallback(async () => {
-    // TODO: Implement cast posting with new auth system
-    console.log('Cast posting disabled:', text);
-    setText('');
-    setPlaceholder('posting disabled');
-    setTimeout(() => setPlaceholder(DEFAULT_PLACEHOLDER), 1500);
-  }, [text]);
+  const submit = () => {
+    const next = text.trim();
+    if (!next || compose.isPending) return;
+    compose.mutate(
+      { text: next, parentHash },
+      {
+        onSuccess: () => setText(''),
+      },
+    );
+  };
 
   return (
-    <KeyboardAvoidingView
-      style={{ marginTop: 0 }}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 0}
-    >
-      <View style={{ flex: 1 }}>
-        <View style={{ flex: 1, justifyContent: 'flex-end' }}>
-          <BlurView
-            intensity={80}
-            tint="systemMaterial"
-            style={styles.glassInputWrapper}
-          >
-            <View style={styles.composeInputContainer}>
-              <TextInput
-                value={text}
-                onChangeText={setText}
-                placeholder={placeholder}
-                placeholderTextColor={"#666"}
-                style={styles.composeInput}
-              />
-              <TouchableOpacity onPress={handleCast} style={styles.composeButton}>
-                <BlurView
-                  intensity={100}
-                  tint="light"
-                  style={styles.sendButton}
-                >
-                  <FontAwesome name="send" size={16} color="#000" />
-                </BlurView>
-              </TouchableOpacity>
-            </View>
-          </BlurView>
-        </View>
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={88}>
+      <View style={styles.wrap}>
+        <BlurView intensity={80} tint="systemMaterial" style={styles.glass}>
+          <TextInput
+            value={text}
+            onChangeText={setText}
+            placeholder={canWrite ? (parentHash ? 'write a reply…' : 'cast something…') : 'sign in to cast'}
+            placeholderTextColor="#666"
+            style={styles.input}
+            editable={!compose.isPending}
+          />
+          <TouchableOpacity onPress={submit} style={styles.send} disabled={!text.trim()}>
+            <FontAwesome name="send" size={15} color={text.trim() ? '#000' : SystemColors.tertiaryLabel} />
+          </TouchableOpacity>
+        </BlurView>
       </View>
     </KeyboardAvoidingView>
   );
-};
+}
 
 const styles = StyleSheet.create({
-  glassInputWrapper: {
-    margin: 12,
-    marginBottom: 100,
+  wrap: { paddingHorizontal: 12, paddingBottom: Platform.OS === 'web' ? 16 : 88 },
+  glass: {
     borderRadius: 24,
     overflow: 'hidden',
-    backgroundColor: 'rgba(255, 255, 255, 0.75)',
-  },
-  composeInputContainer: {
+    backgroundColor: 'rgba(255,255,255,0.75)',
     flexDirection: 'row',
     alignItems: 'center',
-    minHeight: 44,
     paddingHorizontal: 16,
-    paddingVertical: 8,
-    gap: 8,
+    minHeight: 44,
   },
-  composeInput: {
-    flex: 1,
-    fontSize: 16,
-    color: '#000',
-  },
-  composeButton: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  sendButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.08)',
-    borderWidth: 0.5,
-    borderColor: 'rgba(0, 0, 0, 0.1)',
-  },
+  input: { flex: 1, fontSize: 16, color: SystemColors.label, paddingVertical: 10 },
+  send: { padding: 8 },
 });
-
-export default ComposeCast;

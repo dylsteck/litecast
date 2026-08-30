@@ -2,13 +2,14 @@
   "name": "litecast",
   "main": "expo-router/entry",
   "author": "@dylsteck",
-  "version": "0.0.17",
+  "version": "0.1.0",
   "scripts": {
     "start": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
     "clean": "rm -rf node_modules bun.lock && bun install",
     "web": "expo start --web",
+    "typecheck": "tsc --noEmit",
     "test": "jest --watchAll"
   },
   "jest": {
