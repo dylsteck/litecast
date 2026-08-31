@@ -1,54 +1,45 @@
-# Litecast ✍️
+# Litecast
 
 A beautiful yet simple Farcaster client. Built by [dylsteck.eth](https://farcaster.xyz/dylsteck.eth)
 
-Originally started as part of [dwr.eth's mobile client bounty](https://farcaster.xyz/dwr.eth/0x5727a985)
+Talks to the official Farcaster client API (`https://client.farcaster.xyz`) — the same API the open-sourced Farcaster client uses. Guest browsing works without a key. Ranked Home, notifications, DMs, and writes need a Farcaster API session.
 
-### Built with
+### Stack
 
-- [Expo](https://expo.dev)
-- [Neynar](https://neynar.com)
+- Expo / Expo Router
+- TanStack Query
+- Official Farcaster client API + Farcaster Auth relay (SIWF)
 
-### How to run
-
-1. Set up the app locally
-
--   `git clone https://github.com/dylsteck/litecast`
--   `cd litecast && bun install`
-
-2. Set environment variables
-
--   Copy `.env.example` to a new `.env` file and add your `NEYNAR_API_KEY`
-
-1. Create Expo project
-
--   To run the app locally, you'll need to create an account at `https://expo.dev`, then create a new project
--   Once you've created a project, run `npm install --global eas-cli && eas init --id [YOUR PROJECT ID]` to overwrite the existing project with your own
-
-4. Run the app
+### Run
 
 ```bash
-bun install      # Install dependencies
-bun run start    # Start development server with Expo Go
+bun install
+cp .env.example .env
+bun run start
 ```
 
-Press `i` to open iOS Simulator
+`i` opens the iOS simulator. `bun run web` for web.
 
-**Useful commands:**
-- `bun run clean` - Fresh install (removes node_modules and reinstalls)
-- `bun run start` - Start development server
-- `bun run ios` - Run on iOS Simulator
-- `bun run android` - Run on Android Simulator
-- `bun run web` - Run on web
+### What works without a session
 
-### Mockups
+- Discover feed (recent casts from the network)
+- Profiles, threads, search, channels
+- Local hide / mute
+- Sign in with Farcaster (QR) for identity
 
-Here are some mockups from the very original version from around when this was started -- huge shoutout to [Sirsu](https://farcaster.xyz/sirsu) for the amazing designs 🙌
+### What needs a `client.farcaster.xyz` session
 
-|                       Login                        |                       Home                        |
-| :------------------------------------------------: | :-----------------------------------------------: |
-| ![Litecast Login](https://i.imgur.com/ncsCxVU.png) | ![Litecast Home](https://i.imgur.com/GBlg0fJ.png) |
+- Ranked For You / Following (`POST /v2/feed-items`) including the view → rank loop
+- Notifications and direct casts
+- Cast, reply, like, recast, follow
 
-|                       Search                        |                       Reply                        |
-| :-------------------------------------------------: | :------------------------------------------------: |
-| ![Litecast Search](https://i.imgur.com/cDsCm95.png) | ![Litecast Reply](https://i.imgur.com/BdhLkTy.png) |
+That session is what the official client mints after custody / companion-device login. SIWF proves who you are; it is not a Warpcast API token.
+
+### Layout
+
+```
+lib/farcaster/     API client, types, view-event buffer
+providers/         Session + local hide/mute
+hooks/             React Query hooks, one concern each
+app/(tabs)/        Home, Explore, Inbox, Profile
+```

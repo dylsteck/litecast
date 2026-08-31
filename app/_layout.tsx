@@ -1,34 +1,29 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
 import { SplashScreen, Stack } from 'expo-router';
 import { useEffect } from 'react';
 import { useColorScheme } from 'react-native';
-import GuestHeaderLeft from '../components/GuestHeaderLeft';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { HiddenProvider } from '../providers/HiddenProvider';
+import { SessionProvider } from '../providers/SessionProvider';
 
-// Create a client
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 2,
-      staleTime: 1000 * 60 * 5, // 5 minutes
-      gcTime: 1000 * 60 * 30, // 30 minutes (previously cacheTime)
+      staleTime: 1000 * 60 * 2,
+      gcTime: 1000 * 60 * 30,
     },
   },
 });
 
-export {
-  // Catch any errors thrown by the Layout component.
-  ErrorBoundary,
-} from 'expo-router';
+export { ErrorBoundary } from 'expo-router';
 
 export const unstable_settings = {
-  // Ensure that reloading on `/modal` keeps a back button present.
-  initialRouteName: '(tabs)',
+  initialRouteName: 'index',
 };
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
@@ -37,36 +32,39 @@ export default function RootLayout() {
     ...FontAwesome.font,
   });
 
-  // Expo Router uses Error Boundaries to catch errors in the navigation tree.
   useEffect(() => {
     if (error) throw error;
   }, [error]);
 
   useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
+    if (loaded) SplashScreen.hideAsync();
   }, [loaded]);
 
-  if (!loaded) {
-    return null;
-  }
-
-  return <RootLayoutNav />;
-}
-
-function RootLayoutNav() {
-  const colorScheme = useColorScheme();
+  if (!loaded) return null;
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack>
-          <Stack.Screen name="index" options={{ headerShown: false }} />
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="guest" options={{ headerShown: true, title: 'Feed', headerTitleStyle: { color: 'black' }, headerLeft: GuestHeaderLeft, headerStyle: { backgroundColor: 'white'} }}/>
-        </Stack>
-      </ThemeProvider>
+      <SessionProvider>
+        <HiddenProvider>
+          <RootNav />
+        </HiddenProvider>
+      </SessionProvider>
     </QueryClientProvider>
+  );
+}
+
+function RootNav() {
+  const colorScheme = useColorScheme();
+  return (
+    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="index" />
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="casts/[hash]" />
+        <Stack.Screen name="fids/[fid]" />
+        <Stack.Screen name="[username]" />
+        <Stack.Screen name="channel/[key]" />
+      </Stack>
+    </ThemeProvider>
   );
 }
