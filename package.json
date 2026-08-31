@@ -13,13 +13,21 @@
     "test": "jest --watchAll"
   },
   "jest": {
-    "preset": "jest-expo"
+    "preset": "jest-expo",
+    "transformIgnorePatterns": [
+      "node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@sentry/.*|native-base|react-native-svg|@noble/.*|@scure/.*)"
+    ]
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
     "@legendapp/list": "^2.0.14",
+    "@noble/ciphers": "^2.4.0",
+    "@noble/curves": "^2.4.0",
+    "@noble/hashes": "^2.4.0",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-navigation/native": "^7.1.8",
+    "@scure/bip32": "^2.4.0",
+    "@scure/bip39": "^2.4.0",
     "@tanstack/react-query": "^5.62.0",
     "date-fns": "^3.0.6",
     "expo": "~54.0.0",

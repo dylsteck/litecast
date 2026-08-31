@@ -14,11 +14,10 @@ import { SystemColors } from '../../constants/Colors';
 type InboxTab = 'notifications' | 'messages';
 
 export default function InboxScreen() {
-  const { session } = useSession();
+  const { isSignedIn } = useSession();
   const [tab, setTab] = useState<InboxTab>('notifications');
   const notifications = useNotifications('all');
   const inbox = useInbox();
-  const hasApiSession = Boolean(session?.token?.secret);
 
   return (
     <Screen>
@@ -30,7 +29,7 @@ export default function InboxScreen() {
         activeTab={tab}
         onTabChange={setTab}
       />
-      {!hasApiSession ? (
+      {!isSignedIn ? (
         <SignInCard compact />
       ) : tab === 'notifications' ? (
         <LegendList

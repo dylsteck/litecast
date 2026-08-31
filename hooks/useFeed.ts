@@ -10,7 +10,7 @@ export function useRankedFeed(feedKey: 'home' | 'following') {
 
   const query = useInfiniteQuery({
     queryKey: ['feedItems', feedKey, session?.user.fid],
-    enabled: isSignedIn && Boolean(session?.token?.secret),
+    enabled: isSignedIn,
     initialPageParam: undefined as { olderThan?: number; latestMainCastTimestamp?: number; excludeItemIdPrefixes?: string[] } | undefined,
     staleTime: FEED_STALE_TIME_MS,
     retry: (count, error) => {

@@ -1,8 +1,6 @@
-import { FARCASTER_API_BASE_URL, FARCASTER_AUTH_RELAY_URL } from './config';
+import { FARCASTER_API_BASE_URL } from './config';
 import { FarcasterApiError, messageFromApiErrorBody } from './errors';
 import type {
-  AuthChannel,
-  AuthChannelStatus,
   AuthToken,
   Cast,
   CastHash,
@@ -25,6 +23,7 @@ type RequestOptions = {
   body?: unknown;
   auth?: AuthToken | null;
   timeoutMs?: number;
+  retryOnUnauthorized?: boolean;
 };
 
 function toSearch(query?: RequestOptions['query']): string {
@@ -45,6 +44,7 @@ export class FarcasterClient {
       getToken: () => AuthToken | null;
       getDeviceId: () => string;
       getFid?: () => number | undefined;
+      refreshSession?: () => Promise<AuthToken | null>;
     },
   ) {}
 
@@ -77,6 +77,11 @@ export class FarcasterClient {
       const data = text ? JSON.parse(text) : null;
 
       if (!response.ok) {
+        const usingSession = options.auth === undefined;
+        if (response.status === 401 && usingSession && options.retryOnUnauthorized !== false) {
+          const next = await this.options.refreshSession?.();
+          if (next) return this.request<T>(path, { ...options, retryOnUnauthorized: false });
+        }
         throw new FarcasterApiError({
           status: response.status,
           path,
@@ -263,42 +268,6 @@ export class FarcasterClient {
   setFeedSeen(feeds: Array<{ feedKey: string; feedType: string; latestItemTimestamp: number; accessTimestamp: number }>) {
     return this.request('/v2/feed-seen', { method: 'PUT', body: { feeds } });
   }
-}
-
-export async function createAuthChannel({
-  domain,
-  siweUri,
-}: {
-  domain: string;
-  siweUri: string;
-}): Promise<AuthChannel> {
-  const response = await fetch(`${FARCASTER_AUTH_RELAY_URL}/v1/channel`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ siweUri, domain }),
-  });
-  if (!response.ok) {
-    throw new FarcasterApiError({
-      status: response.status,
-      path: '/v1/channel',
-      message: 'Could not start Farcaster sign-in',
-    });
-  }
-  return response.json();
-}
-
-export async function pollAuthChannel(channelToken: string): Promise<AuthChannelStatus> {
-  const response = await fetch(`${FARCASTER_AUTH_RELAY_URL}/v1/channel/status`, {
-    headers: { Authorization: `Bearer ${channelToken}` },
-  });
-  if (!response.ok) {
-    throw new FarcasterApiError({
-      status: response.status,
-      path: '/v1/channel/status',
-      message: 'Could not check Farcaster sign-in',
-    });
-  }
-  return response.json();
 }
 
 export function pageFromCasts(response: { result: { casts: Cast[] }; next?: { cursor?: string } }): Page<Cast> {

@@ -1,5 +1,5 @@
 import { LegendList } from '@legendapp/list';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { RefreshControl } from 'react-native';
 import { CastCard } from '../../components/CastCard';
 import { ComposeCast } from '../../components/ComposeCast';
@@ -14,9 +14,12 @@ import { SystemColors } from '../../constants/Colors';
 type HomeTab = 'foryou' | 'following' | 'discover';
 
 export default function HomeScreen() {
-  const { session, views } = useSession();
-  const hasApiSession = Boolean(session?.token?.secret);
-  const [tab, setTab] = useState<HomeTab>(hasApiSession ? 'foryou' : 'discover');
+  const { isSignedIn, views } = useSession();
+  const [tab, setTab] = useState<HomeTab>(isSignedIn ? 'foryou' : 'discover');
+
+  useEffect(() => {
+    setTab(isSignedIn ? 'foryou' : 'discover');
+  }, [isSignedIn]);
 
   const home = useRankedFeed('home');
   const following = useRankedFeed('following');
@@ -24,17 +27,17 @@ export default function HomeScreen() {
 
   const tabs = useMemo(
     () =>
-      hasApiSession
+      isSignedIn
         ? [
             { id: 'foryou' as const, label: 'For You' },
             { id: 'following' as const, label: 'Following' },
           ]
         : [{ id: 'discover' as const, label: 'Discover' }],
-    [hasApiSession],
+    [isSignedIn],
   );
 
   const ranked = tab === 'following' ? following : home;
-  const usingRanked = hasApiSession && tab !== 'discover';
+  const usingRanked = isSignedIn && tab !== 'discover';
   const casts: Cast[] = usingRanked ? ranked.items.map((item) => item.cast) : discover.casts;
   const items: FeedItem[] = usingRanked ? ranked.items : [];
 
@@ -58,7 +61,7 @@ export default function HomeScreen() {
           isEmpty={!loading && casts.length === 0}
           emptyTitle={tab === 'following' ? 'No following feed' : 'No posts yet'}
           emptySubtitle={
-            hasApiSession
+            isSignedIn
               ? 'Pull to refresh'
               : 'Guest Discover mixes recent casts from the network. Sign in for ranked For You.'
           }

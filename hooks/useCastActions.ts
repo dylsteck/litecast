@@ -9,10 +9,10 @@ function needsSession(error: unknown) {
 }
 
 export function useCastActions() {
-  const { client, isSignedIn, session } = useSession();
+  const { client, isSignedIn } = useSession();
   const { hideCast, muteFid } = useHidden();
   const queryClient = useQueryClient();
-  const canWrite = isSignedIn && Boolean(session?.token?.secret);
+  const canWrite = isSignedIn;
 
   const invalidate = () => {
     void queryClient.invalidateQueries({ queryKey: ['feedItems'] });
@@ -23,7 +23,7 @@ export function useCastActions() {
 
   const requireWrite = () => {
     if (!canWrite) {
-      Alert.alert('Sign in', 'Casting and reactions use the Farcaster client API and need a signed-in session.');
+      Alert.alert('Sign in', 'Scan the Farcaster QR or connect your custody wallet to cast.');
       return false;
     }
     return true;

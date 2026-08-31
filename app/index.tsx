@@ -14,15 +14,13 @@ export default function LandingScreen() {
     if (ready && isSignedIn) router.replace('/(tabs)');
   }, [ready, isSignedIn, router]);
 
-  if (!ready) return null;
-
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.hero}>
         <Text style={styles.title}>Litecast</Text>
         <Text style={styles.subtitle}>A beautiful yet simple Farcaster client</Text>
       </View>
-      <SignInCard />
+      {ready ? <SignInCard autoStart /> : null}
       <Text style={styles.guest} onPress={() => router.replace('/(tabs)')}>
         Continue as guest
       </Text>

@@ -8,7 +8,8 @@ export type AuthToken = {
 
 export type Session = {
   user: User;
-  token?: AuthToken;
+  token: AuthToken;
+  custodyAddress?: string;
 };
 
 export type UserPfp = {
@@ -168,20 +169,3 @@ export type CastViewEvent = {
   position?: number;
 };
 
-export type AuthChannel = {
-  channelToken: string;
-  url: string;
-  nonce: string;
-};
-
-export type AuthChannelStatus =
-  | { state: 'pending' }
-  | {
-      state: 'completed';
-      fid: Fid;
-      username?: string;
-      displayName?: string;
-      pfpUrl?: string;
-      message: string;
-      signature: string;
-    };

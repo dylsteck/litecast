@@ -5,7 +5,7 @@ export function useInbox() {
   const { client, isSignedIn, session } = useSession();
   return useQuery({
     queryKey: ['inbox', session?.user.fid],
-    enabled: isSignedIn && Boolean(session?.token?.secret),
+    enabled: isSignedIn,
     queryFn: async () => (await client.getInbox()).result.conversations ?? [],
   });
 }

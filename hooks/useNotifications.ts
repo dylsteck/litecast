@@ -7,7 +7,7 @@ export function useNotifications(tab = 'all') {
 
   const query = useInfiniteQuery({
     queryKey: ['notifications', tab, session?.user.fid],
-    enabled: isSignedIn && Boolean(session?.token?.secret),
+    enabled: isSignedIn,
     initialPageParam: undefined as string | undefined,
     queryFn: async ({ pageParam }) => {
       const response = await client.getNotifications({ tab, cursor: pageParam, limit: DEFAULT_PAGE_SIZE });
